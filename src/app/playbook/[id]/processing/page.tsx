@@ -221,12 +221,15 @@ export default function ProcessingPage() {
   const router = useRouter()
   const [statusData, setStatusData] = useState<StatusData | null>(null)
   const [pageError, setPageError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
   const [startMs] = useState(() => Date.now())
   const elapsed = useElapsedTime(startMs)
   const redirectedRef = useRef(false)
 
-  // Log the id we got from params
+  // Wait for client-side mount before rendering anything dynamic
+  // This prevents hydration mismatches from SSR
   useEffect(() => {
+    setMounted(true)
     console.log('[processing] Page mounted with id:', id, 'type:', typeof id)
     if (!id || id === 'undefined') {
       console.error('[processing] Invalid id from params:', id)
@@ -278,6 +281,22 @@ export default function ProcessingPage() {
           <Link href="/dashboard" className="text-[#339af0] text-sm hover:underline">
             ← Go to dashboard
           </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render dynamic content until client-side hydration is complete
+  // This prevents hydration mismatches and SSR/client state conflicts
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-14 h-14 rounded-xl bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center mx-auto mb-5">
+            <Zap className="w-7 h-7 text-[#339af0] animate-pulse" />
+          </div>
+          <p className="text-white font-semibold text-lg mb-1">Loading playbook…</p>
+          <p className="text-[#a1a1aa] text-sm">Preparing your research pipeline</p>
         </div>
       </div>
     )
