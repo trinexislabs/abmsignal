@@ -41,3 +41,4 @@ Error: listen EADDRINUSE: address already in use 0.0.0.0:3738
 - Network:       http://0.0.0.0:3738
 ✓ Ready in 54ms
 [generate] Orchestrator invoked for flow 849e56a3-15c0-4cd1-ad5c-1bb9c7450640
+Killed

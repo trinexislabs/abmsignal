@@ -16,16 +16,38 @@ export default function NewPlaybookProcessingPage() {
 
     async function submit() {
       try {
+        console.log('[new/processing] Starting playbook creation flow')
+
         const briefRaw = localStorage.getItem('abmsignal_product_brief')
         const accountRaw = localStorage.getItem('abmsignal_account')
 
+        console.log('[new/processing] localStorage briefRaw:', briefRaw ? `exists (${briefRaw.length} chars)` : 'MISSING')
+        console.log('[new/processing] localStorage accountRaw:', accountRaw ? `exists (${accountRaw.length} chars)` : 'MISSING')
+
         if (!briefRaw || !accountRaw) {
+          console.warn('[new/processing] Missing localStorage data, redirecting to product page')
           router.replace('/playbook/new/product')
           return
         }
 
-        const brief = JSON.parse(briefRaw) as Record<string, unknown>
-        const account = JSON.parse(accountRaw) as Record<string, unknown>
+        let brief: Record<string, unknown>
+        let account: Record<string, unknown>
+        try {
+          brief = JSON.parse(briefRaw) as Record<string, unknown>
+          console.log('[new/processing] Parsed brief:', { product_name: brief.product_name, mode: brief.mode })
+        } catch (parseErr) {
+          console.error('[new/processing] Failed to parse brief JSON:', parseErr)
+          setError('Failed to read product brief data. Please go back and try again.')
+          return
+        }
+        try {
+          account = JSON.parse(accountRaw) as Record<string, unknown>
+          console.log('[new/processing] Parsed account:', { company_name: account.company_name, industry: account.industry })
+        } catch (parseErr) {
+          console.error('[new/processing] Failed to parse account JSON:', parseErr)
+          setError('Failed to read account data. Please go back and try again.')
+          return
+        }
 
         const product_brief = {
           product_name: String(brief.product_name ?? ''),
@@ -51,29 +73,55 @@ export default function NewPlaybookProcessingPage() {
           notes: account.additional_notes ? String(account.additional_notes) : undefined,
         }
 
-        const createRes = await fetch('/api/playbooks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ product_brief, target_account }),
-        })
+        console.log('[new/processing] Creating playbook with:', { product_name: product_brief.product_name, target_company: target_account.target_company })
 
-        if (!createRes.ok) {
-          throw new Error(`Failed to create playbook: ${createRes.status}`)
+        let createRes: Response
+        try {
+          createRes = await fetch('/api/playbooks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_brief, target_account }),
+          })
+        } catch (fetchErr) {
+          console.error('[new/processing] Fetch failed:', fetchErr)
+          setError('Network error creating playbook. Please check your connection and try again.')
+          return
         }
 
-        const createData = (await createRes.json()) as { data: { playbook_id: string } }
+        console.log('[new/processing] Create response status:', createRes.status)
+
+        if (!createRes.ok) {
+          const errorBody = await createRes.text()
+          console.error('[new/processing] Create failed:', createRes.status, errorBody)
+          setError(`Failed to create playbook (${createRes.status}). Please try again.`)
+          return
+        }
+
+        let createData: { data: { playbook_id: string } }
+        try {
+          createData = (await createRes.json()) as { data: { playbook_id: string } }
+        } catch (jsonErr) {
+          console.error('[new/processing] Failed to parse create response:', jsonErr)
+          setError('Invalid server response. Please try again.')
+          return
+        }
+
         const playbookId = createData.data.playbook_id
+        console.log('[new/processing] Playbook created:', playbookId)
 
         // Trigger OpenClaw (or simulation) — fire and don't wait for it
-        fetch(`/api/playbooks/${playbookId}/generate`, { method: 'POST' }).catch(() => {})
+        fetch(`/api/playbooks/${playbookId}/generate`, { method: 'POST' })
+          .then((res) => console.log('[new/processing] Generate triggered:', res.status))
+          .catch((err) => console.warn('[new/processing] Generate trigger failed (non-critical):', err))
 
         localStorage.removeItem('abmsignal_product_brief')
         localStorage.removeItem('abmsignal_account')
 
+        console.log('[new/processing] Redirecting to /playbook/', playbookId, '/processing')
         router.replace(`/playbook/${playbookId}/processing`)
       } catch (err) {
-        console.error('[new/processing]', err)
-        setError('Something went wrong. Please go back and try again.')
+        console.error('[new/processing] Unexpected error:', err)
+        setError(`Unexpected error: ${err instanceof Error ? err.message : String(err)}`)
       }
     }
 
@@ -83,13 +131,16 @@ export default function NewPlaybookProcessingPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
+          <div className="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚠️</span>
+          </div>
           <p className="text-red-400 mb-4 text-sm">{error}</p>
           <Link
-            href="/playbook/new/account"
+            href="/playbook/new/product"
             className="text-[#339af0] text-sm hover:underline"
           >
-            ← Go back
+            ← Start over
           </Link>
         </div>
       </div>

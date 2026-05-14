@@ -220,9 +220,19 @@ export default function ProcessingPage() {
   const id = params.id as string
   const router = useRouter()
   const [statusData, setStatusData] = useState<StatusData | null>(null)
+  const [pageError, setPageError] = useState<string | null>(null)
   const [startMs] = useState(() => Date.now())
   const elapsed = useElapsedTime(startMs)
   const redirectedRef = useRef(false)
+
+  // Log the id we got from params
+  useEffect(() => {
+    console.log('[processing] Page mounted with id:', id, 'type:', typeof id)
+    if (!id || id === 'undefined') {
+      console.error('[processing] Invalid id from params:', id)
+      setPageError('Invalid playbook ID. Please try creating a new playbook.')
+    }
+  }, [id])
 
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>
@@ -256,6 +266,22 @@ export default function ProcessingPage() {
     intervalId = setInterval(poll, 3000)
     return () => clearInterval(intervalId)
   }, [id, router])
+
+  if (pageError) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <p className="text-red-400 mb-4 text-sm">{pageError}</p>
+          <Link href="/dashboard" className="text-[#339af0] text-sm hover:underline">
+            ← Go to dashboard
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const currentStatus: PlaybookStatus = statusData?.status ?? 'researching'
   const progress = statusData?.progress_pct ?? 0
