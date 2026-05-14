@@ -69,11 +69,13 @@ Orchestrator → spawns Researcher → collects research
 
 ## Current Priority: Build the Engine
 
-**Phase 1 (Current): Agent Configs + Test Loop**
-1. Create 4 agent configs (SOUL.md, skills, workspaces) on DGX Spark
-2. Test orchestration: Orchestrator dispatches to Researcher
-3. Test full loop: Researcher → Writer → Reviewer → assembled playbook
-4. Validate output quality with real target account
+**Phase 1 (Current): Agent Configs + Test Loop** ✅ IN PROGRESS
+1. ✅ Create 4 agent configs (SOUL.md, workspaces) on DGX Spark
+2. ✅ Add agents to OpenClaw config
+3. ✅ Create ABM Framework skill
+4. ⏳ Test orchestration: Orchestrator dispatches to Researcher
+5. ⏳ Test full loop: Researcher → Writer → Reviewer → assembled playbook
+6. ⏳ Validate output quality with real target account
 
 **Phase 2: API Layer + Job Queue**
 - REST API: POST /api/playbooks, GET status, POST contact review
