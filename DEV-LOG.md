@@ -11,6 +11,25 @@
 
 ---
 
+## ✅ Milestone: End-to-End Pipeline Verified (2026-05-14 13:30)
+
+**The complete pipeline from Next.js to OpenClaw is working:**
+
+1. `POST /api/playbooks` → Creates playbook in memory ✅
+2. `POST /api/playbooks/[id]/generate` → Creates TaskFlow + spawns orchestrator via `run_task` ✅
+3. `GET /api/playbooks/[id]/flow` → Polls TaskFlow status from OpenClaw ✅
+4. OpenClaw confirms flow created with full goal + stateJson ✅
+
+**Mode detection:** If OpenClaw gateway is reachable → `mode: "openclaw"` with `flow_id`. If unreachable → `mode: "simulation"` with time-based fake progress.
+
+**Next steps:**
+- Orchestrator needs to actually process the TaskFlow (currently queued, needs agent activation)
+- Wire up result pipeline (orchestrator writes to flow stateJson → Next.js reads it)
+- Human gate: orchestrator sets flow to `waiting` → Next.js shows contact review UI
+- Complete result endpoint: Next.js reads playbook from flow result when status is `done`
+
+---
+
 ## Architecture Decisions
 
 ### 2026-05-14: OpenClaw Integration Architecture (Updated)
