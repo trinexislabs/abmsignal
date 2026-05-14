@@ -42,6 +42,7 @@ export interface TaskFlow {
 /**
  * Create a new playbook generation TaskFlow.
  * This sends the request to the orchestrator agent via OpenClaw webhooks.
+ * Two-step process: create_flow → run_task (spawns orchestrator session).
  */
 export async function createPlaybookFlow(params: {
   playbookId: string
@@ -57,7 +58,7 @@ export async function createPlaybookFlow(params: {
   deploymentModel?: string
   dealSize?: string
   salesCycle?: string
-}): Promise<{ ok: boolean; flowId?: string; error?: string }> {
+}): Promise<{ ok: boolean; flowId?: string; taskId?: string; error?: string }> {
   const goal = [
     `GENERATE ABM PLAYBOOK — ID: ${params.playbookId}`,
     ``,
@@ -77,11 +78,18 @@ export async function createPlaybookFlow(params: {
     `Geography: ${params.geography}`,
     `Priority: ${params.priorityTier}`,
     ``,
-    `Execute the full ABM playbook generation pipeline.`,
+    `Execute the full ABM playbook generation pipeline:`,
+    `1. Research the target account (Researcher agent)`,
+    `2. Present contacts for human review (Contact Gate)`,
+    `3. Write all 12 playbook sections (Writer agent)`,
+    `4. Review with 16-point quality checklist (Reviewer agent)`,
+    ``,
+    `Return results as structured JSON.`,
   ].join('\n')
 
   try {
-    const res = await fetch(`${OPENCLAW_URL}/api/generate`, {
+    // Step 1: Create the TaskFlow
+    const flowRes = await fetch(`${OPENCLAW_URL}/api/generate`, {
       method: 'POST',
       headers: buildHeaders(),
       body: JSON.stringify({
@@ -92,13 +100,37 @@ export async function createPlaybookFlow(params: {
       }),
     })
 
-    const data = await res.json() as { ok: boolean; result?: { flow?: TaskFlow }; error?: string }
+    const flowData = await flowRes.json() as { ok: boolean; result?: { flow?: TaskFlow }; error?: string }
     
-    if (!data.ok) {
-      return { ok: false, error: data.error ?? `HTTP ${res.status}` }
+    if (!flowData.ok || !flowData.result?.flow?.flowId) {
+      return { ok: false, error: flowData.error ?? `Flow creation failed: HTTP ${flowRes.status}` }
     }
 
-    return { ok: true, flowId: data.result?.flow?.flowId }
+    const flowId = flowData.result.flow.flowId
+
+    // Step 2: Run the orchestrator agent as a task within the flow
+    const taskRes = await fetch(`${OPENCLAW_URL}/api/generate`, {
+      method: 'POST',
+      headers: buildHeaders(),
+      body: JSON.stringify({
+        action: 'run_task',
+        flowId,
+        runtime: 'subagent',
+        agentId: 'orchestrator',
+        task: goal,
+        label: `playbook-${params.playbookId}`,
+      }),
+    })
+
+    const taskData = await taskRes.json() as { ok: boolean; result?: { task?: { taskId: string } }; error?: string }
+    
+    if (!taskData.ok) {
+      // Flow was created but task failed — still return flowId for polling
+      console.error('[createPlaybookFlow] run_task failed:', taskData.error)
+      return { ok: true, flowId }
+    }
+
+    return { ok: true, flowId, taskId: taskData.result?.task?.taskId }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Unknown error' }
   }
