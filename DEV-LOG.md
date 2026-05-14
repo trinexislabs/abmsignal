@@ -13,22 +13,35 @@
 
 ## Architecture Decisions
 
-### 2026-05-14: OpenClaw Integration Architecture
+### 2026-05-14: OpenClaw Integration Architecture (Updated)
 
-**Key Insight:** OpenClaw does NOT have a REST API for creating sessions externally. The `POST /api/v1/sessions` endpoint doesn't exist.
+**Key Insights:**
+1. OpenClaw does NOT have a REST API for creating sessions externally
+2. The `POST /api/v1/sessions` endpoint doesn't exist — you can't call it from outside
+3. The correct integration pattern is the **webhooks plugin** with **TaskFlow API**
 
-**Correct integration pattern:**
-- The Next.js app sends messages to the **orchestrator agent via the hooks API** (`POST /hooks`)
-- The orchestrator agent receives the message and uses `sessions_spawn` internally to dispatch to researcher/writer/reviewer
-- Results are written to `/tmp/abmsignal/{playbook_id}/result.json` which the Next.js app polls
+**Architecture: Server A (Next.js) ↔ Server B (OpenClaw)**
+- Server A runs the Next.js app (Vercel / EC2)
+- Server B runs OpenClaw agent cluster (EC2 with GPU)
+- Communication via REST API: webhooks plugin creates TaskFlows
+- No file system access between servers — clean API contract
 
-**Hooks API:**
-- Endpoint: `http://localhost:18790/hooks`
-- Auth: `Authorization: Bearer k5EGW3POknr5cdIkljFUt2-lAQKpGiM822QovD30e50`
-- Body: `{"message": "..."}`
-- This sends the message to the default agent (orchestrator)
+**TaskFlow API (webhooks plugin):**
+- `POST /api/generate` with `action: create_flow` → routes to orchestrator
+- `POST /api/status` with `action: find_latest_flow` → poll progress
+- `POST /api/status` with `action: get_flow` → get specific flow
+- Auth: `X-Openclaw-Webhook-Secret` header
+- Secret: `abmsignal-wh-secret-2026`
 
-**Simulation fallback:** When OpenClaw is not reachable, the API falls back to time-based simulation (researching → contacts_review → writing → reviewing → complete).
+**Orchestrator Pattern:**
+- Orchestrator receives TaskFlow with playbook generation goal
+- Parses the product brief + target account
+- Uses `sessions_spawn` internally to dispatch researcher/writer/reviewer
+- Manages state between agent handoffs
+- Writes results to flow stateJson
+- Human gate: orchestrator sets flow to `waiting` state, Next.js shows contact review UI
+
+**Simulation fallback:** When OpenClaw is unreachable, the API uses time-based simulation (researching → contacts_review → writing → reviewing → complete).
 
 **Decision:** 4 OpenClaw agents on a SEPARATE instance from Trinexis team.
 
