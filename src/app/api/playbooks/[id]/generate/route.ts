@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPlaybook, updatePlaybook } from '@/lib/store/playbooks'
-import { requestPlaybookGeneration, healthCheck } from '@/lib/openclaw/client'
+import { createPlaybookFlow, healthCheck } from '@/lib/openclaw/client'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -16,11 +16,12 @@ export async function POST(_req: Request, { params }: RouteContext) {
 
   const now = new Date().toISOString()
   let mode: 'openclaw' | 'simulation' = 'simulation'
+  let flowId: string | undefined
 
-  // Try to reach OpenClaw and send the generation request
+  // Try to reach OpenClaw and create a TaskFlow
   const isHealthy = await healthCheck()
   if (isHealthy) {
-    const result = await requestPlaybookGeneration({
+    const result = await createPlaybookFlow({
       playbookId: id,
       productName: playbook.product_name,
       productDescription: playbook.product_brief.description,
@@ -36,10 +37,11 @@ export async function POST(_req: Request, { params }: RouteContext) {
       salesCycle: playbook.product_brief.sales_cycle,
     })
 
-    if (result.ok) {
+    if (result.ok && result.flowId) {
       mode = 'openclaw'
+      flowId = result.flowId
     } else {
-      console.error('[generate] OpenClaw hook failed, using simulation:', result.error)
+      console.error('[generate] OpenClaw TaskFlow creation failed, using simulation:', result.error)
     }
   } else {
     console.error('[generate] OpenClaw gateway unreachable, using simulation')
@@ -48,14 +50,14 @@ export async function POST(_req: Request, { params }: RouteContext) {
   updatePlaybook(id, {
     status: 'researching',
     progress_pct: 0,
-    simulation_started_at: now,
+    simulation_started_at: mode === 'simulation' ? now : undefined,
     phase_started_at: now,
     agent_status: [
       {
         agent: 'orchestrator',
         task: 'Coordinating research pipeline',
         status: 'running',
-        detail: mode === 'openclaw' ? 'OpenClaw orchestrator dispatched' : 'Simulation mode',
+        detail: mode === 'openclaw' ? `TaskFlow: ${flowId}` : 'Simulation mode',
       },
       { agent: 'researcher', task: 'Starting account research', status: 'pending' },
       { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
@@ -67,6 +69,7 @@ export async function POST(_req: Request, { params }: RouteContext) {
     data: {
       playbook_id: id,
       mode,
+      flow_id: flowId ?? null,
     },
   })
 }
