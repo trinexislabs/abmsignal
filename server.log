@@ -2,22 +2,12 @@
 > abmsignal-app@0.1.0 start
 > next start -p 3738 -H 0.0.0.0
 
-▲ Next.js 16.2.6
-- Local:         http://localhost:3738
-- Network:       http://0.0.0.0:3738
-✓ Ready in 55ms
-[generate] OpenClaw unreachable, using simulation: TypeError: fetch failed
-    at async _ (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:1:2053)
-    at async b (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:11:60)
-    at async l (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:11:3984)
-    at async i (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:11:5025)
-    at async Module.S [as handler] (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:11:6132) {
-  [cause]: Error: connect ECONNREFUSED 127.0.0.1:18790
-      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:18790) {
-    errno: -111,
-    code: 'ECONNREFUSED',
-    syscall: 'connect',
-    address: '127.0.0.1',
-    port: 18790
-  }
+⨯ Failed to start server
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3738
+    at <unknown> (Error: listen EADDRINUSE: address already in use 0.0.0.0:3738) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3738
 }

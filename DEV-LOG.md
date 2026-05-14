@@ -13,7 +13,22 @@
 
 ## Architecture Decisions
 
-### 2026-05-14: Agent Architecture (Updated)
+### 2026-05-14: OpenClaw Integration Architecture
+
+**Key Insight:** OpenClaw does NOT have a REST API for creating sessions externally. The `POST /api/v1/sessions` endpoint doesn't exist.
+
+**Correct integration pattern:**
+- The Next.js app sends messages to the **orchestrator agent via the hooks API** (`POST /hooks`)
+- The orchestrator agent receives the message and uses `sessions_spawn` internally to dispatch to researcher/writer/reviewer
+- Results are written to `/tmp/abmsignal/{playbook_id}/result.json` which the Next.js app polls
+
+**Hooks API:**
+- Endpoint: `http://localhost:18790/hooks`
+- Auth: `Authorization: Bearer k5EGW3POknr5cdIkljFUt2-lAQKpGiM822QovD30e50`
+- Body: `{"message": "..."}`
+- This sends the message to the default agent (orchestrator)
+
+**Simulation fallback:** When OpenClaw is not reachable, the API falls back to time-based simulation (researching → contacts_review → writing → reviewing → complete).
 
 **Decision:** 4 OpenClaw agents on a SEPARATE instance from Trinexis team.
 
