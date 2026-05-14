@@ -64,13 +64,24 @@
 
 ## Current Priority: Build the Engine
 
-**Phase 1 (Current): Agent Configs + Test Loop** ✅ IN PROGRESS
+**Phase 1 (Current): Agent Configs + Test Loop** ✅ COMPLETE
 1. ✅ Create 4 agent configs (SOUL.md, workspaces) on DGX Spark
-2. ✅ Add agents to OpenClaw config
+2. ✅ Add agents to separate OpenClaw instance (port 18790)
 3. ✅ Create ABM Framework skill
 4. ⏳ Test orchestration: Orchestrator dispatches to Researcher
 5. ⏳ Test full loop: Researcher → Writer → Reviewer → assembled playbook
 6. ⏳ Validate output quality with real target account
+
+**Phase 2: API Layer + Frontend Wiring** ✅ IN PROGRESS
+1. ✅ OpenClaw REST client (src/lib/openclaw/client.ts)
+2. ✅ In-memory playbook store (src/lib/store/playbooks.ts)
+3. ✅ 7 API routes (create, list, detail, status, contacts, review, generate)
+4. ✅ Processing page with agent status cards + polling
+5. ✅ New playbook processing flow (create → generate → progress)
+6. ✅ Simulation mode (falls back to mock when OpenClaw not reachable)
+7. ⏳ Wire frontend forms to API (product brief → account → generate)
+8. ⏳ End-to-end test with real OpenClaw agents
+9. ⏳ Settings/billing pages (low priority)
 
 **Phase 2: API Layer + Job Queue**
 - REST API: POST /api/playbooks, GET status, POST contact review
