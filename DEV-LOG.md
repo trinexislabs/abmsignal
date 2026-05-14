@@ -256,3 +256,23 @@
 ---
 
 *Last updated: 2026-05-14 by Spark*
+## 2026-05-14 23:30 — Hydration Fix + Error Boundaries
+
+### Problem
+"Application error: a client-side exception has occurred" when navigating to playbook processing page.
+
+### Root Cause
+Next.js 16 passes `params` as `Promise` to dynamic route pages. Code was using sync `params.id` which crashes.
+
+### Changes
+- `[id]/processing/page.tsx`: Switched to `useParams()` + `mounted` guard
+- `[id]/page.tsx`, `contacts/page.tsx`, `review/page.tsx`: Switched to `use(params)` with `Promise<>` type
+- Added `error.tsx` error boundaries with user-friendly messages at app root + processing routes
+- Added `loading.tsx` Suspense boundary for processing route
+- Added `mounted` state guard on both processing pages (prevents hydration mismatch)
+- Added detailed console logging throughout create/generate flow
+- Clean `.next` rebuild for fresh chunk hashes (browser cache bust)
+
+### Verified
+- Browser-harness E2E test: localStorage → new/processing → redirect → [id]/processing ✅
+- All 3 services running: Next.js (3738), OpenClaw (18790), Engine Runner (18793) ✅
