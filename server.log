@@ -6,3 +6,18 @@
 - Local:         http://localhost:3738
 - Network:       http://0.0.0.0:3738
 ✓ Ready in 55ms
+[generate] OpenClaw unreachable, using simulation: TypeError: fetch failed
+    at async _ (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:1:2053)
+    at async b (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:11:60)
+    at async l (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:11:3984)
+    at async i (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:11:5025)
+    at async Module.S [as handler] (.next/server/chunks/[root-of-the-server]__0m4em8r._.js:11:6132) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:18790
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:18790) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 18790
+  }
+}

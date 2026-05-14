@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPlaybook, updatePlaybook } from '@/lib/store/playbooks'
-import { spawnAgent } from '@/lib/openclaw/client'
+import { requestPlaybookGeneration, healthCheck } from '@/lib/openclaw/client'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -15,28 +15,34 @@ export async function POST(_req: Request, { params }: RouteContext) {
   }
 
   const now = new Date().toISOString()
+  let mode: 'openclaw' | 'simulation' = 'simulation'
 
-  let sessionId: string | undefined
-  try {
-    const prompt = [
-      `Generate a complete ABM playbook for the following:`,
-      `Product: ${playbook.product_name}`,
-      `Description: ${playbook.product_brief.description}`,
-      `Value Props: ${playbook.product_brief.value_propositions.join(', ')}`,
-      `Target Company: ${playbook.target_company}`,
-      `Industry: ${playbook.industry}`,
-      `Geography: ${playbook.geography}`,
-      `Priority Tier: ${playbook.priority_tier}`,
-      ``,
-      `Generate all 12 playbook sections with hyper-personalized content.`,
-      `Include contact discovery and 16-point quality review.`,
-    ].join('\n')
+  // Try to reach OpenClaw and send the generation request
+  const isHealthy = await healthCheck()
+  if (isHealthy) {
+    const result = await requestPlaybookGeneration({
+      playbookId: id,
+      productName: playbook.product_name,
+      productDescription: playbook.product_brief.description,
+      valuePropositions: playbook.product_brief.value_propositions,
+      targetCompany: playbook.target_company,
+      industry: playbook.industry,
+      geography: playbook.geography,
+      priorityTier: playbook.priority_tier,
+      productUrl: playbook.product_url,
+      competitors: playbook.product_brief.competitors,
+      deploymentModel: playbook.product_brief.deployment_model,
+      dealSize: playbook.product_brief.deal_size,
+      salesCycle: playbook.product_brief.sales_cycle,
+    })
 
-    const result = await spawnAgent('orchestrator', prompt)
-    sessionId = result.sessionId
-  } catch (err) {
-    // OpenClaw not reachable — continue with simulation
-    console.error('[generate] OpenClaw unreachable, using simulation:', err)
+    if (result.ok) {
+      mode = 'openclaw'
+    } else {
+      console.error('[generate] OpenClaw hook failed, using simulation:', result.error)
+    }
+  } else {
+    console.error('[generate] OpenClaw gateway unreachable, using simulation')
   }
 
   updatePlaybook(id, {
@@ -44,13 +50,12 @@ export async function POST(_req: Request, { params }: RouteContext) {
     progress_pct: 0,
     simulation_started_at: now,
     phase_started_at: now,
-    openclaw_session_id: sessionId,
     agent_status: [
       {
         agent: 'orchestrator',
         task: 'Coordinating research pipeline',
         status: 'running',
-        detail: sessionId ? `OpenClaw session: ${sessionId}` : 'Simulation mode',
+        detail: mode === 'openclaw' ? 'OpenClaw orchestrator dispatched' : 'Simulation mode',
       },
       { agent: 'researcher', task: 'Starting account research', status: 'pending' },
       { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
@@ -61,8 +66,7 @@ export async function POST(_req: Request, { params }: RouteContext) {
   return NextResponse.json({
     data: {
       playbook_id: id,
-      session_id: sessionId ?? null,
-      mode: sessionId ? 'openclaw' : 'simulation',
+      mode,
     },
   })
 }
