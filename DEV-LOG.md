@@ -13,31 +13,26 @@
 
 ## Architecture Decisions
 
-### 2026-05-14: Agent Cluster Architecture
+### 2026-05-14: Agent Architecture (Updated)
 
-**Decision:** 4 OpenClaw agents, not 3. Orchestrator IS a separate agent.
+**Decision:** 4 OpenClaw agents on a SEPARATE instance from Trinexis team.
 
 | Agent | Role | Model | Workspace |
 |-------|------|-------|-----------|
-| abmsignal-orchestrator | Receives requests, decomposes tasks, manages state, enforces human gates, assembles final playbook | Best available (GPT-4o / Claude) | ~/.openclaw/workspace-abmsignal-orchestrator |
-| abm-researcher | Deep research via UDR loops (3-5 iterations per account), contact discovery, signal detection | Best available | ~/.openclaw/workspace-abm-researcher |
-| abm-writer | Writes all 12 playbook sections, cultural adaptation, personalized outreach | Best available | ~/.openclaw/workspace-abm-writer |
-| abm-reviewer | 16-point quality checklist, fact verification, consistency scoring | Fast/cheap model (GPT-4o-mini) | ~/.openclaw/workspace-abm-reviewer |
+| orchestrator | Receives requests, decomposes tasks, manages state, enforces human gates, assembles final playbook | GLM-5.1 (cloud) | ~/.openclaw/workspace-abmsignal-orchestrator |
+| researcher | Deep research via UDR loops (3-5 iterations per account), contact discovery, signal detection | GLM-5.1 (cloud) | ~/.openclaw/workspace-abm-researcher |
+| writer | Writes all 12 playbook sections, cultural adaptation, personalized outreach | GLM-5.1 (cloud) | ~/.openclaw/workspace-abm-writer |
+| reviewer | 16-point quality checklist, fact verification, consistency scoring | Qwen 3.5 35B (local) | ~/.openclaw/workspace-abm-reviewer |
 
-**Flow:**
-```
-Orchestrator → spawns Researcher → collects research
-→ Human Gate (contact review) → spawns Writer → collects playbook
-→ spawns Reviewer → collects review → if fail, re-spawn Writer for flagged sections
-→ assembles final playbook → delivers
-```
+**Separate OpenClaw instance:**
+- Config: `~/.openclaw-abmsignal/openclaw.json`
+- Port: 18790 (vs Trinexis on 18789)
+- Service: `openclaw-abmsignal.service` (systemd)
+- Start script: `~/.openclaw-abmsignal/start.sh`
+- No Telegram channel (API-only, no chat interface needed)
+- Shares Ollama models with Trinexis instance
 
-**Key decisions:**
-- Orchestrator uses `sessions_spawn` to dispatch to sub-agents (OpenClaw native)
-- Each agent returns structured JSON (defined schemas per agent)
-- Human gate pauses BullMQ job, resumes when user approves contacts via API
-- Dev: DGX Spark (separate OpenClaw instance). Production: AWS EC2
-- Orchestrator is an agent, NOT just API logic — it makes decisions about routing, retry, and revision loops
+**Why separate:** ABMSignal is a product, not a team member. It should not share config, sessions, or channels with Trinexis staff agents.
 
 ### 2026-05-13: Product Naming & Repo Setup
 
