@@ -1,7 +1,7 @@
 'use client'
 
-import { use, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   Zap,
@@ -215,12 +215,9 @@ function getStageIndex(status: PlaybookStatus): number {
 // Page
 // ─────────────────────────────────────────────────────────
 
-interface PageProps {
-  params: Promise<{ id: string }>
-}
-
-export default function ProcessingPage({ params }: PageProps) {
-  const { id } = use(params)
+export default function ProcessingPage() {
+  const params = useParams()
+  const id = params.id as string
   const router = useRouter()
   const [statusData, setStatusData] = useState<StatusData | null>(null)
   const [startMs] = useState(() => Date.now())

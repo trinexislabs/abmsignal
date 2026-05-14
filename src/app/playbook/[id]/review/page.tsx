@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, use } from 'react'
 import Link from 'next/link'
 import { AppSidebar } from '@/components/app-sidebar'
 import { Button } from '@/components/ui/button'
@@ -162,7 +162,8 @@ const PLAYBOOK_SECTIONS = [
   'Appendix',
 ]
 
-export default function QualityReviewPage({ params }: { params: { id: string } }) {
+export default function QualityReviewPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [expandedCheck, setExpandedCheck] = useState<number | null>(null)
   const [feedback, setFeedback] = useState('')
   const [selectedSections, setSelectedSections] = useState<string[]>([])
@@ -196,7 +197,7 @@ export default function QualityReviewPage({ params }: { params: { id: string } }
         {/* Top bar */}
         <header className="flex items-center justify-between h-14 px-6 border-b border-white/[0.06] bg-[#0d0d15] flex-shrink-0">
           <div className="flex items-center gap-3">
-            <Link href={`/playbook/${params.id}`} className="text-[#a1a1aa] hover:text-white transition-colors">
+            <Link href={`/playbook/${id}`} className="text-[#a1a1aa] hover:text-white transition-colors">
               <ChevronRight className="w-4 h-4 rotate-180" />
             </Link>
             <h1 className="font-heading font-semibold text-white text-base">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { use } from 'react'
 import Link from 'next/link'
 import { AppSidebar } from '@/components/app-sidebar'
 import { Button } from '@/components/ui/button'
@@ -129,7 +130,8 @@ const STATUS_CONFIG: Record<ContactVerificationStatus, { label: string; classNam
 
 type FilterType = 'all' | ContactVerificationStatus
 
-export default function ContactsPage({ params }: { params: { id: string } }) {
+export default function ContactsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [contacts, setContacts] = useState<MockContact[]>(INITIAL_CONTACTS)
   const [filter, setFilter] = useState<FilterType>('all')
   const [showAddForm, setShowAddForm] = useState(false)
@@ -194,7 +196,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
         {/* Top bar */}
         <header className="flex items-center justify-between h-14 px-6 border-b border-white/[0.06] bg-[#0d0d15] flex-shrink-0">
           <div className="flex items-center gap-3">
-            <Link href={`/playbook/${params.id}`} className="text-[#a1a1aa] hover:text-white transition-colors">
+            <Link href={`/playbook/${id}`} className="text-[#a1a1aa] hover:text-white transition-colors">
               <ChevronRight className="w-4 h-4 rotate-180" />
             </Link>
             <h1 className="font-heading font-semibold text-white text-base">
@@ -511,7 +513,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
                     <span>All contacts reviewed</span>
                   </div>
                 )}
-                <Link href={allActioned ? `/playbook/${params.id}` : '#'}>
+                <Link href={allActioned ? `/playbook/${id}` : '#'}>
                   <Button
                     size="sm"
                     disabled={!allActioned}

@@ -1,4 +1,5 @@
 'use client'
+import { use } from 'react'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -146,7 +147,8 @@ function renderMarkdown(content: string): React.ReactNode {
   return <>{elements}</>
 }
 
-export default function PlaybookDetailPage({ params }: { params: { id: string } }) {
+export default function PlaybookDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [activeSectionType, setActiveSectionType] = useState<SectionType>('executive_summary')
   const [editingSection, setEditingSection] = useState<string | null>(null)
   const [editContent, setEditContent] = useState<string>('')
@@ -204,7 +206,7 @@ export default function PlaybookDetailPage({ params }: { params: { id: string } 
               <Share2 className="w-3.5 h-3.5" />
               Share
             </Button>
-            <Link href={`/playbook/${params.id}/review`}>
+            <Link href={`/playbook/${id}/review`}>
               <Button
                 variant="outline"
                 size="sm"

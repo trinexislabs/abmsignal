@@ -8,3 +8,36 @@
 ✓ Ready in 54ms
 [generate] OpenClaw gateway unreachable, using simulation
 [generate] Orchestrator invoked for flow 1a1de991-f640-4f40-94af-2fca4c81a328
+[generate] Orchestrator invoked for flow 18c18469-bf55-4be8-a4ac-cbf0c90163bb
+[generate] Orchestrator invoked for flow 93c8c4b1-1432-4128-93ed-1bcc9cbd3991
+art server
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3738
+    at <unknown> (Error: listen EADDRINUSE: address already in use 0.0.0.0:3738) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3738
+}
+
+> abmsignal-app@0.1.0 start
+> next start -p 3738 -H 0.0.0.0
+
+⨯ Failed to start server
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3738
+    at <unknown> (Error: listen EADDRINUSE: address already in use 0.0.0.0:3738) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3738
+}
+
+> abmsignal-app@0.1.0 start
+> next start -p 3738 -H 0.0.0.0
+
+▲ Next.js 16.2.6
+- Local:         http://localhost:3738
+- Network:       http://0.0.0.0:3738
+✓ Ready in 54ms
+[generate] Orchestrator invoked for flow 849e56a3-15c0-4cd1-ad5c-1bb9c7450640
