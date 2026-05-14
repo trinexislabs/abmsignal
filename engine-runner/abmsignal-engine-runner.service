@@ -1,0 +1,19 @@
+[Unit]
+Description=ABMSignal Engine Runner
+After=network.target
+
+[Service]
+Type=simple
+User=trinexis-dgx-spark
+WorkingDirectory=/home/trinexis-dgx-spark/Apps/abmsignal/engine-runner
+ExecStart=/usr/bin/node src/index.js
+Restart=on-failure
+RestartSec=5
+Environment=ENGINE_RUNNER_PORT=18791
+Environment=OPENCLAW_HTTP_URL=http://localhost:18790
+Environment=OPENCLAW_STATE_DIR=/home/trinexis-dgx-spark/.openclaw-abmsignal
+Environment=OPENCLAW_CONFIG_PATH=/home/trinexis-dgx-spark/.openclaw-abmsignal/openclaw.json
+Environment=OPENCLAW_BIN=/home/trinexis-dgx-spark/.openclaw/bin/openclaw
+
+[Install]
+WantedBy=multi-user.target

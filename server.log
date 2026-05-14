@@ -5,4 +5,6 @@
 ▲ Next.js 16.2.6
 - Local:         http://localhost:3738
 - Network:       http://0.0.0.0:3738
-✓ Ready in 56ms
+✓ Ready in 54ms
+[generate] OpenClaw gateway unreachable, using simulation
+[generate] Orchestrator invoked for flow 1a1de991-f640-4f40-94af-2fca4c81a328

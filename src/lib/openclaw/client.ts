@@ -141,7 +141,7 @@ export async function createPlaybookFlow(params: {
  */
 export async function findLatestFlow(): Promise<{ ok: boolean; flow?: TaskFlow | null; error?: string }> {
   try {
-    const res = await fetch(`${OPENCLAW_URL}/api/status`, {
+    const res = await fetch(`${OPENCLAW_URL}/api/generate`, {
       method: 'POST',
       headers: buildHeaders(),
       body: JSON.stringify({ action: 'find_latest_flow' }),
@@ -164,7 +164,7 @@ export async function findLatestFlow(): Promise<{ ok: boolean; flow?: TaskFlow |
  */
 export async function getFlow(flowId: string): Promise<{ ok: boolean; flow?: TaskFlow | null; error?: string }> {
   try {
-    const res = await fetch(`${OPENCLAW_URL}/api/status`, {
+    const res = await fetch(`${OPENCLAW_URL}/api/generate`, {
       method: 'POST',
       headers: buildHeaders(),
       body: JSON.stringify({ action: 'get_flow', flowId }),

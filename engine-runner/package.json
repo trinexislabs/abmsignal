@@ -1,0 +1,13 @@
+{
+  "name": "abmsignal-engine-runner",
+  "version": "1.0.0",
+  "description": "Real-time bridge between ABMSignal Next.js app and OpenClaw agent cluster",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
