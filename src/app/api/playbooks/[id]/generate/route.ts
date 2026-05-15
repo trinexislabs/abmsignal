@@ -19,7 +19,7 @@ export async function POST(_req: Request, { params }: RouteContext) {
 
   const now = new Date().toISOString()
 
-  // Set initial status to researching
+  // Set initial status to researching — orchestrator will update via PATCH
   updatePlaybook(id, {
     status: 'researching',
     progress_pct: 0,
@@ -37,7 +37,7 @@ export async function POST(_req: Request, { params }: RouteContext) {
   })
 
   // Try to invoke the orchestrator via Engine Runner
-  let mode: 'openclaw' | 'simulation' = 'simulation'
+  let mode: 'openclaw' | 'error' = 'error'
   let flowId: string | undefined
 
   const isHealthy = await healthCheck()
@@ -62,7 +62,7 @@ export async function POST(_req: Request, { params }: RouteContext) {
       mode = 'openclaw'
       flowId = result.flowId
 
-      // Invoke the orchestrator via Engine Runner
+      // Invoke the orchestrator via Engine Runner (fire-and-forget)
       try {
         await fetch(`${ENGINE_RUNNER_URL}/invoke`, {
           method: 'POST',
@@ -77,18 +77,22 @@ export async function POST(_req: Request, { params }: RouteContext) {
         console.error('[generate] Engine Runner invoke failed:', err instanceof Error ? err.message : err)
       }
     } else {
-      console.error('[generate] TaskFlow creation failed, falling back to simulation:', result.error)
+      console.error('[generate] TaskFlow creation failed:', result.error)
+      updatePlaybook(id, {
+        status: 'error',
+        agent_status: [
+          { agent: 'orchestrator', task: 'Failed to start pipeline', status: 'error' },
+        ],
+      })
     }
   } else {
-    console.error('[generate] OpenClaw gateway unreachable, falling back to simulation')
-  }
-
-  // If no real orchestrator, set up simulation as fallback
-  if (mode === 'simulation') {
+    console.error('[generate] OpenClaw gateway unreachable')
     updatePlaybook(id, {
-      simulation_started_at: now,
+      status: 'error',
+      agent_status: [
+        { agent: 'orchestrator', task: 'Gateway unreachable — cannot start pipeline', status: 'error' },
+      ],
     })
-    console.log('[generate] Using simulation mode — orchestrator not available')
   }
 
   return NextResponse.json({

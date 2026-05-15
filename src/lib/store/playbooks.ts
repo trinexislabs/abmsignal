@@ -12,7 +12,6 @@ export interface StoredPlaybook extends Playbook {
   contacts: Contact[]
   quality_checks: QualityCheck[]
   openclaw_session_id?: string
-  simulation_started_at?: string
   phase_started_at?: string
 }
 
