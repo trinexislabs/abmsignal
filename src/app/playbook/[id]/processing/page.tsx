@@ -228,12 +228,11 @@ export default function ProcessingPage() {
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  useEffect(() => {
     setStartMs(Date.now())
     console.log('[processing] Page mounted with id:', id, 'type:', typeof id)
-    if (!id || id === 'undefined') {
-      console.error('[processing] Invalid id from params:', id)
-      setPageError('Invalid playbook ID. Please try creating a new playbook.')
-    }
   }, [id])
 
   useEffect(() => {
@@ -286,8 +285,8 @@ export default function ProcessingPage() {
   }
 
   // Don't render dynamic content until client-side hydration is complete
-  // This prevents hydration mismatches and SSR/client state conflicts
-  if (!mounted) {
+  // and we have a valid playbook ID from the URL
+  if (!mounted || !id || id === 'undefined') {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-center">
