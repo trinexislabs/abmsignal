@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { use } from 'react'
 import Link from 'next/link'
 import { AppSidebar } from '@/components/app-sidebar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { ContactVerificationStatus, ContactConfidence } from '@/types'
+import type { Contact, ContactVerificationStatus, ContactConfidence } from '@/types'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -21,7 +21,7 @@ import {
   Check,
 } from 'lucide-react'
 
-interface MockContact {
+interface ResearchedContact {
   id: string
   name: string
   title: string
@@ -30,90 +30,8 @@ interface MockContact {
   source: string
   linkedinUrl: string
   status: ContactVerificationStatus
+  notes?: string
 }
-
-const INITIAL_CONTACTS: MockContact[] = [
-  {
-    id: 'c1',
-    name: 'Sophie Vanderberg',
-    title: 'Chief Digital Officer',
-    department: 'C-Suite',
-    confidence: 'high',
-    source: 'LinkedIn',
-    linkedinUrl: 'https://linkedin.com/in/sophie-vanderberg',
-    status: 'pending',
-  },
-  {
-    id: 'c2',
-    name: 'Jan De Smet',
-    title: 'Head of Payments Technology',
-    department: 'Technology',
-    confidence: 'high',
-    source: 'LinkedIn + Web',
-    linkedinUrl: 'https://linkedin.com/in/jan-de-smet',
-    status: 'pending',
-  },
-  {
-    id: 'c3',
-    name: 'Marie Claes',
-    title: 'VP Digital Innovation',
-    department: 'Innovation',
-    confidence: 'medium',
-    source: 'LinkedIn',
-    linkedinUrl: 'https://linkedin.com/in/marie-claes',
-    status: 'pending',
-  },
-  {
-    id: 'c4',
-    name: 'Thomas Leemans',
-    title: 'Senior Director, Core Banking',
-    department: 'Technology',
-    confidence: 'high',
-    source: 'LinkedIn',
-    linkedinUrl: 'https://linkedin.com/in/thomas-leemans',
-    status: 'pending',
-  },
-  {
-    id: 'c5',
-    name: 'Adrien Fontaine',
-    title: 'Head of Enterprise Architecture',
-    department: 'IT',
-    confidence: 'medium',
-    source: 'LinkedIn',
-    linkedinUrl: 'https://linkedin.com/in/adrien-fontaine',
-    status: 'pending',
-  },
-  {
-    id: 'c6',
-    name: 'Isabelle Moreau',
-    title: 'Chief Risk Officer',
-    department: 'Risk & Compliance',
-    confidence: 'low',
-    source: 'Web only',
-    linkedinUrl: 'https://linkedin.com/search/results/people/?keywords=isabelle+moreau+belfius',
-    status: 'pending',
-  },
-  {
-    id: 'c7',
-    name: 'Kevin Storms',
-    title: 'Head of Data & Analytics',
-    department: 'Data',
-    confidence: 'high',
-    source: 'LinkedIn',
-    linkedinUrl: 'https://linkedin.com/in/kevin-storms',
-    status: 'pending',
-  },
-  {
-    id: 'c8',
-    name: 'Nathalie Dupont',
-    title: 'VP Strategic Partnerships',
-    department: 'Strategy',
-    confidence: 'low',
-    source: 'Web only',
-    linkedinUrl: 'https://linkedin.com/search/results/people/?keywords=nathalie+dupont+belfius',
-    status: 'pending',
-  },
-]
 
 const CONFIDENCE_CONFIG: Record<ContactConfidence, { label: string; className: string }> = {
   high: { label: 'High', className: 'bg-green-500/15 text-green-400 border-green-500/30' },
@@ -132,7 +50,36 @@ type FilterType = 'all' | ContactVerificationStatus
 
 export default function ContactsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const [contacts, setContacts] = useState<MockContact[]>(INITIAL_CONTACTS)
+  const [contacts, setContacts] = useState<ResearchedContact[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchContacts() {
+      try {
+        const res = await fetch(`/api/playbooks/${id}/contacts`)
+        if (res.ok) {
+          const data = await res.json()
+          const fetched: ResearchedContact[] = (data.data || []).map((c: Contact) => ({
+            id: c.id,
+            name: c.name,
+            title: c.title,
+            department: c.title?.split(',').pop()?.trim() || 'Executive',
+            confidence: c.confidence || 'medium',
+            source: c.source || 'AI Research',
+            linkedinUrl: c.linkedin_url || '',
+            status: c.verification_status || 'pending',
+            notes: c.notes,
+          }))
+          setContacts(fetched)
+        }
+      } catch {
+        // Contacts will remain empty
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchContacts()
+  }, [id])
   const [filter, setFilter] = useState<FilterType>('all')
   const [showAddForm, setShowAddForm] = useState(false)
   const [newContact, setNewContact] = useState({
@@ -143,6 +90,33 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
     confidence: 'medium' as ContactConfidence,
     source: '',
   })
+
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleContinue = async () => {
+    if (!allActioned || submitting) return
+    setSubmitting(true)
+    try {
+      const reviewedContacts = contacts.map(c => ({
+        id: c.id,
+        name: c.name,
+        title: c.title,
+        confidence: c.confidence,
+        source: c.source,
+        linkedin_url: c.linkedinUrl,
+        verification_status: c.status,
+        playbook_id: id,
+      }))
+      await fetch(`/api/playbooks/${id}/contacts/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contacts: reviewedContacts }),
+      })
+    } catch {
+      // Continue anyway
+    }
+    window.location.href = `/playbook/${id}`
+  }
 
   const confirmed = contacts.filter(c => c.status === 'confirmed').length
   const pending = contacts.filter(c => c.status === 'pending').length
@@ -156,6 +130,27 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
   const filteredContacts = filter === 'all'
     ? contacts
     : contacts.filter(c => c.status === filter)
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-[#a1a1aa] text-sm">Loading contacts...</div>
+      </div>
+    )
+  }
+
+  // Show empty state if no contacts
+  if (contacts.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-[#a1a1aa] text-sm mb-2">No contacts found yet</div>
+          <div className="text-[#71717a] text-xs">The AI agents are still researching. Please wait...</div>
+        </div>
+      </div>
+    )
+  }
 
   function setStatus(id: string, status: ContactVerificationStatus) {
     setContacts(prev => prev.map(c => c.id === id ? { ...c, status } : c))
@@ -173,7 +168,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
 
   function addContact() {
     if (!newContact.name || !newContact.title) return
-    const contact: MockContact = {
+    const contact: ResearchedContact = {
       id: `c_new_${Date.now()}`,
       name: newContact.name,
       title: newContact.title,
@@ -513,20 +508,18 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                     <span>All contacts reviewed</span>
                   </div>
                 )}
-                <Link href={allActioned ? `/playbook/${id}` : '#'}>
-                  <Button
-                    size="sm"
-                    disabled={!allActioned}
-                    className={`gap-1.5 ${
-                      allActioned
-                        ? 'bg-[#339af0] hover:bg-[#339af0]/90 text-white'
-                        : 'bg-white/10 text-white/40 cursor-not-allowed'
-                    }`}
-                  >
-                    Continue to Playbook
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
-                </Link>
+                <button
+                  onClick={handleContinue}
+                  disabled={!allActioned || submitting}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    allActioned && !submitting
+                      ? 'bg-[#339af0] hover:bg-[#339af0]/90 text-white cursor-pointer'
+                      : 'bg-white/10 text-white/40 cursor-not-allowed'
+                  }`}
+                >
+                  {submitting ? 'Starting generation...' : 'Continue to Playbook'}
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           </div>

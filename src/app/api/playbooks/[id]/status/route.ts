@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getPlaybook, updatePlaybook } from '@/lib/store/playbooks'
+import { getPlaybook, updatePlaybook, updateContacts } from '@/lib/store/playbooks'
+import { generateAccountContacts, generatePlaybookSections } from '@/lib/research/account-contacts'
 import type { AgentStatus, PlaybookStatus } from '@/types'
 
 interface SimulatedStatus {
@@ -85,7 +86,7 @@ function simulateProgress(
           task: 'Account research complete',
           status: 'complete',
           completed_at: new Date(
-            new Date(simulationStartedAt).getTime() + 170_000,
+            new Date(simulationStartedAt).getTime() + 55_000,
           ).toISOString(),
         },
         { agent: 'writer', task: 'Waiting for verified contacts', status: 'pending' },
@@ -207,12 +208,37 @@ export async function GET(_req: Request, { params }: RouteContext) {
   if (simulated) {
     if (simulated.status !== playbook.status) {
       // Status transition — persist and reset phase timer
-      updatePlaybook(id, {
+      const updateData: Record<string, unknown> = {
         status: simulated.status,
         progress_pct: simulated.progress_pct,
         agent_status: simulated.agent_status,
         phase_started_at: new Date().toISOString(),
-      })
+      }
+
+      // When transitioning to contact_review, generate account-specific contacts
+      if (simulated.status === 'contact_review' && (!playbook.contacts || playbook.contacts.length === 0)) {
+        const contacts = generateAccountContacts({
+          companyName: playbook.target_company,
+          industry: playbook.industry,
+          geography: playbook.geography,
+        })
+        // Set playbook_id on each contact
+        contacts.forEach(c => { c.playbook_id = id })
+        updateData.contacts = contacts
+      }
+
+      // When transitioning to complete, generate playbook sections
+      if (simulated.status === 'complete' && (!playbook.sections || playbook.sections.length === 0)) {
+        const sections = generatePlaybookSections({
+          companyName: playbook.target_company,
+          industry: playbook.industry,
+          geography: playbook.geography,
+        })
+        sections.forEach(s => { s.playbook_id = id })
+        updateData.sections = sections
+      }
+
+      updatePlaybook(id, updateData)
     } else {
       // Progress-only update
       updatePlaybook(id, {
