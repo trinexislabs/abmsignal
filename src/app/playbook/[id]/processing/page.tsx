@@ -222,14 +222,13 @@ export default function ProcessingPage() {
   const [statusData, setStatusData] = useState<StatusData | null>(null)
   const [pageError, setPageError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
-  const [startMs] = useState(() => Date.now())
+  const [startMs, setStartMs] = useState(0)
   const elapsed = useElapsedTime(startMs)
   const redirectedRef = useRef(false)
 
-  // Wait for client-side mount before rendering anything dynamic
-  // This prevents hydration mismatches from SSR
   useEffect(() => {
     setMounted(true)
+    setStartMs(Date.now())
     console.log('[processing] Page mounted with id:', id, 'type:', typeof id)
     if (!id || id === 'undefined') {
       console.error('[processing] Invalid id from params:', id)

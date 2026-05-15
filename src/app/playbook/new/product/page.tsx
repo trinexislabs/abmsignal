@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { formState } from '@/lib/form-state'
 
 // ──────────────────────────────────────────────────────────
 // Step Indicator
@@ -196,13 +197,11 @@ export default function ProductBriefPage() {
   }
 
   const handleSaveDraft = () => {
-    const data = { ...form, mode }
-    localStorage.setItem('abmsignal_product_brief', JSON.stringify(data))
+    formState.saveBrief({ ...form, mode })
   }
 
   const handleNext = () => {
-    const data = { ...form, mode, url: urlInput }
-    localStorage.setItem('abmsignal_product_brief', JSON.stringify(data))
+    formState.saveBrief({ ...form, mode, url: urlInput })
     router.push('/playbook/new/account')
   }
 

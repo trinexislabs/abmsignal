@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Zap } from 'lucide-react'
+import { formState } from '@/lib/form-state'
 
 export default function NewPlaybookProcessingPage() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function NewPlaybookProcessingPage() {
   }, [])
 
   useEffect(() => {
+    if (!mounted) return
     if (ran.current) return
     ran.current = true
 
@@ -23,11 +25,11 @@ export default function NewPlaybookProcessingPage() {
       try {
         console.log('[new/processing] Starting playbook creation flow')
 
-        const briefRaw = localStorage.getItem('abmsignal_product_brief')
-        const accountRaw = localStorage.getItem('abmsignal_account')
+        const briefRaw = formState.readBrief()
+        const accountRaw = formState.readAccount()
 
-        console.log('[new/processing] localStorage briefRaw:', briefRaw ? `exists (${briefRaw.length} chars)` : 'MISSING')
-        console.log('[new/processing] localStorage accountRaw:', accountRaw ? `exists (${accountRaw.length} chars)` : 'MISSING')
+        console.log('[new/processing] briefRaw:', briefRaw ? `exists (${briefRaw.length} chars)` : 'MISSING')
+        console.log('[new/processing] accountRaw:', accountRaw ? `exists (${accountRaw.length} chars)` : 'MISSING')
 
         if (!briefRaw || !accountRaw) {
           console.warn('[new/processing] Missing localStorage data, redirecting to product page')
@@ -119,8 +121,7 @@ export default function NewPlaybookProcessingPage() {
           .then((res) => console.log('[new/processing] Generate triggered:', res.status))
           .catch((err) => console.warn('[new/processing] Generate trigger failed (non-critical):', err))
 
-        localStorage.removeItem('abmsignal_product_brief')
-        localStorage.removeItem('abmsignal_account')
+        formState.clear()
 
         console.log('[new/processing] Redirecting to /playbook/', playbookId, '/processing')
         router.replace(`/playbook/${playbookId}/processing`)
@@ -131,7 +132,7 @@ export default function NewPlaybookProcessingPage() {
     }
 
     submit()
-  }, [router])
+  }, [router, mounted])
 
   if (error) {
     return (

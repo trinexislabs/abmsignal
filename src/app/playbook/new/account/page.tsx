@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { formState } from '@/lib/form-state'
 
 // ──────────────────────────────────────────────────────────
 // Step Indicator (reused from product page)
@@ -178,10 +179,12 @@ export default function TargetAccountPage() {
     if (!isValid) return
     setSubmitting(true)
 
-    const briefRaw = localStorage.getItem('abmsignal_product_brief')
-    const brief = briefRaw ? JSON.parse(briefRaw) : {}
-    const accountData = { ...form, brief }
-    localStorage.setItem('abmsignal_account', JSON.stringify(accountData))
+    let brief: Record<string, unknown> = {}
+    const briefRaw = formState.readBrief()
+    if (briefRaw) {
+      try { brief = JSON.parse(briefRaw) as Record<string, unknown> } catch {}
+    }
+    formState.saveAccount({ ...form, brief })
 
     await new Promise((r) => setTimeout(r, 500))
     router.push('/playbook/new/processing')
