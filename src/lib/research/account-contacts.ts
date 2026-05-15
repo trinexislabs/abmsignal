@@ -117,7 +117,7 @@ export function generateAccountContacts(context: AccountContext): Contact[] {
   return contacts
 }
 
-export interface PlaybookSection {
+export interface GeneratedSection {
   id: string
   playbook_id: string
   title: string
@@ -140,11 +140,11 @@ function culturalNote(geography: string): string {
   return 'Adapt communication style to local business norms. Research cultural preferences. Consider language preferences.'
 }
 
-export function generatePlaybookSections(context: AccountContext): PlaybookSection[] {
+export function generatePlaybookSections(context: AccountContext): GeneratedSection[] {
   const { companyName, industry, geography } = context
   const cultureNote = culturalNote(geography)
 
-  const sections: PlaybookSection[] = [
+  const sections: GeneratedSection[] = [
     {
       id: 'sec-1', playbook_id: '', title: 'Executive Summary', type: 'executive_summary',
       content: `## Strategic Opportunity: ${companyName}\n\nThis playbook outlines a targeted approach for engaging ${companyName}, a key player in ${industry.toLowerCase()}. Our analysis reveals multiple high-priority entry points based on recent strategic initiatives, technology signals, and organizational changes.\n\n**Key Insight:** ${companyName} has publicly committed to digital transformation, creating a window of opportunity for engagement.\n\n**Recommended Approach:** Multi-threaded engagement targeting both business and technology stakeholders, with initial outreach focused on the Chief Digital Officer and VP of Technology.`,

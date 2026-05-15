@@ -54,6 +54,7 @@ const CONFIG = {
   // OpenClaw
   openclawHttpUrl: process.env.OPENCLAW_HTTP_URL || 'http://localhost:18790',
   openclawWebhookSecret: process.env.OPENCLAW_WEBHOOK_SECRET || 'abmsignal-wh-secret-2026',
+  nextjsUrl: process.env.NEXTJS_URL || 'http://localhost:3738',
   openclawStateDir: process.env.OPENCLAW_STATE_DIR || '/home/trinexis-dgx-spark/.openclaw-abmsignal',
   openclawConfigPath: process.env.OPENCLAW_CONFIG_PATH || '/home/trinexis-dgx-spark/.openclaw-abmsignal/openclaw.json',
   openclawBin: process.env.OPENCLAW_BIN || '/home/trinexis-dgx-spark/.openclaw/bin/openclaw',
@@ -110,7 +111,23 @@ const activeInvocations = new Map()
  * We don't wait for the process to finish — Next.js polls the flow status.
  */
 function invokeOrchestrator(flowId, playbookId, goal) {
-  const message = goal || `PROCESS QUEUED TASKFLOW\n\nFlow ID: ${flowId}\nPlaybook ID: ${playbookId}\n\nA TaskFlow has been created for ABM playbook generation. Read your SOUL.md for instructions on how to process this request. Use the TaskFlow API to update the flow status as you progress through each phase.`
+  const defaultMessage = `GENERATE ABM PLAYBOOK
+
+Playbook ID: ${playbookId}
+Flow ID: ${flowId}
+
+NEXTJS_API_URL: ${CONFIG.nextjsUrl}
+
+You are running in embedded mode. Process this playbook request end-to-end.
+Use curl to call the Next.js API to update status, push contacts, and submit sections.
+
+CRITICAL API ENDPOINTS (use curl with JSON payloads):
+- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/status  — check current status
+- POST ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/contacts/review  — submit contacts (body: {contacts: [...]})
+- PATCH ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — update playbook fields
+
+Read your SOUL.md for full instructions on the playbook generation pipeline.`
+  const message = goal || defaultMessage
   
   const env = {
     ...process.env,
@@ -130,6 +147,7 @@ function invokeOrchestrator(flowId, playbookId, goal) {
     'agent',
     '--agent', CONFIG.orchestratorAgentId,
     '--message', message,
+    '--local',
     '--json',
   ]
   

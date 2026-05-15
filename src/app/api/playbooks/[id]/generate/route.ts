@@ -18,10 +18,28 @@ export async function POST(_req: Request, { params }: RouteContext) {
   }
 
   const now = new Date().toISOString()
+
+  // Set initial status to researching
+  updatePlaybook(id, {
+    status: 'researching',
+    progress_pct: 0,
+    phase_started_at: now,
+    agent_status: [
+      {
+        agent: 'orchestrator',
+        task: 'Coordinating research pipeline',
+        status: 'running',
+      },
+      { agent: 'researcher', task: 'Starting account research', status: 'pending' },
+      { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
+      { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
+    ],
+  })
+
+  // Try to invoke the orchestrator via Engine Runner
   let mode: 'openclaw' | 'simulation' = 'simulation'
   let flowId: string | undefined
 
-  // Try to reach OpenClaw and create a TaskFlow
   const isHealthy = await healthCheck()
   if (isHealthy) {
     const result = await createPlaybookFlow({
@@ -44,73 +62,34 @@ export async function POST(_req: Request, { params }: RouteContext) {
       mode = 'openclaw'
       flowId = result.flowId
 
-      // Invoke the orchestrator via Engine Runner (real-time activation)
+      // Invoke the orchestrator via Engine Runner
       try {
-        const goal = [
-          `GENERATE ABM PLAYBOOK — ID: ${id}`,
-          ``,
-          `## Product`,
-          `Name: ${playbook.product_name}`,
-          `Description: ${playbook.product_brief.description}`,
-          `Value Propositions: ${playbook.product_brief.value_propositions.join('; ')}`,
-          `Competitors: ${playbook.product_brief.competitors?.join(', ') || 'N/A'}`,
-          `Deployment: ${playbook.product_brief.deployment_model}`,
-          `Deal Size: ${playbook.product_brief.deal_size}`,
-          `Sales Cycle: ${playbook.product_brief.sales_cycle}`,
-          ``,
-          `## Target Account`,
-          `Company: ${playbook.target_company}`,
-          `Industry: ${playbook.industry}`,
-          `Geography: ${playbook.geography}`,
-          `Priority: ${playbook.priority_tier}`,
-          ``,
-          `Execute the full ABM playbook generation pipeline.`,
-        ].join('\n')
-
         await fetch(`${ENGINE_RUNNER_URL}/invoke`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-API-Key': ENGINE_RUNNER_API_KEY,
           },
-          body: JSON.stringify({
-            flowId,
-            playbookId: id,
-            goal,
-          }),
+          body: JSON.stringify({ flowId, playbookId: id }),
         })
         console.log(`[generate] Orchestrator invoked for flow ${flowId}`)
       } catch (err) {
-        console.error('[generate] Engine Runner invoke failed (orchestrator may still process via other means):', err instanceof Error ? err.message : err)
+        console.error('[generate] Engine Runner invoke failed:', err instanceof Error ? err.message : err)
       }
     } else {
-      console.error('[generate] OpenClaw TaskFlow creation failed, using simulation:', result.error)
+      console.error('[generate] TaskFlow creation failed, falling back to simulation:', result.error)
     }
   } else {
-    console.error('[generate] OpenClaw gateway unreachable, using simulation')
+    console.error('[generate] OpenClaw gateway unreachable, falling back to simulation')
   }
 
-  updatePlaybook(id, {
-    status: 'researching',
-    progress_pct: 0,
-    simulation_started_at: now,
-    phase_started_at: now,
-    agent_status: [
-      {
-        agent: 'orchestrator',
-        task: 'Coordinating research pipeline',
-        status: 'running',
-        detail: mode === 'openclaw' ? `TaskFlow: ${flowId}` : 'Simulation mode',
-      },
-      { agent: 'researcher', task: 'Starting account research', status: 'pending' },
-      { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
-      { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
-    ],
-  })
-
-  // Verify simulation_started_at was persisted
-  const verifyPb = getPlaybook(id)
-  console.log('[generate] After update - simulation_started_at:', verifyPb?.simulation_started_at, 'phase_started_at:', verifyPb?.phase_started_at)
+  // If no real orchestrator, set up simulation as fallback
+  if (mode === 'simulation') {
+    updatePlaybook(id, {
+      simulation_started_at: now,
+    })
+    console.log('[generate] Using simulation mode — orchestrator not available')
+  }
 
   return NextResponse.json({
     data: {

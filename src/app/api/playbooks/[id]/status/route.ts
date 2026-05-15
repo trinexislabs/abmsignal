@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getPlaybook, updatePlaybook, updateContacts } from '@/lib/store/playbooks'
-import { generateAccountContacts, generatePlaybookSections } from '@/lib/research/account-contacts'
-import type { AgentStatus, PlaybookStatus } from '@/types'
+import { getPlaybook, updatePlaybook } from '@/lib/store/playbooks'
+import type { AgentStatus, PlaybookStatus, SectionType, SectionStatus } from '@/types'
 
 interface SimulatedStatus {
   status: PlaybookStatus
@@ -14,81 +13,47 @@ function simulateProgress(
   simulationStartedAt: string | undefined,
   phaseStartedAt: string | undefined,
 ): SimulatedStatus | null {
-  // Only simulate if generation has been triggered
+  // Only simulate if explicitly in simulation mode
   if (!simulationStartedAt) return null
 
-  // These statuses are terminal or manual gates — don't simulate
-  if (currentStatus === 'complete' || currentStatus === 'error' || currentStatus === 'draft') {
-    return null
-  }
+  if (currentStatus === 'complete' || currentStatus === 'error' || currentStatus === 'draft') return null
   if (currentStatus === 'contact_review') return null
 
   const now = Date.now()
   const simElapsedSec = (now - new Date(simulationStartedAt).getTime()) / 1000
 
   if (currentStatus === 'researching') {
-    // Phase 1: 0–30s → 0–30%
     if (simElapsedSec < 30) {
       const pct = Math.floor((simElapsedSec / 30) * 30)
       return {
         status: 'researching',
         progress_pct: pct,
         agent_status: [
-          {
-            agent: 'orchestrator',
-            task: 'Coordinating research pipeline',
-            status: 'running',
-            detail: `${pct}% initialised`,
-          },
-          {
-            agent: 'researcher',
-            task: simElapsedSec > 15 ? 'Deep account research in progress' : 'Starting account research',
-            status: simElapsedSec > 15 ? 'running' : 'pending',
-          },
+          { agent: 'orchestrator', task: 'Coordinating research pipeline', status: 'running' },
+          { agent: 'researcher', task: simElapsedSec > 15 ? 'Deep account research in progress' : 'Starting account research', status: simElapsedSec > 15 ? 'running' : 'pending' },
           { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
           { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
         ],
       }
     }
-    // Phase 2: 30–60s → 30–40%
     if (simElapsedSec < 60) {
       const pct = 30 + Math.floor(((simElapsedSec - 30) / 30) * 10)
-      const contactsFound = Math.floor(((simElapsedSec - 30) / 30) * 12)
       return {
         status: 'researching',
         progress_pct: pct,
         agent_status: [
           { agent: 'orchestrator', task: 'Processing research findings', status: 'running' },
-          {
-            agent: 'researcher',
-            task: 'Discovering contacts and buying signals',
-            status: 'running',
-            detail: `${contactsFound} contacts found so far`,
-          },
+          { agent: 'researcher', task: 'Discovering contacts and buying signals', status: 'running', detail: `${Math.floor(((simElapsedSec - 30) / 30) * 12)} contacts found` },
           { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
           { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
         ],
       }
     }
-    // Transition to contact_review at 1 min
     return {
-      status: 'contact_review',
-      progress_pct: 40,
+      status: 'contact_review', progress_pct: 40,
       agent_status: [
-        {
-          agent: 'orchestrator',
-          task: 'Contact verification gate — awaiting human review',
-          status: 'running',
-          detail: 'Paused at verification checkpoint',
-        },
-        {
-          agent: 'researcher',
-          task: 'Account research complete',
-          status: 'complete',
-          completed_at: new Date(
-            new Date(simulationStartedAt).getTime() + 55_000,
-          ).toISOString(),
-        },
+        { agent: 'orchestrator', task: 'Contact verification gate', status: 'running', detail: 'Paused for human review' },
+        { agent: 'researcher', task: 'Account research complete', status: 'complete' },
         { agent: 'writer', task: 'Waiting for verified contacts', status: 'pending' },
         { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
       ],
@@ -101,91 +66,47 @@ function simulateProgress(
   if (currentStatus === 'writing') {
     if (phaseElapsedSec < 45) {
       const pct = 40 + Math.floor((phaseElapsedSec / 45) * 35)
-      const sectionNum = Math.min(8, Math.floor((phaseElapsedSec / 45) * 8) + 1)
       return {
-        status: 'writing',
-        progress_pct: pct,
+        status: 'writing', progress_pct: pct,
         agent_status: [
           { agent: 'orchestrator', task: 'Managing writing pipeline', status: 'running' },
-          { agent: 'researcher', task: 'Account research complete', status: 'complete' },
-          {
-            agent: 'writer',
-            task: 'Generating hyper-personalized sections',
-            status: 'running',
-            detail: `Section ${sectionNum} of 8`,
-          },
-          {
-            agent: 'reviewer',
-            task: 'Reviewing completed sections',
-            status: phaseElapsedSec > 30 ? 'running' : 'pending',
-          },
+          { agent: 'researcher', task: 'Research complete', status: 'complete' },
+          { agent: 'writer', task: `Generating section ${Math.min(8, Math.floor((phaseElapsedSec / 45) * 8) + 1)} of 8`, status: 'running' },
+          { agent: 'reviewer', task: 'Reviewing sections', status: phaseElapsedSec > 30 ? 'running' : 'pending' },
         ],
       }
     }
-    // Transition to reviewing
-    return {
-      status: 'reviewing',
-      progress_pct: 75,
-      agent_status: [
-        { agent: 'orchestrator', task: 'Quality review in progress', status: 'running' },
-        { agent: 'researcher', task: 'Account research complete', status: 'complete' },
-        { agent: 'writer', task: 'Content generation complete', status: 'complete' },
-        {
-          agent: 'reviewer',
-          task: 'Running 16-point quality checklist',
-          status: 'running',
-          detail: 'Checking accuracy and consistency',
-        },
-      ],
-    }
+    return { status: 'reviewing', progress_pct: 75, agent_status: [
+      { agent: 'orchestrator', task: 'Quality review', status: 'running' },
+      { agent: 'researcher', task: 'Research complete', status: 'complete' },
+      { agent: 'writer', task: 'Writing complete', status: 'complete' },
+      { agent: 'reviewer', task: 'Running quality check', status: 'running' },
+    ] }
   }
 
   if (currentStatus === 'reviewing') {
     if (phaseElapsedSec < 30) {
       const pct = 75 + Math.floor((phaseElapsedSec / 30) * 20)
-      const checkNum = Math.min(16, Math.floor((phaseElapsedSec / 30) * 16) + 1)
-      return {
-        status: 'reviewing',
-        progress_pct: pct,
-        agent_status: [
-          { agent: 'orchestrator', task: 'Finalizing playbook', status: 'running' },
-          { agent: 'researcher', task: 'Account research complete', status: 'complete' },
-          { agent: 'writer', task: 'Content generation complete', status: 'complete' },
-          {
-            agent: 'reviewer',
-            task: `Quality check ${checkNum} of 16`,
-            status: 'running',
-            detail: `${pct}% verified`,
-          },
-        ],
-      }
+      return { status: 'reviewing', progress_pct: pct, agent_status: [
+        { agent: 'orchestrator', task: 'Finalizing playbook', status: 'running' },
+        { agent: 'researcher', task: 'Research complete', status: 'complete' },
+        { agent: 'writer', task: 'Writing complete', status: 'complete' },
+        { agent: 'reviewer', task: `Quality check ${Math.min(16, Math.floor((phaseElapsedSec / 30) * 16) + 1)} of 16`, status: 'running' },
+      ] }
     }
-    // Transition to complete
     const completedAt = new Date().toISOString()
-    return {
-      status: 'complete',
-      progress_pct: 100,
-      agent_status: [
-        {
-          agent: 'orchestrator',
-          task: 'Playbook generation complete',
-          status: 'complete',
-          completed_at: completedAt,
-        },
-        { agent: 'researcher', task: 'Account research complete', status: 'complete' },
-        { agent: 'writer', task: 'Content generation complete', status: 'complete' },
-        {
-          agent: 'reviewer',
-          task: '16-point quality check complete',
-          status: 'complete',
-          completed_at: completedAt,
-        },
-      ],
-    }
+    return { status: 'complete', progress_pct: 100, agent_status: [
+      { agent: 'orchestrator', task: 'Playbook complete', status: 'complete', completed_at: completedAt },
+      { agent: 'researcher', task: 'Research complete', status: 'complete' },
+      { agent: 'writer', task: 'Writing complete', status: 'complete' },
+      { agent: 'reviewer', task: 'Quality check complete', status: 'complete', completed_at: completedAt },
+    ] }
   }
 
   return null
 }
+
+// ──────────────────────────────────────────────
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -199,6 +120,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
   }
 
+  // Check for simulation fallback (only if simulation_started_at is set)
   const simulated = simulateProgress(
     playbook.status,
     playbook.simulation_started_at,
@@ -207,40 +129,56 @@ export async function GET(_req: Request, { params }: RouteContext) {
 
   if (simulated) {
     if (simulated.status !== playbook.status) {
-      // Status transition — persist and reset phase timer
-      const updateData: Record<string, unknown> = {
+      updatePlaybook(id, {
         status: simulated.status,
         progress_pct: simulated.progress_pct,
         agent_status: simulated.agent_status,
         phase_started_at: new Date().toISOString(),
-      }
+      })
 
-      // When transitioning to contact_review, generate account-specific contacts
+      // When simulation transitions to contact_review, add account-specific contacts
       if (simulated.status === 'contact_review' && (!playbook.contacts || playbook.contacts.length === 0)) {
+        const { generateAccountContacts } = await import('@/lib/research/account-contacts')
         const contacts = generateAccountContacts({
           companyName: playbook.target_company,
           industry: playbook.industry,
           geography: playbook.geography,
         })
-        // Set playbook_id on each contact
         contacts.forEach(c => { c.playbook_id = id })
-        updateData.contacts = contacts
+        updatePlaybook(id, { contacts })
       }
 
-      // When transitioning to complete, generate playbook sections
+      // When simulation transitions to complete, add playbook sections
       if (simulated.status === 'complete' && (!playbook.sections || playbook.sections.length === 0)) {
-        const sections = generatePlaybookSections({
+        const { generatePlaybookSections } = await import('@/lib/research/account-contacts')
+        const generated = generatePlaybookSections({
           companyName: playbook.target_company,
           industry: playbook.industry,
           geography: playbook.geography,
         })
-        sections.forEach(s => { s.playbook_id = id })
-        updateData.sections = sections
+        // Convert GeneratedSection to PlaybookSection format
+        const sectionTypeMap: Record<string, SectionType> = {
+          'executive_summary': 'executive_summary',
+          'account_intel': 'account_intelligence',
+          'buying_committee': 'buying_committee',
+          'why_now': 'why_now',
+          'outreach': 'outreach_strategy',
+          'competitive': 'competitive_landscape',
+          'engagement': 'personalized_sequences',
+          'cultural': 'cultural_context',
+        }
+        const sections = generated.map((s) => ({
+          id: s.id,
+          playbook_id: id,
+          section_type: sectionTypeMap[s.type] || 'appendix' as SectionType,
+          title: s.title,
+          content: s.content,
+          status: 'complete' as SectionStatus,
+          created_at: s.created_at,
+        }))
+        updatePlaybook(id, { sections })
       }
-
-      updatePlaybook(id, updateData)
     } else {
-      // Progress-only update
       updatePlaybook(id, {
         progress_pct: simulated.progress_pct,
         agent_status: simulated.agent_status,
