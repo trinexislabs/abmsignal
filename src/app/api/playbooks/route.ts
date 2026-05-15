@@ -1,25 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createPlaybook, listPlaybooks } from '@/lib/store/playbooks'
-import {
-  MOCK_PLAYBOOKS,
-  MOCK_CONTACTS,
-  MOCK_SECTIONS,
-  MOCK_QUALITY_CHECKS,
-} from '@/lib/mock-data'
 import type { PlaybookCreateRequest } from '@/types'
 
 export async function GET() {
   const stored = listPlaybooks()
   const storedIds = new Set(stored.map((p) => p.id))
 
-  const mockExtended = MOCK_PLAYBOOKS.filter((p) => !storedIds.has(p.id)).map((p) => ({
-    ...p,
-    sections: MOCK_SECTIONS.filter((s) => s.playbook_id === p.id),
-    contacts: MOCK_CONTACTS.filter((c) => c.playbook_id === p.id),
-    quality_checks: MOCK_QUALITY_CHECKS.filter((q) => q.playbook_id === p.id),
-  }))
-
-  return NextResponse.json({ data: [...stored, ...mockExtended] })
+  // Don't include mock playbooks in the list — only show real ones from the store
+  // Mock data (pb-001, etc.) is only for development/demo purposes
+  return NextResponse.json({ data: stored })
 }
 
 export async function POST(request: Request) {

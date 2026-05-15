@@ -228,7 +228,31 @@ app.post('/invoke', authCheck, async (req, res) => {
   }
   
   try {
-    // First, verify the flow exists
+    // Fetch playbook data from Next.js API to include in the message
+    let playbookData = null
+    if (playbookId) {
+      try {
+        const pbRes = await fetch(`${CONFIG.nextjsUrl}/api/playbooks/${playbookId}`)
+        if (pbRes.ok) {
+          const pbJson = await pbRes.json()
+          playbookData = pbJson.data || pbJson
+          console.log(`[engine-runner] Fetched playbook data for ${playbookId}: ${playbookData.product_name} / ${playbookData.target_company}`)
+        } else {
+          console.warn(`[engine-runner] Could not fetch playbook ${playbookId}: HTTP ${pbRes.status}`)
+        }
+      } catch (fetchErr) {
+        console.warn(`[engine-runner] Failed to fetch playbook data: ${fetchErr.message}`)
+      }
+    }
+    
+    // Build the message with full playbook context
+    let enrichedGoal = goal
+    if (!goal && playbookData) {
+      const brief = playbookData.product_brief || {}
+      enrichedGoal = `GENERATE ABM PLAYBOOK\n\nPlaybook ID: ${playbookId}\nFlow ID: ${flowId}\n\nNEXTJS_API_URL: ${CONFIG.nextjsUrl}\n\nYou are running in embedded mode. Process this playbook request end-to-end.\nUse curl to call the Next.js API to update status, push contacts, and submit sections.\n\nCRITICAL API ENDPOINTS (use curl with JSON payloads):\n- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — fetch full playbook data (product brief, target account)\n- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/status  — check current status\n- POST ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/contacts/review  — submit contacts (body: {contacts: [...]})\n- PATCH ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — update playbook fields\n\n## Product\nName: ${playbookData.product_name || 'Unknown'}\nDescription: ${brief.description || 'N/A'}\nValue Propositions: ${Array.isArray(brief.value_propositions) ? brief.value_propositions.join('; ') : (brief.value_propositions || 'N/A')}\nCompetitors: ${brief.competitors || 'N/A'}\nDeployment: ${brief.deployment_model || 'N/A'}\nDeal Size: ${brief.deal_size || 'N/A'}\nSales Cycle: ${brief.sales_cycle || 'N/A'}\n\n## Target Account\nCompany: ${playbookData.target_company || 'Unknown'}\nIndustry: ${playbookData.industry || 'N/A'}\nGeography: ${playbookData.geography || 'N/A'}\nPriority: ${playbookData.priority_tier || 'N/A'}\n\nIMPORTANT: Research the ACTUAL company specified above (${playbookData.target_company}). Do NOT use placeholder or example companies. All contacts, sections, and messaging must be specific to ${playbookData.target_company} in ${playbookData.geography}.\n\nRead your SOUL.md for full instructions on the playbook generation pipeline.`
+    }
+    
+    // Verify the flow exists
     const flow = await taskflowRequest('get_flow', { flowId })
     if (!flow) {
       return res.status(404).json({ error: 'Flow not found', flowId })
@@ -244,7 +268,7 @@ app.post('/invoke', authCheck, async (req, res) => {
     }
     
     // Fire-and-forget: spawn the orchestrator
-    const invocation = invokeOrchestrator(flowId, playbookId, goal)
+    const invocation = invokeOrchestrator(flowId, playbookId, enrichedGoal)
     
     res.json({
       ok: true,

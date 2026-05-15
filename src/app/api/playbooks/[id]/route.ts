@@ -20,6 +20,12 @@ export async function GET(_req: Request, { params }: RouteContext) {
     return NextResponse.json({ data: stored })
   }
 
+  // Only return mock data for mock IDs (pb-001, pb-002, pb-003)
+  // Never return mock data for real playbook IDs (pb_xxxxx) — those should 404
+  if (id.startsWith('pb_')) {
+    return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
+  }
+
   const mock = MOCK_PLAYBOOKS.find((p) => p.id === id)
   if (mock) {
     return NextResponse.json({
