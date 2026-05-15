@@ -26,9 +26,9 @@ function simulateProgress(
   const simElapsedSec = (now - new Date(simulationStartedAt).getTime()) / 1000
 
   if (currentStatus === 'researching') {
-    // Phase 1: 0–90s → 0–30%
-    if (simElapsedSec < 90) {
-      const pct = Math.floor((simElapsedSec / 90) * 30)
+    // Phase 1: 0–30s → 0–30%
+    if (simElapsedSec < 30) {
+      const pct = Math.floor((simElapsedSec / 30) * 30)
       return {
         status: 'researching',
         progress_pct: pct,
@@ -49,10 +49,10 @@ function simulateProgress(
         ],
       }
     }
-    // Phase 2: 90–180s → 30–40%
-    if (simElapsedSec < 180) {
-      const pct = 30 + Math.floor(((simElapsedSec - 90) / 90) * 10)
-      const contactsFound = Math.floor(((simElapsedSec - 90) / 90) * 12)
+    // Phase 2: 30–60s → 30–40%
+    if (simElapsedSec < 60) {
+      const pct = 30 + Math.floor(((simElapsedSec - 30) / 30) * 10)
+      const contactsFound = Math.floor(((simElapsedSec - 30) / 30) * 12)
       return {
         status: 'researching',
         progress_pct: pct,
@@ -69,7 +69,7 @@ function simulateProgress(
         ],
       }
     }
-    // Transition to contact_review at 3 min
+    // Transition to contact_review at 1 min
     return {
       status: 'contact_review',
       progress_pct: 40,
@@ -98,9 +98,9 @@ function simulateProgress(
   const phaseElapsedSec = (now - phaseStart) / 1000
 
   if (currentStatus === 'writing') {
-    if (phaseElapsedSec < 120) {
-      const pct = 40 + Math.floor((phaseElapsedSec / 120) * 35)
-      const sectionNum = Math.min(8, Math.floor((phaseElapsedSec / 120) * 8) + 1)
+    if (phaseElapsedSec < 45) {
+      const pct = 40 + Math.floor((phaseElapsedSec / 45) * 35)
+      const sectionNum = Math.min(8, Math.floor((phaseElapsedSec / 45) * 8) + 1)
       return {
         status: 'writing',
         progress_pct: pct,
@@ -140,9 +140,9 @@ function simulateProgress(
   }
 
   if (currentStatus === 'reviewing') {
-    if (phaseElapsedSec < 60) {
-      const pct = 75 + Math.floor((phaseElapsedSec / 60) * 20)
-      const checkNum = Math.min(16, Math.floor((phaseElapsedSec / 60) * 16) + 1)
+    if (phaseElapsedSec < 30) {
+      const pct = 75 + Math.floor((phaseElapsedSec / 30) * 20)
+      const checkNum = Math.min(16, Math.floor((phaseElapsedSec / 30) * 16) + 1)
       return {
         status: 'reviewing',
         progress_pct: pct,

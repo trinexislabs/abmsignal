@@ -93,7 +93,7 @@ export async function POST(_req: Request, { params }: RouteContext) {
   updatePlaybook(id, {
     status: 'researching',
     progress_pct: 0,
-    simulation_started_at: mode === 'simulation' ? now : undefined,
+    simulation_started_at: now,
     phase_started_at: now,
     agent_status: [
       {
@@ -107,6 +107,10 @@ export async function POST(_req: Request, { params }: RouteContext) {
       { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
     ],
   })
+
+  // Verify simulation_started_at was persisted
+  const verifyPb = getPlaybook(id)
+  console.log('[generate] After update - simulation_started_at:', verifyPb?.simulation_started_at, 'phase_started_at:', verifyPb?.phase_started_at)
 
   return NextResponse.json({
     data: {
