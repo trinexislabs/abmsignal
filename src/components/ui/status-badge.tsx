@@ -40,6 +40,11 @@ const STATUS_CONFIG: Record<PlaybookStatus, { label: string; className: string; 
     className: 'bg-red-500/20 text-red-400 border-red-500/30',
     dot: 'bg-red-400',
   },
+  rejected: {
+    label: 'Rejected',
+    className: 'bg-red-500/20 text-red-400 border-red-500/30',
+    dot: 'bg-red-400',
+  },
 }
 
 interface StatusBadgeProps {

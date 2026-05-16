@@ -10,6 +10,7 @@ const STATUS_CONFIG: Record<PlaybookStatus, { label: string; className: string }
   reviewing: { label: 'Reviewing', className: 'bg-orange-500/20 text-orange-400 border-orange-500/30 animate-pulse' },
   complete: { label: 'Complete', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
   error: { label: 'Error', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  rejected: { label: 'Rejected', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
 }
 
 export function PlaybookStatusBadge({ status, className }: { status: PlaybookStatus; className?: string }) {

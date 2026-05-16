@@ -70,6 +70,7 @@ const STATUS_LABELS: Record<PlaybookStatus, string> = {
   reviewing: 'Quality Review',
   complete: 'Complete',
   error: 'Error',
+  rejected: 'Rejected',
 }
 
 const STATUS_BADGE: Record<PlaybookStatus, string> = {
@@ -80,6 +81,7 @@ const STATUS_BADGE: Record<PlaybookStatus, string> = {
   reviewing: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
   complete: 'bg-green-500/15 text-green-400 border-green-500/30',
   error: 'bg-red-500/15 text-red-400 border-red-500/30',
+  rejected: 'bg-red-500/15 text-red-400 border-red-500/30',
 }
 
 // ─────────────────────────────────────────────────────────
@@ -255,7 +257,7 @@ export default function ProcessingPage() {
           redirectedRef.current = true
           clearInterval(intervalId)
           router.push(`/playbook/${id}`)
-        } else if (json.data.status === 'error') {
+        } else if (json.data.status === 'error' || json.data.status === 'rejected') {
           clearInterval(intervalId)
         }
       } catch (err) {
@@ -309,7 +311,7 @@ export default function ProcessingPage() {
     (agent) => agentMap.get(agent) ?? { agent, task: 'Awaiting previous stage…', status: 'pending' as const },
   )
 
-  const isActive = currentStatus !== 'complete' && currentStatus !== 'error'
+  const isActive = currentStatus !== 'complete' && currentStatus !== 'error' && currentStatus !== 'rejected'
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -401,6 +403,35 @@ export default function ProcessingPage() {
             </div>
           </div>
         </Card>
+
+        {/* Error / Rejected state - retry button */}
+        {(currentStatus === 'error' || currentStatus === 'rejected') && (
+          <div className="mt-8 text-center">
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 mb-4">
+              <p className="text-sm text-red-400 mb-1 font-medium">
+                {currentStatus === 'rejected' ? 'Playbook generation was rejected' : 'An error occurred during generation'}
+              </p>
+              <p className="text-xs text-[#a1a1aa]">
+                {currentStatus === 'rejected'
+                  ? 'The agent could not process this request. This may be due to insufficient product information.'
+                  : 'The agent encountered an unexpected error. You can try again.'}
+              </p>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  await fetch(`/api/playbooks/${id}/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+                  setStartMs(Date.now())
+                } catch (err) {
+                  console.error('[retry] failed:', err)
+                }
+              }}
+              className="px-6 py-2.5 rounded-lg bg-[#339af0] text-white text-sm font-medium hover:bg-[#2b8ad8] transition-colors"
+            >
+              Retry Generation
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
