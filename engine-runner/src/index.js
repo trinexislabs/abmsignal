@@ -57,6 +57,7 @@ const CONFIG = {
   nextjsUrl: process.env.NEXTJS_URL || 'http://localhost:3738',
   openclawStateDir: process.env.OPENCLAW_STATE_DIR || '/home/trinexis-dgx-spark/.openclaw-abmsignal',
   openclawConfigPath: process.env.OPENCLAW_CONFIG_PATH || '/home/trinexis-dgx-spark/.openclaw-abmsignal/openclaw.json',
+  openclawGatewayPort: parseInt(process.env.OPENCLAW_GATEWAY_PORT || '18790', 10),
   openclawBin: process.env.OPENCLAW_BIN || '/home/trinexis-dgx-spark/.openclaw/bin/openclaw',
   
   // Agent
@@ -133,6 +134,7 @@ Read your SOUL.md for full instructions on the playbook generation pipeline.`
     ...process.env,
     OPENCLAW_STATE_DIR: CONFIG.openclawStateDir,
     OPENCLAW_CONFIG_PATH: CONFIG.openclawConfigPath,
+    OPENCLAW_GATEWAY_PORT: String(CONFIG.openclawGatewayPort),
   }
   
   // Log file for this invocation
@@ -143,11 +145,10 @@ Read your SOUL.md for full instructions on the playbook generation pipeline.`
   
   console.log(`[engine-runner] Spawning orchestrator for flow ${flowId}, log: ${logFile}`)
   
-  const args = [
+: const args = [
     'agent',
     '--agent', CONFIG.orchestratorAgentId,
     '--message', message,
-    '--local',
     '--json',
   ]
   
@@ -249,7 +250,7 @@ app.post('/invoke', authCheck, async (req, res) => {
     let enrichedGoal = goal
     if (!goal && playbookData) {
       const brief = playbookData.product_brief || {}
-      enrichedGoal = `GENERATE ABM PLAYBOOK\n\nPlaybook ID: ${playbookId}\nFlow ID: ${flowId}\n\nNEXTJS_API_URL: ${CONFIG.nextjsUrl}\n\nYou are running in embedded mode. Process this playbook request end-to-end.\nUse curl to call the Next.js API to update status, push contacts, and submit sections.\n\nCRITICAL API ENDPOINTS (use curl with JSON payloads):\n- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — fetch full playbook data (product brief, target account)\n- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/status  — check current status\n- POST ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/contacts/review  — submit contacts (body: {contacts: [...]})\n- PATCH ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — update playbook fields\n\n## Product\nName: ${playbookData.product_name || 'Unknown'}\nDescription: ${brief.description || 'N/A'}\nValue Propositions: ${Array.isArray(brief.value_propositions) ? brief.value_propositions.join('; ') : (brief.value_propositions || 'N/A')}\nCompetitors: ${brief.competitors || 'N/A'}\nDeployment: ${brief.deployment_model || 'N/A'}\nDeal Size: ${brief.deal_size || 'N/A'}\nSales Cycle: ${brief.sales_cycle || 'N/A'}\n\n## Target Account\nCompany: ${playbookData.target_company || 'Unknown'}\nIndustry: ${playbookData.industry || 'N/A'}\nGeography: ${playbookData.geography || 'N/A'}\nPriority: ${playbookData.priority_tier || 'N/A'}\n\nIMPORTANT: Research the ACTUAL company specified above (${playbookData.target_company}). Do NOT use placeholder or example companies. All contacts, sections, and messaging must be specific to ${playbookData.target_company} in ${playbookData.geography}.\n\nRead your SOUL.md for full instructions on the playbook generation pipeline.`
+: enrichedGoal = `GENERATE ABM PLAYBOOK\n\nPlaybook ID: ${playbookId}\nFlow ID: ${flowId}\n\nNEXTJS_API_URL: ${CONFIG.nextjsUrl}\n\nYou are connected to the ABMSignal gateway. You can spawn sub-agents (researcher, writer, reviewer) using sessions_spawn.\nUse curl to call the Next.js API to update status, push contacts, and submit sections.\n\nCRITICAL API ENDPOINTS (use curl with JSON payloads):\n- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — fetch full playbook data (product brief, target account)\n- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/status  — check current status\n- POST ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/contacts/review  — submit contacts (body: {contacts: [...]})\n- PATCH ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — update playbook fields\n\n## Product\nName: ${playbookData.product_name || 'Unknown'}\nDescription: ${brief.description || 'N/A'}\nValue Propositions: ${Array.isArray(brief.value_propositions) ? brief.value_propositions.join('; ') : (brief.value_propositions || 'N/A')}\nCompetitors: ${brief.competitors || 'N/A'}\nDeployment: ${brief.deployment_model || 'N/A'}\nDeal Size: ${brief.deal_size || 'N/A'}\nSales Cycle: ${brief.sales_cycle || 'N/A'}\n\n## Target Account\nCompany: ${playbookData.target_company || 'Unknown'}\nIndustry: ${playbookData.industry || 'N/A'}\nGeography: ${playbookData.geography || 'N/A'}\nPriority: ${playbookData.priority_tier || 'N/A'}\n\nIMPORTANT: Research the ACTUAL company specified above (${playbookData.target_company}). Do NOT use placeholder or example companies. All contacts, sections, and messaging must be specific to ${playbookData.target_company} in ${playbookData.geography}.\n\nRead your SOUL.md for full instructions on the playbook generation pipeline.`
     }
     
     // Verify the flow exists
