@@ -115,7 +115,8 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
     } catch {
       // Continue anyway
     }
-    window.location.href = `/playbook/${id}`
+    // Redirect to processing page so user sees writing + reviewing progress
+    window.location.href = `/playbook/${id}/processing`
   }
 
   const confirmed = contacts.filter(c => c.status === 'confirmed').length

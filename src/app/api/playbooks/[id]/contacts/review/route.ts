@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getPlaybook, updatePlaybook, updateContacts } from '@/lib/store/playbooks'
+import { continuePlaybookFlow } from '@/lib/openclaw/client'
 import type { Contact } from '@/types'
+
+const ENGINE_RUNNER_URL = process.env.ENGINE_RUNNER_URL ?? 'http://localhost:18793'
+const ENGINE_RUNNER_API_KEY = process.env.ENGINE_RUNNER_API_KEY ?? 'abmsignal-engine-runner-2026'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -46,6 +50,44 @@ export async function POST(request: Request, { params }: RouteContext) {
       { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
     ],
   })
+
+  // Re-invoke the orchestrator to continue with writing + reviewing phases.
+  // First try the Engine Runner (same mechanism as generate), then fall back
+  // to a direct OpenClaw task via continuePlaybookFlow.
+  const flowId = playbook.openclaw_session_id
+  if (flowId) {
+    let invokedViaRunner = false
+    try {
+      const res = await fetch(`${ENGINE_RUNNER_URL}/invoke`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': ENGINE_RUNNER_API_KEY,
+        },
+        body: JSON.stringify({ flowId, playbookId: id, phase: 'writing', contactsApproved: true }),
+      })
+      invokedViaRunner = res.ok
+      if (!invokedViaRunner) {
+        console.error('[contacts/review] Engine Runner returned', res.status)
+      }
+    } catch (err) {
+      console.error('[contacts/review] Engine Runner unreachable:', err instanceof Error ? err.message : err)
+    }
+
+    if (!invokedViaRunner) {
+      // Fallback: create a new task directly in the existing OpenClaw flow
+      const result = await continuePlaybookFlow({ flowId, playbookId: id })
+      if (!result.ok) {
+        console.error('[contacts/review] continuePlaybookFlow failed:', result.error)
+      } else {
+        console.log(`[contacts/review] Orchestrator resumed via OpenClaw task ${result.taskId ?? '(no taskId)'}`)
+      }
+    } else {
+      console.log(`[contacts/review] Orchestrator resumed via Engine Runner for flow ${flowId}`)
+    }
+  } else {
+    console.warn('[contacts/review] No flowId stored — orchestrator cannot be re-invoked automatically')
+  }
 
   return NextResponse.json({
     data: { message: 'Contact review submitted. Writing phase started.' },
