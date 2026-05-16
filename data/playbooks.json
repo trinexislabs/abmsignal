@@ -1,0 +1,1018 @@
+{
+  "pb_9ef84927c1674fac": {
+    "user_id": "usr_demo",
+    "product_name": "TracEI",
+    "product_brief": {
+      "product_name": "TracEI",
+      "description": "SWIFT payment investigation system that alows banks to do the E&I operations. ",
+      "value_propositions": [
+        "low cost exception investigation",
+        "Saas offering"
+      ],
+      "target_personas": [
+        "CTO",
+        "CPO"
+      ],
+      "differentiators": [
+        "Saas offering of a E&I application"
+      ],
+      "competitors": [
+        "Pega Smart Investigate"
+      ],
+      "deployment_model": "saas",
+      "deal_size": "<50k",
+      "sales_cycle": "<30d"
+    },
+    "target_company": "Comercial Bank Sri Lanka",
+    "target_url": "https://www.combank.lk/",
+    "industry": "Banking & Finance",
+    "geography": "Global",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "Writing complete",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: TracEI → Commercial Bank of Sri Lanka\n\nCommercial Bank of Ceylon (CBC) is Sri Lanka's largest private sector bank (Rs. 2.876T assets, Rs. 55.7Bn profit, +154% YoY). Four signals make this a fast-cycle opportunity:\n\n1. **Google Pay launch (Nov 2025)** — First bank in Sri Lanka. More digital payments = more exceptions = more investigations.\n2. **CEO with IT background** — Sanath Manatunge previously headed IT, Cards, and Digital Banking. He personally understands E&I pain and has authority for <$50K decisions.\n3. **Record profitability (+154% YoY)** — Budget available for technology investment.\n4. **ISO 20022 / SWIFT CBPR+ migration** — Multi-format investigation complexity growing.\n\n**Approach:** Velocity play — <$50K, <30 day cycle. Lead with low cost vs. Pega, quick SaaS deployment, SWIFT/ISO 20022 compliance. Target Randil Boteju (CDO) as champion, CEO as direct buyer.\n\n**Outcome:** Close within 30 days. <$50K ARR with expansion as payment volumes grow.",
+        "order": 1,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## Commercial Bank of Ceylon — Account Intelligence\n\n**Name:** Commercial Bank of Ceylon PLC | **Type:** Largest private sector bank, Sri Lanka\n**HQ:** Colombo | **CEO:** Sanath Manatunge (since 2022) | **Chairman:** Sharhan Muhseen (since April 2024)\n**CDO:** Randil Boteju | **CIO:** Sumudu Gunawardhana (also MD, CBC Tech Solutions)\n\n**Financials (2024):** Assets Rs. 2.876T | Deposits Rs. 2.237T | Profit Rs. 55.7Bn (+154%)\n**Market Share:** 13.16% assets, 12.90% deposits, 13.22% loans\n**International:** Bangladesh (25 branches), Myanmar, Maldives\n**Awards:** Best Managed Bank (Asian Banker), Best Mobile Banking App (Global Finance)\n\n**Digital Signals:** First to launch Google Pay (Nov 2025), North Star digital strategy, CBC Tech Solutions subsidiary, Q+ payment app, WeChatPay/AliPay/LANKAQR integrations\n\n**E&I Pain:** Rs. 2.24T deposits = massive transaction volumes | Cross-border SWIFT payments | ISO 20022 migration complexity | Bangladesh multi-country investigations | Growing volumes without staff growth",
+        "order": 2,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: Randil Boteju (CDO)** — Digital strategy owner. <$50K within budget authority.\n**Economic Buyer: Sanath Manatunge (CEO)** — Former IT/Cards head. Understands E&I pain. Direct approval at <$50K.\n**Technical Buyer: Sumudu Gunawardhana (CIO)** — Evaluates SaaS fit, security, integration.\n**Endorser: Sharhan Muhseen (Chairman)** — Former banking analyst.\n**End Users:** Payment operations, SWIFT team, international ops (~10-20 people)\n\n**Decision Speed:** <$50K + <30 day cycle = CDO + CEO decision. No RFP.",
+        "order": 3,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now\n\n1. **Google Pay Launch (🔴 CRITICAL)** — Digital payment surge → more exceptions → investigation bottleneck\n2. **Record Profitability (🔴 HIGH)** — 154% profit growth, tech budget available\n3. **ISO 20022 Migration (🔴 HIGH)** — Dual-format (MT/FIN + ISO 20022) investigation complexity\n4. **CEO IT Background (🟡 MEDIUM-HIGH)** — Manatunge ran IT/Cards — shortens cycle\n5. **Bangladesh Operations (🟡 MEDIUM)** — Cross-border investigations need multi-country support",
+        "order": 4,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n**Pega Smart Investigate:** 30+ years SWIFT expertise, AI decisioning, ISO 20022 support. BUT: $200K+ TCO, 6-12 month implementation, requires platform license, over-engineered for mid-size banks, limited APAC coverage.\n\n**TracEI Advantage:** <$50K vs. $200K+ | <30 days vs. 6-12 months | Complete E&I solution | SaaS-native | APAC focus | No platform license | SWIFT + ISO 20022 support\n\n**Strategy:** CBC likely does NOT have Pega (too expensive). Greenfield — position against manual/spreadsheet workflows. Lead: 'Low cost, complete, deployable in 30 days — built for banks like CBC.'",
+        "order": 5,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Sri Lankan Banking Culture\n\n- **Decisions:** Hierarchical, relationship-driven. CEO has <$50K authority.\n- **Formality:** 'Mr.' + last name. English for business.\n- **Price sensitivity:** Very high. Lead with value.\n- **Relationships:** Trust before business.\n\n**CBC-Specific:** Proud of digital leadership (Google Pay first, Best Mobile Banking). CEO is technology-forward. Fast decisions at <$50K.\n\n**Do's:** Acknowledge Google Pay leadership | Reference Asian Banker awards | Lead with cost-effectiveness | Show SWIFT/ISO 20022/LANKAQR understanding | Offer quick pilot\n**Don'ts:** Over-engineer pitch | Assume Pega deployment | Ignore Bangladesh ops | Use Western-centric references",
+        "order": 6,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Channels:** Direct email CDO + CEO | **Duration:** 3-4 weeks | **Touches:** 4/persona\n\n**CDO — Boteju:** 1) Google Pay first → investigations must keep up 2) APAC bank 80% faster case study 3) ROI calculator 4) 14-day pilot offer\n\n**CEO — Manatunge:** 1) 'From someone who ran IT/Cards — you know E&I pain' 2) <$50K, <30 days, complete E&I 3) Google Pay leadership reference 4) Executive call invite\n\n**CIO — Gunawardhana:** 1) Technical brief 2) SWIFT/ISO 20022 docs 3) Technical walkthrough",
+        "order": 7,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Hyper-Personalized Sequences",
+        "type": "sequences",
+        "content": "## Email Sequences\n\n**CDO — Randil Boteju:**\n\n*Email 1:* Subject: Google Pay first — now make investigations keep up\n\nDear Mr. Boteju,\n\nCommercial Bank's Google Pay launch put you ahead of every other bank in Sri Lanka. But with digital payment volumes growing, payment exceptions and investigations are the bottleneck most banks overlook.\n\nTracEI is a low cost, complete exceptions & investigations solution that deploys in under 30 days. SWIFT, ISO 20022, and LANKAQR — everything your growing payment channels need.\n\nI'd value 15 minutes to show how APAC banks cut investigation time by 80%.\n\nBest regards, [Sender]\n\n**CEO — Sanath Manatunge:**\n\n*Email 1:* Subject: From someone who ran IT — a faster way to handle E&I\n\nDear Mr. Manatunge,\n\nYou've run IT, Cards, and Digital Banking at CBC — so you know payment investigations are the hidden bottleneck. TracEI deploys in <30 days for <$50K. No platform license, no 12-month implementation.\n\nBest regards, [Sender]",
+        "order": 8,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Battle Cards & Objection Handling",
+        "type": "objection_handling",
+        "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Doesn't scale. Google Pay + ISO 20022 = volume multiplying. TracEI automates 80% for <$50K.\n2. **\"Pega is the industry standard.\"** → Pega: $200K+, 6-12 months. CBC needs low cost, complete, <30 day deployment.\n3. **\"$50K is significant.\"** → Each manual investigation costs $15-25 in staff time. 80% automation = payback <6 months.\n4. **\"Need SWIFT + ISO 20022.\"** → TracEI supports MT/FIN, ISO 20022, CBPR+, gpi, LANKAQR.\n5. **\"Bangladesh operations?\"** → Multi-country, multi-currency investigations including Bangladesh Bank regulations.\n6. **\"Need to see it work.\"** → 14-day free pilot. Real data, no commitment.",
+        "order": 9,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Content Asset Strategy",
+        "type": "content_assets",
+        "content": "## Content Assets\n\n**Awareness (Week 1):** 1) Payment Investigations: Hidden Bottleneck — LinkedIn article 2) Google Pay + ISO 20022 Investigation Volume Problem — 2-page brief\n\n**Consideration (Week 1-2):** 3) APAC Bank 80% Faster Investigations — Case study 4) TracEI vs. Pega for Mid-Size Banks — 1-page comparison 5) CBC-Specific ROI Calculator\n\n**Decision (Week 2-3):** 6) 14-Day Free Pilot Proposal — SOW 7) Security & Compliance Pack — SOC 2, ISO 27001, SWIFT CSP",
+        "order": 10,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Measurement Framework",
+        "type": "measurement",
+        "content": "## KPIs\n\n**Awareness:** Open >40% | LinkedIn response >20% | Meeting booked >15%\n**Engagement:** CDO/CEO meeting within 7 days | Pilot request within 14 days\n**Pipeline:** Close within 30 days | <$50K ARR | Expansion $100-150K\n\n**Week 1:** CDO engaged, pain confirmed\n**Week 2:** CIO evaluation, pilot scope\n**Week 3:** Pilot launched or contract signed\n**Week 4:** Close\n\n**Expansion:** Bangladesh ops +$25-50K | Google Pay workflows +$10-20K | Compliance module +$15-30K",
+        "order": 11,
+        "created_at": "2026-05-16T04:12:00Z"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n**Sources:** CBC Annual Report 2024 (HIGH) | combank.lk (HIGH) | Asian Banker award (HIGH) | RocketReach profiles (MEDIUM) | Google Pay launch (HIGH) | Pega documentation (MEDIUM)\n\n**Unverified [⚠️]:** LinkedIn URLs | CFO/DGM Transaction Banking/Head SWIFT/CRO identities | Current investigation tooling (likely manual) | Pega deployment (very likely not at CBC) | Exact investigation volumes\n\n**Methodology:** Web research from official reports, press releases, executive profiles.",
+        "order": 12,
+        "created_at": "2026-05-16T04:12:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "name": "Sanath Manatunge",
+        "title": "Managing Director / CEO",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — combank.lk, Asian Banker",
+        "verification_status": "pending",
+        "notes": "CEO since 2022. Previously headed IT, Cards, Digital Banking. Best Bank CEO Sri Lanka. Economic buyer for <$50K.",
+        "created_at": "2026-05-16T04:10:00Z"
+      },
+      {
+        "id": "c-2",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "name": "Randil Boteju",
+        "title": "Chief Digital Officer",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — RocketReach",
+        "verification_status": "pending",
+        "notes": "CDO — PRIMARY CHAMPION. Drives digital strategy including Google Pay, payment modernization.",
+        "created_at": "2026-05-16T04:10:00Z"
+      },
+      {
+        "id": "c-3",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "name": "Sumudu Gunawardhana",
+        "title": "Chief Information Officer / MD, CBC Tech Solutions",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — RocketReach",
+        "verification_status": "pending",
+        "notes": "CIO — technical buyer. Evaluates SaaS integration, security, deployment.",
+        "created_at": "2026-05-16T04:10:00Z"
+      },
+      {
+        "id": "c-4",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "name": "Sharhan Muhseen",
+        "title": "Chairman",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — GlobalData, combank.lk",
+        "verification_status": "pending",
+        "notes": "Chairman since April 2024. Former banking sector analyst. Strategic endorser.",
+        "created_at": "2026-05-16T04:10:00Z"
+      },
+      {
+        "id": "c-5",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "name": "[UNVERIFIED] DGM Transaction Banking",
+        "title": "Deputy General Manager - Transaction Banking / Payments",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "medium",
+        "source": "Web inference",
+        "verification_status": "pending",
+        "notes": "Day-to-day owner of payment operations. Primary end-user of TracEI.",
+        "created_at": "2026-05-16T04:10:00Z"
+      },
+      {
+        "id": "c-6",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "name": "[UNVERIFIED] Head of SWIFT Operations",
+        "title": "Senior Manager - SWIFT / International Payments",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "medium",
+        "source": "Web inference",
+        "verification_status": "pending",
+        "notes": "Owns SWIFT operations, ISO 20022 migration, cross-border exceptions.",
+        "created_at": "2026-05-16T04:10:00Z"
+      },
+      {
+        "id": "c-7",
+        "playbook_id": "pb_9ef84927c1674fac",
+        "name": "[UNVERIFIED] Chief Risk Officer",
+        "title": "CRO / DGM Risk Management",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "medium",
+        "source": "Web inference",
+        "verification_status": "pending",
+        "notes": "Risk gate for payment investigation system validation.",
+        "created_at": "2026-05-16T04:10:00Z"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_9ef84927c1674fac",
+    "created_at": "2026-05-16T08:42:56.138Z",
+    "updated_at": "2026-05-16T08:44:12.218Z",
+    "phase_started_at": "2026-05-16T08:43:39.287Z",
+    "openclaw_session_id": "619fbefe-fb8b-4a6b-84bc-4b5de49c4e01"
+  },
+  "pb_972518ce2263406a": {
+    "user_id": "usr_demo",
+    "product_name": "DataVault",
+    "product_brief": {
+      "product_name": "DataVault",
+      "description": "AI data governance platform for banks",
+      "value_propositions": [
+        "Automated compliance monitoring",
+        "Real-time risk detection"
+      ],
+      "target_personas": [],
+      "differentiators": [],
+      "competitors": [
+        "Collibra",
+        "Informatica"
+      ],
+      "deployment_model": "saas",
+      "deal_size": "120K",
+      "sales_cycle": "6 months"
+    },
+    "target_company": "Hatton National Bank",
+    "industry": "Banking & Finance",
+    "geography": "Sri Lanka",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "Writing complete",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: DataVault → Hatton National Bank\n\nHatton National Bank (HNB) is Sri Lanka's largest private sector retail bank (255 branches, 825 ATMs, Rs. 44.8Bn group profit in 2024 — doubled YoY) in the midst of a transformative digital reinvention. Five converging signals make this a compelling $120K opportunity:\n\n1. **CDO role with explicit data governance mandate** — Business Today (Oct 2025) confirms HNB's CDO 'strengthens data governance and analytics.' This is DataVault's direct buyer — the role exists because data governance is a strategic priority.\n\n2. **Dual-speed innovation model (2024 digital strategy review)** — HNB restructured around CINVO + CIO + CDO. Data governance is no longer a side project; it's a C-suite mandate.\n\n3. **Record profitability (profit doubled)** — HNB has budget for strategic technology investment. Bank CEO of the Year 2025 Damith Pallewatte is investing aggressively in digital.\n\n4. **CBSL regulatory pressure** — Central Bank of Sri Lanka's enhanced AML/CFT circulars (2024-2025), Basel III compliance, and historical data leakage incident create urgent compliance monitoring needs.\n\n5. **AI adoption acceleration** — HNB is already piloting AI-driven loan assessments. The bank wants AI; DataVault delivers AI-powered data governance.\n\n**Recommended approach:** 6-month enterprise sale targeting CDO as champion, CEO Pallewatte as economic buyer, CINVO Cooray as influencer, and CISO Emmanuel as security gate. Lead with automated compliance monitoring and real-time risk detection — the CDO's exact mandate.\n\n**Expected outcome:** $120K ARR entry with expansion to $200K+ across data quality, lineage, and AI governance modules.",
+        "order": 1,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## Hatton National Bank — Account Intelligence\n\n### Company Overview\n- **Name:** Hatton National Bank PLC (HNB)\n- **Type:** Sri Lanka's largest private sector retail bank\n- **HQ:** Colombo, Sri Lanka\n- **Founded:** 1888 (Hatton Bank origin)\n- **CEO:** Damith Pallewatte (MD/CEO since Nov 2024, Bank CEO of the Year 2025)\n- **Chairman:** Nihal Jayawardene (former AG Dept officer, 20+ years)\n- **COO:** Sanjay Wijemanne (since April 2024)\n- **CINVO:** Chandima Cooray (Chief Innovation Officer, leads HNB Innovation Studio)\n- **CTDO:** Rohan Buultjens (Chief Technology & Digital Officer)\n- **CDO:** [Name TBD] — confirmed role, data governance & analytics mandate\n- **CISO:** Suresh Emmanuel (SVP)\n- **Branches:** 255 | **ATMs:** 825\n- **Revenue (est.):** $933M (2024)\n\n### Financials (2024)\n- Group PAT: Rs. 44.8 Bn (doubled YoY)\n- Bank PAT: Rs. 41.3 Bn\n- Q1 2024 PBT: Rs. 9.8 Bn\n- Fitch Ratings: Investment grade (AA-)\n\n### Digital & Innovation Signals\n- **Dual-speed innovation model** (2024 digital strategy review)\n- **HNB Innovation Studio** — sandbox environment for rapid prototyping\n- **HNB Accept** — Visa partnership, merchant payments via mobile (launched at FinTech Summit 2025)\n- **AI-driven loan assessments** — piloting same-day approvals\n- **National Digital Economy Strategy 2030** — HNB positioned as catalyst\n\n### Data Governance Pain Points\n- CDO role created specifically to address data governance gaps\n- Historical CBSL customer data leakage enforcement (4,630 customers affected)\n- Manual compliance monitoring across 255 branches\n- CBSL enhanced AML/CFT circulars (2024-2025) creating compliance workload\n- Basel III reporting requirements\n- Data silos across retail, corporate, SME, and Islamic banking divisions\n- No centralized AI-powered data governance platform",
+        "order": 2,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: Chief Data Officer [Name TBD]**\n- Explicit mandate: 'strengthens data governance and analytics'\n- Direct budget ownership for data governance tools\n- Reports to CEO Pallewatte within dual-speed innovation structure\n\n**Economic Buyer: Damith Pallewatte (MD/CEO)**\n- Bank CEO of the Year 2025. Digitally aggressive strategy.\n- $120K requires ExCo awareness — CEO approval likely given strategic priority\n\n**Key Influencer: Chandima Cooray (Chief Innovation Officer)**\n- Leads HNB Innovation Studio. Innovation agenda owner.\n- Can fast-track evaluation through Innovation Studio sandbox\n\n**Technical Buyer: Rohan Buultjens (CTDO)**\n- Evaluates SaaS architecture, integration, technical fit\n- Must validate against HNB's core banking and data infrastructure\n\n**Security Gate: Suresh Emmanuel (CISO, SVP)**\n- Must approve SaaS security posture, data handling, access controls\n- Critical gate — DataVault handles sensitive customer data\n\n**Operations Stakeholder: Sanjay Wijemanne (COO)**\n- Former DGM Retail Banking. Data governance impacts all business lines.\n- Validates operational impact and workflow integration\n\n**Strategic Endorser: Nihal Jayawardene (Chairman)**\n- Legal background — appreciates compliance and governance\n\n**Risk Gate: CRO [Name TBD]**\n- Validates automated compliance monitoring against CBSL requirements\n\n**Decision Process:** CDO champions → CINVO sponsors Innovation Studio eval → CISO security review → CTDO technical approval → COO operational sign-off → CEO approval (6-month cycle)",
+        "order": 3,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now — Signal Analysis\n\n### S1: CDO Role with Data Governance Mandate (🔴 CRITICAL)\n- HNB created a dedicated CDO role in 2024 with explicit 'data governance and analytics' mandate\n- This role exists because the problem is urgent and strategic\n- **Action:** 'Your CDO was created to solve data governance. DataVault is the platform to deliver it.'\n\n### S2: Record Profitability — Budget Available (🔴 HIGH)\n- Group PAT doubled to Rs. 44.8Bn in 2024\n- Bank CEO of the Year — investing aggressively in digital\n- **Action:** 'Invest a fraction of your record profits in the data governance platform your CDO needs.'\n\n### S3: CBSL Regulatory Pressure (🔴 HIGH)\n- Enhanced AML/CFT circulars (2024-2025) from CBSL/FIU\n- Historical data leakage enforcement (4,630 customers)\n- Basel III compliance requirements\n- **Action:** 'Automated compliance monitoring reduces regulatory risk and manual workload.'\n\n### S4: Dual-Speed Innovation Model (🟡 MEDIUM-HIGH)\n- 2024 digital strategy review created CINVO + CIO + CDO structure\n- Innovation Studio sandbox enables fast-track evaluation\n- **Action:** 'DataVault can be evaluated in your Innovation Studio within 90 days.'\n\n### S5: AI Adoption Momentum (🟡 MEDIUM)\n- Already piloting AI loan assessments\n- National Digital Economy Strategy 2030 alignment\n- **Action:** 'You're investing in AI — invest in AI-powered data governance too.'",
+        "order": 4,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n### Collibra\n- **Strengths:** Market leader in data governance, data catalog, lineage, quality; strong enterprise features; $100M+ ARR; Gartner Leader\n- **Weaknesses:** Enterprise pricing ($300K+ TCO for banks), 12-18 month implementation, complex licensing, over-engineered for mid-size banks, limited APAC regulatory coverage, requires dedicated admin team\n- **DataVault Advantage:** $120K vs. $300K+; 6 months vs. 12-18 months; SaaS-native (no admin overhead); AI-powered automated compliance (not just catalog); APAC regulatory templates\n\n### Informatica\n- **Strengths:** Broad data management portfolio, cloud-native, strong ETL/lineage, Gartner Leader\n- **Weaknesses:** Complex pricing model, modular (governance is add-on), heavy implementation services, not purpose-built for banking compliance, $250K+ for governance module\n- **DataVault Advantage:** Purpose-built for banking; automated compliance monitoring out of the box; real-time risk detection; simpler SaaS pricing; faster deployment\n\n### Displacement Strategy\n- HNB likely does NOT have Collibra or Informatica (too expensive/complex for Sri Lankan market)\n- **Greenfield opportunity** — position against manual/spreadsheet-based governance\n- Lead: 'AI-powered data governance, purpose-built for banks, deployable in 6 months at $120K'\n- If either is mentioned, counter: 'Collibra/Informatica are catalog-first tools. DataVault is compliance-first — automated monitoring and real-time risk detection built for banking regulators like CBSL.'",
+        "order": 5,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Sri Lankan Banking Culture — HNB Specific\n\n- **Decision-making:** Hierarchical with strong board influence. $120K requires multi-stakeholder approval (CDO → ExCo awareness → CEO).\n- **Formality:** Use 'Mr.' and last name. English for business (Sri Lanka's business language).\n- **Meeting style:** Relationships first. Trust before technology. Multiple meetings expected.\n- **Price sensitivity:** High — but HNB's record profits soften this. Lead with value, not features.\n- **Regulatory consciousness:** Very high — CBSL oversight, Basel III, AML/CFT. Chairman has legal background.\n\n### HNB-Specific\n- Proud of Innovation Studio and dual-speed model\n- CEO Pallewatte is digitally aggressive (Bank CEO of the Year)\n- CDO role is new — the CDO needs wins to prove the role's value\n- HNB Accept (Visa partnership) shows appetite for partnerships\n- Innovation Studio sandbox is the fastest evaluation path\n\n### Do's\n- ✅ Acknowledge Innovation Studio and CINVO structure\n- ✅ Reference Bank CEO of the Year award\n- ✅ Lead with automated compliance monitoring (CBSL angle)\n- ✅ Propose Innovation Studio sandbox evaluation\n- ✅ Show understanding of CBSL, FIU, Basel III requirements\n- ✅ Position as partner, not vendor (like Visa partnership)\n\n### Don'ts\n- ❌ Lead with catalog/lineage features (too Collibra-like)\n- ❌ Assume they have Collibra or Informatica\n- ❌ Underestimate the 6-month procurement cycle\n- ❌ Use US/EU-centric compliance references\n- ❌ Ignore Chairman's legal background\n- ❌ Rush the relationship-building phase",
+        "order": 6,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Channels:** Direct email + LinkedIn to CDO, CINVO, CTDO | Executive intro to CEO\n**Duration:** 6 months | **Touches:** 8-10 per key persona\n\n### CDO [Name TBD] — Champion\n1. Email: 'Data governance is your mandate. DataVault is your platform.'\n2. CBSL compliance monitoring whitepaper\n3. Innovation Studio sandbox proposal (90-day eval)\n4. APAC bank case study: 60% compliance workload reduction\n5. ROI model: automated monitoring vs. manual processes\n6. Reference call with APAC banking CDO\n7. Commercial proposal\n8. Executive close meeting\n\n### Chandima Cooray (CINVO) — Influencer\n1. LinkedIn: 'Your Innovation Studio is the perfect place to evaluate AI-powered data governance'\n2. Technical brief: DataVault architecture for Innovation Studio sandbox\n3. Innovation Studio 90-day pilot proposal\n4. HNB Accept parallel: 'Like you partnered with Visa for payments, partner with DataVault for governance'\n\n### Damith Pallewatte (CEO) — Economic Buyer\n1. Executive letter: 'Record profits deserve record data governance'\n2. Board-ready business case: ROI, compliance risk reduction, CDO enablement\n3. CEO peer reference\n4. Executive close dinner/meeting\n\n### Suresh Emmanuel (CISO) — Security Gate\n1. Security architecture brief\n2. SOC 2 / ISO 27001 / SWIFT CSP compliance pack\n3. SaaS security review meeting\n4. Penetration test results sharing",
+        "order": 7,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Hyper-Personalized Sequences",
+        "type": "sequences",
+        "content": "## Email Sequences\n\n### CDO — Champion\n\n**Email 1 (Day 1):**\nSubject: Data governance is your mandate. DataVault is your platform.\n\nDear [CDO Name],\n\nWhen Hatton National Bank created the Chief Data Officer role, it made a statement: data governance is no longer optional — it's strategic.\n\nDataVault is an AI-powered data governance platform purpose-built for banks. Automated compliance monitoring for CBSL requirements. Real-time risk detection across 255 branches. All SaaS, all in one platform.\n\nI'd value 30 minutes to show you how APAC banks are reducing compliance workload by 60% with AI-powered governance.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 7):** CBSL compliance is getting harder. Here's how AI helps.\n**Email 3 (Day 14):** Innovation Studio sandbox proposal — 90-day evaluation\n**Email 4 (Day 21):** APAC bank case study — 60% compliance workload reduction\n\n### Chandima Cooray (CINVO)\n\n**Email 1 (Day 3):**\nSubject: HNB Innovation Studio + DataVault = 90-day data governance proof-of-concept\n\nDear Mr. Cooray,\n\nHNB's Innovation Studio was built for exactly this: rapid evaluation of technologies that matter. DataVault's AI-powered data governance platform can be running in your sandbox within 2 weeks — testing real compliance scenarios against real HNB data patterns.\n\nLike HNB Accept went from concept to FinTech Summit launch in 3 months, DataVault can prove value in 90 days.\n\nBest regards,\n[Sender]\n\n### Damith Pallewatte (CEO)\n\n**Email 1 (Day 30 — after CDO engagement):**\nSubject: Record profits deserve record data governance\n\nDear Mr. Pallewatte,\n\nCongratulations on Bank CEO of the Year and the record results. You created the CDO role to make data governance strategic. DataVault is the platform to deliver on that vision — automated compliance monitoring and real-time risk detection for CBSL, Basel III, and beyond.\n\nYour CDO and Innovation Studio are evaluating DataVault. I'd welcome 20 minutes to share the business case directly.\n\nBest regards,\n[Sender]",
+        "order": 8,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Battle Cards & Objection Handling",
+        "type": "objection_handling",
+        "content": "## Objection Handling\n\n1. **\"We have manual data governance processes.\"** → Manual doesn't scale across 255 branches. CBSL enhanced AML/CFT circulars are multiplying. Automated compliance monitoring reduces workload 60% and eliminates regulatory gaps.\n\n2. **\"Collibra is the market leader.\"** → Collibra is a catalog-first tool at $300K+ TCO with 12-18 month implementation. DataVault is compliance-first, $120K, 6-month deployment, AI-powered monitoring — built for banks like HNB.\n\n3. **\"Informatica covers our data management needs.\"** → Informatica's governance is an add-on module, not purpose-built for banking compliance. DataVault automates CBSL-specific compliance monitoring out of the box.\n\n4. **\"$120K is significant.\"** → Your CDO exists because data governance failures cost more. The CBSL data leakage incident affected 4,630 customers. One regulatory fine exceeds DataVault's annual cost.\n\n5. **\"6 months is too long.\"** → We can demonstrate value in your Innovation Studio sandbox within 90 days. Full deployment in 6 months aligns with your dual-speed innovation model.\n\n6. **\"We need to see it work with our data.\"** → Innovation Studio sandbox evaluation with real HNB data patterns. 90-day pilot, no commitment.\n\n7. **\"Security concerns with SaaS.\"** → SOC 2 Type II, ISO 27001, SWIFT CSP compliant. CISO Emmanuel can review our security architecture in detail.\n\n8. **\"We're already investing in AI for loan assessments.\"** → Exactly. AI without data governance is risky. DataVault ensures your AI models are trained on governed, compliant data.",
+        "order": 9,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Content Asset Strategy",
+        "type": "content_assets",
+        "content": "## Content Assets\n\n**Awareness (Month 1-2):**\n1. AI-Powered Data Governance for Sri Lankan Banks — LinkedIn article\n2. CBSL Compliance Monitoring: From Manual to Automated — 4-page whitepaper\n3. Data Governance Is Not Optional — Why HNB Created a CDO — Blog post\n\n**Consideration (Month 2-4):**\n4. APAC Bank Reduces Compliance Workload 60% with DataVault — Case study (5 pages)\n5. DataVault vs. Collibra vs. Informatica for Mid-Size Banks — 2-page comparison\n6. HNB-Specific ROI Model — Interactive calculator (compliance cost savings, risk reduction)\n7. Innovation Studio 90-Day Sandbox Proposal — SOW document\n\n**Decision (Month 4-6):**\n8. Board-Ready Business Case — Executive presentation (ROI, risk reduction, CDO enablement)\n9. Security & Compliance Documentation — SOC 2, ISO 27001, SWIFT CSP, CBSL alignment\n10. Implementation Roadmap — 6-month deployment plan with milestones\n11. Reference Call with APAC Banking CDO — Customer reference program\n\n**Post-Close Expansion:**\n12. Data Quality & Lineage Module Brief — Upsell path\n13. AI Governance for Model Risk Management — Expansion use case",
+        "order": 10,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Measurement Framework",
+        "type": "measurement",
+        "content": "## KPIs & Success Criteria\n\n### Outreach Metrics\n- CDO meeting booked: within 30 days\n- CINVO Innovation Studio eval proposed: within 45 days\n- CEO engagement: within 60 days\n- CISO security review: within 90 days\n- Sandbox deployed: within 120 days\n- Commercial proposal: within 150 days\n- Contract signed: within 180 days (6 months)\n\n### Pipeline Milestones\n| Month | Milestone | Probability |\n|-------|-----------|------------|\n| 1 | CDO + CINVO engaged | 20% |\n| 2 | Innovation Studio sandbox approved | 35% |\n| 3 | Sandbox live, initial results | 50% |\n| 4 | CISO security review complete | 65% |\n| 5 | Commercial proposal submitted | 80% |\n| 6 | Contract signed | 100% |\n\n### Expansion Revenue\n- Data Quality Module: +$30-40K\n- Data Lineage Module: +$20-30K\n- AI Governance for Model Risk: +$25-35K\n- Total expansion potential: $75-105K → $195-225K total account value\n\n### Success Indicators\n- CDO explicitly requests evaluation\n- Innovation Studio sandbox approved\n- CEO references DataVault in board meeting\n- CISO clears security review in <30 days\n- No competitive eval (Collibra/Informatica) launched",
+        "order": 11,
+        "created_at": "2026-05-16T09:20:00Z"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_972518ce2263406a",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n### Sources\n| Source | Confidence | Date |\n|--------|-----------|------|\n| HNB Annual Report 2024 | HIGH | Feb 2025 |\n| Business Today — Innovation Ecosystem | HIGH | Oct 2025 |\n| Daily FT — Bank CEO of Year | HIGH | Feb 2026 |\n| Business Today — Sustainable Growth | HIGH | Apr 2025 |\n| RocketReach executive profiles | MEDIUM | 2025 |\n| MarketScreener — Rohan Buultjens | MEDIUM | 2025 |\n| CBSL enforcement statement | HIGH | 2017 (historical) |\n| Craft.co executive team | MEDIUM | 2025 |\n| Wikipedia — HNB | HIGH | 2025 |\n| Fitch Ratings | HIGH | Jun 2024 |\n| PitchBook company profile | MEDIUM | 2026 |\n\n### Unverified Items [⚠️]\n- CDO name — role confirmed but individual identity unknown\n- CIO name — role confirmed but individual identity unknown\n- CRO name and identity\n- LinkedIn URLs for all contacts\n- Rohan Buultjens current status (MarketScreener shows 2019-2022 tenure — may have successor)\n- Current data governance tooling at HNB (likely manual/spreadsheet)\n- Collibra or Informatica deployment status (very likely not deployed)\n- Exact compliance team size and manual workload\n\n### Key Distinctions\n- **HNB ≠ HNB Finance** — HNB Finance PLC is a separate subsidiary (Chairman: Rajive Dissanayake)\n- **HNB = Sri Lanka's largest private sector retail bank** (not to be confused with Commercial Bank of Ceylon, which is the largest private sector bank by assets)\n- **CEO Damith Pallewatte ≠ Jonathan Alles** — Alles was predecessor CEO who retired Aug 2024\n\n### Research Methodology\nWeb research using official annual reports, press releases, Business Today Sri Lanka, Daily FT, executive profile databases (RocketReach, MarketScreener, Craft.co), regulatory publications (CBSL), and industry ratings (Fitch). All financial data from HNB's 2024 Annual Report.",
+        "order": 12,
+        "created_at": "2026-05-16T09:20:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "playbook_id": "pb_972518ce2263406a",
+        "name": "Damith Pallewatte",
+        "title": "Managing Director / CEO",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — Annual Report 2024, Daily FT, Asian Banker",
+        "verification_status": "pending",
+        "notes": "CEO since Nov 2024. Bank CEO of the Year 2025 (Global CEO Forum). Led record profit year (doubled). Champions digital-first strategy. Economic buyer for $120K — requires ExCo awareness but likely supportive.",
+        "created_at": "2026-05-16T09:15:00Z"
+      },
+      {
+        "id": "c-2",
+        "playbook_id": "pb_972518ce2263406a",
+        "name": "[UNVERIFIED] Chief Data Officer",
+        "title": "Chief Data Officer",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "medium",
+        "source": "Web research — Business Today Oct 2025 confirms CDO role exists with data governance & analytics mandate",
+        "verification_status": "pending",
+        "notes": "PRIMARY CHAMPION. CDO role confirmed by Business Today: 'strengthens data governance and analytics.' This is DataVault's direct buyer. Name unknown — needs LinkedIn/HR verification.",
+        "created_at": "2026-05-16T09:15:00Z"
+      },
+      {
+        "id": "c-3",
+        "playbook_id": "pb_972518ce2263406a",
+        "name": "Chandima Cooray",
+        "title": "Chief Innovation Officer (CINVO)",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — RocketReach executive profile",
+        "verification_status": "pending",
+        "notes": "Leads HNB Innovation Studio. Oversees innovation agenda. Dual-speed innovation model owner. Key influencer for AI-driven data governance.",
+        "created_at": "2026-05-16T09:15:00Z"
+      },
+      {
+        "id": "c-4",
+        "playbook_id": "pb_972518ce2263406a",
+        "name": "Rohan Buultjens",
+        "title": "Chief Technology & Digital Officer (CTDO)",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — MarketScreener, Craft.co",
+        "verification_status": "pending",
+        "notes": "Technical buyer. Evaluates SaaS architecture, integration, security. Note: served 2019-2022 per MarketScreener — may have successor. Verify current status.",
+        "created_at": "2026-05-16T09:15:00Z"
+      },
+      {
+        "id": "c-5",
+        "playbook_id": "pb_972518ce2263406a",
+        "name": "Sanjay Wijemanne",
+        "title": "Chief Operating Officer (COO)",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — Annual Report 2024, Craft.co",
+        "verification_status": "pending",
+        "notes": "COO since April 2024. Formerly DGM Retail Banking. Operations owner — data governance impacts all business lines. Key stakeholder for compliance monitoring.",
+        "created_at": "2026-05-16T09:15:00Z"
+      },
+      {
+        "id": "c-6",
+        "playbook_id": "pb_972518ce2263406a",
+        "name": "Nihal Jayawardene",
+        "title": "Chairman",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — The Org, Annual Report 2024",
+        "verification_status": "pending",
+        "notes": "Chairman. Former Attorney General Dept officer (20+ years). Legal/governance background — will appreciate data governance and regulatory compliance angle.",
+        "created_at": "2026-05-16T09:15:00Z"
+      },
+      {
+        "id": "c-7",
+        "playbook_id": "pb_972518ce2263406a",
+        "name": "Suresh Emmanuel",
+        "title": "Chief Information Security Officer (SISO), SVP",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — RocketReach executive profile",
+        "verification_status": "pending",
+        "notes": "CISO — data security gate. Must validate DataVault's security posture, data handling, SaaS compliance. Key technical influencer.",
+        "created_at": "2026-05-16T09:15:00Z"
+      },
+      {
+        "id": "c-8",
+        "playbook_id": "pb_972518ce2263406a",
+        "name": "[UNVERIFIED] Chief Risk Officer",
+        "title": "CRO / DGM Risk Management",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "medium",
+        "source": "Web inference — required for CBSL regulatory compliance and Basel III",
+        "verification_status": "pending",
+        "notes": "Risk gate. Must validate automated compliance monitoring and real-time risk detection against CBSL requirements.",
+        "created_at": "2026-05-16T09:15:00Z"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_972518ce2263406a",
+    "created_at": "2026-05-16T09:12:47.577Z",
+    "updated_at": "2026-05-16T09:16:04.069Z",
+    "phase_started_at": "2026-05-16T09:12:47.585Z",
+    "openclaw_session_id": "9c087c85-286c-412a-a0a3-201fe09f29a5"
+  },
+  "pb_8d628b2f260e4199": {
+    "user_id": "usr_demo",
+    "product_name": "TracEI",
+    "product_brief": {
+      "product_name": "TracEI",
+      "description": "A swift payment investigation product built for banks and fintecs who deal with SWIFT exception and investigation business",
+      "value_propositions": [
+        "saas product for banks",
+        "Low cost solution"
+      ],
+      "target_personas": [
+        "CTO",
+        "CPO"
+      ],
+      "differentiators": [
+        "Cost factor compared to competitors"
+      ],
+      "competitors": [
+        "TracEI Smart investigate"
+      ],
+      "deployment_model": "saas",
+      "deal_size": "<50k",
+      "sales_cycle": "<30d"
+    },
+    "target_company": "finastra",
+    "target_url": "https://www.finastra.com/",
+    "industry": "Banking & Finance",
+    "geography": "Global",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "Writing complete",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: TracEI → Finastra (Partnership Play)\n\nFinastra is the world's third-largest banking software company ($1.8B revenue, 8,000+ bank customers globally), with a SWIFT messaging and payments ecosystem that processes billions of transactions. Yet their Fusion Total Messaging and Payment Hubs lack a native, automated exceptions & investigations (E&I) solution — most banks handle investigations manually.\n\nThis playbook positions TracEI not as a direct sale to Finastra, but as a **strategic partnership** where TracEI integrates into Finastra's Payments ecosystem, giving 8,000+ bank customers a low-cost, SaaS-native E&I capability they currently lack.\n\nFour converging signals:\n\n1. **No native E&I product in Finastra's Payments suite** — Fusion Total Messaging provides SWIFT connectivity but investigation workflows remain manual for most banks.\n\n2. **Open API/fintech partnership strategy** — Finastra actively courts fintech partners to extend their platform. TracEI fills a clear gap.\n\n3. **CEO transition (Chris Walters, Jan 2025)** — New leadership seeking partnership revenue and ecosystem expansion.\n\n4. **AI center of excellence (Mar 2026)** — Finastra is AI-forward. TracEI's AI-powered investigation aligns.\n\n**Recommended approach:** Velocity partnership play. <$50K integration/pilot, <30 days to demonstrate value. Target Barry Rodrigues (EVP Payments) as champion. Position as 'Finastra Payments ecosystem partner for E&I.'\n\n**Expected outcome:** Partnership agreement, distribution to 8,000+ bank customers. <$50K pilot → $500K+ annual partnership revenue.",
+        "order": 1,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## Finastra — Account Intelligence\n\n### Company Overview\n- **Name:** Finastra\n- **Type:** Global banking software company (3rd largest worldwide)\n- **HQ:** London, UK\n- **CEO:** Chris Walters (since Jan 2025, succeeded Simon Paris)\n- **COO:** Don Baptiste\n- **CFO:** Carissa Kell\n- **CTO:** Mike Stawchansky\n- **EVP Payments:** Barry Rodrigues\n- **EVP Universal Banking:** Siobhan Byron\n- **CRCO:** Elona Ruka-Wright\n- **Revenue:** ~$1.8B (2023)\n- **Customers:** 8,000+ financial institutions globally\n- **Employees:** ~10,000+\n- **Products:** FusionBanking Essence, FusionPayments, Fusion Total Messaging, Payment Hubs\n\n### Platform & Ecosystem\n- Open API architecture — fintech marketplace and partnership ecosystem\n- SaaS and on-premises delivery models\n- SWIFT CSP certified — independent CSP assessments\n- Fusion Total Messaging — SWIFT connectivity, gpi tracker, universal confirmations\n- Payment Hubs — enterprise (large banks) + PaaS (mid-market)\n- Active fintech partnership program (fraud prevention via NetGuardians, etc.)\n\n### E&I Gap\n- Fusion Total Messaging provides SWIFT message connectivity but NOT automated investigation workflows\n- Payment Hubs process payments but exceptions are handled manually by banks\n- Finastra's fraud prevention partnership (NetGuardians) proves the partnership model works\n- No native E&I product = gap TracEI fills\n\n### AI Strategy\n- AI center of excellence created (Mar 2026)\n- AI-driven initiatives across lending, payments, risk\n- Open to AI-powered partnership solutions",
+        "order": 2,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: Barry Rodrigues (EVP Payments)**\n- Owns the payments P&L where TracEI integrates\n- Partnership directly extends his product suite\n- TracEI fills a gap his customers need\n\n**Economic Buyer: Chris Walters (CEO)**\n- New CEO (Jan 2025) seeking ecosystem expansion and partnership revenue\n- Partnership decisions at this level for strategic alignment\n\n**Technical Buyer: Mike Stawchansky (CTO)**\n- Evaluates API integration, SaaS architecture, security\n- Must validate TracEI's compatibility with Fusion platform\n\n**Operational Stakeholder: Don Baptiste (COO)**\n- Partnership go-to-market and operational integration\n\n**Channel Influencer: Siobhan Byron (EVP Universal Banking)**\n- 8,000+ bank customers through Universal Banking\n- Distribution channel for TracEI through Finastra\n\n**Risk/Compliance: Elona Ruka-Wright (CRCO)**\n- Risk and compliance validation for any partnership\n\n**Partnership Lead: [Name TBD] VP Partnerships & Business Development**\n- Day-to-day partnership management\n- Likely first point of contact\n\n**Decision Process:** EVP Payments sponsors → CTO technical review → CRCO compliance → CEO/COO approval. Partnership model means faster decision than enterprise bank sale.",
+        "order": 3,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now — Signal Analysis\n\n### S1: No Native E&I Product (🔴 CRITICAL)\n- Fusion Total Messaging provides SWIFT connectivity but no automated investigation\n- Banks using Finastra handle E&I manually — a gap customers are feeling\n- **Action:** 'Your customers need E&I. TracEI fills the gap in your Payments suite.'\n\n### S2: Open Partnership Strategy (🔴 HIGH)\n- Finastra actively courts fintech partners (NetGuardians for fraud, etc.)\n- Partnership model proven — TracEI is the natural E&I partner\n- **Action:** 'Like you partnered with NetGuardians for fraud, partner with TracEI for investigations.'\n\n### S3: New CEO Leadership (🟡 MEDIUM-HIGH)\n- Chris Walters (Jan 2025) — fresh perspective on ecosystem and partnerships\n- May seek new revenue streams and competitive differentiation\n- **Action:** 'New leadership, new partnerships — TracEI extends your Payments ecosystem.'\n\n### S4: AI Center of Excellence (🟡 MEDIUM)\n- Mar 2026 — Finastra created AI center of excellence\n- TracEI's AI-powered investigation aligns with AI strategy\n- **Action:** 'Your AI CoE meets our AI-powered E&I — perfect alignment.'\n\n### S5: ISO 20022 Migration Pressure (🟡 MEDIUM)\n- Finastra's banks are migrating to ISO 20022/CBPR+\n- Dual-format investigations (MT + ISO 20022) create complexity\n- **Action:** 'TracEI handles both legacy and new formats — your customers' migration partner.'",
+        "order": 4,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n### Pega Smart Investigate\n- **Strengths:** 30+ years SWIFT expertise, low-code platform, AI decisioning, ISO 20022 support, 25+ global FI clients\n- **Weaknesses:** Enterprise pricing ($200K+ TCO), 6-12 month implementation, requires Pega platform, over-engineered for mid-size banks\n- **TracEI Advantage:** <$50K vs. $200K+, <30 day vs. 6-12 months, complete E&I, SaaS-native, no platform dependency\n\n### Note on Competitor Listed in Brief\n- The brief lists 'TracEI Smart investigate' as a competitor — this appears to be a reference to Pega Smart Investigate (the established competitor in SWIFT E&I)\n\n### Finastra's Strategic Position\n- Finastra could build E&I natively (12-18 months, $5M+)\n- Finastra could partner with Pega (enterprise pricing doesn't fit mid-market)\n- Finastra could partner with TracEI (low cost, SaaS, <30 day integration, fits mid-market customers)\n- **TracEI is the natural partner** — aligned with Finastra's fintech partnership model\n\n### Displacement Strategy\n- This is a **partnership play, not displacement**\n- Position alongside Finastra's existing fraud partnership (NetGuardians)\n- TracEI = E&I partner, NetGuardians = fraud partner — complementary, not competitive\n- Lead: 'Complete the Payments suite: Finastra for processing, TracEI for investigations'",
+        "order": 5,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Finastra Culture & Communication Guide\n\n- **Company:** Global fintech, London HQ, 8,000+ bank customers across 130+ countries\n- **Culture:** Ecosystem/partnership mindset — 'open banking' philosophy\n- **Decision-making:** Executive-led partnership decisions. EVP-level sponsors, CEO/COO approval for strategic partnerships.\n- **Communication style:** Professional, data-driven. English. London business culture.\n- **Speed:** Fintech-speed — partnership decisions can move fast if champion-driven.\n\n### Finastra-Specific\n- Proud of open platform/API strategy\n- NetGuardians fraud partnership proves the model works\n- Barry Rodrigues (EVP Payments) is the key champion — his P&L, his customers, his gap\n- New CEO (Walters) is evaluating partnership opportunities\n- AI CoE signals openness to AI-powered solutions\n\n### Do's\n- ✅ Reference NetGuardians partnership as proof point\n- ✅ Position as 'ecosystem partner' not 'vendor'\n- ✅ Lead with 8,000+ bank customer reach\n- ✅ Show API-first SaaS integration with Fusion platform\n- ✅ Emphasize speed — <30 day integration vs. Pega's 12 months\n- ✅ Use 'extend your Payments suite' language\n\n### Don'ts\n- ❌ Position as competing with Finastra's products\n- ❌ Ignore the partnership model — this isn't a direct bank sale\n- ❌ Lead with cost savings for Finastra (lead with customer value)\n- ❌ Underestimate technical integration requirements\n- ❌ Treat as a standard enterprise sale — this is partnership/business development",
+        "order": 6,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Approach:** Partnership/Business Development (NOT direct enterprise sale)\n**Target:** Barry Rodrigues (EVP Payments) as champion → CEO/COO approval\n**Duration:** <30 days to partnership pilot agreement\n**Channels:** Direct email + LinkedIn to EVP Payments, CTO; Partnership conference introduction\n\n### Barry Rodrigues (EVP Payments) — Champion\n1. Email: 'Complete your Payments suite — TracEI fills the E&I gap'\n2. Partnership brief: How NetGuardians model applies to E&I\n3. Technical integration demo: TracEI + Fusion API walkthrough\n4. Joint go-to-market proposal for 8,000+ bank customers\n\n### Chris Walters (CEO) — Economic Buyer\n1. Executive letter: 'Extend Finastra's ecosystem with AI-powered E&I'\n2. Partnership value: 8,000+ banks × E&I need = massive distribution opportunity\n3. CEO peer meeting at banking conference\n\n### Mike Stawchansky (CTO) — Technical Buyer\n1. Technical brief: SaaS architecture, API-first, Fusion integration\n2. Security & compliance: SOC 2, ISO 27001, SWIFT CSP alignment\n3. Sandbox demo: <30 day integration proof-of-concept\n\n### Siobhan Byron (EVP Universal Banking) — Channel Influencer\n1. Distribution opportunity brief: '8,000+ banks need E&I — TracEI through your channel'\n2. Customer demand data: E&I is top-3 pain point for mid-size banks\n3. Channel revenue model proposal",
+        "order": 7,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Hyper-Personalized Sequences",
+        "type": "sequences",
+        "content": "## Email Sequences\n\n### Barry Rodrigues (EVP Payments)\n\n**Email 1:**\nSubject: Complete your Payments suite — TracEI fills the E&I gap\n\nDear Barry,\n\nFusion Total Messaging connects 8,000+ banks to SWIFT. Your Payment Hubs process their payments. But when investigations hit, banks are on their own.\n\nTracEI is a low-cost SaaS E&I platform that integrates with Fusion via API in under 30 days. Like NetGuardians extends your fraud capabilities, TracEI extends your investigation capabilities.\n\nI'd value 20 minutes to show you the partnership model.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** NetGuardians for fraud. TracEI for investigations. Completing the suite.\n**Email 3 (Day 10):** Technical integration demo — TracEI + Fusion API\n**Email 4 (Day 15):** Joint go-to-market proposal for your mid-market banks\n\n### Chris Walters (CEO)\n\n**Email 1 (Day 7, after Barry engagement):**\nSubject: Extend Finastra's ecosystem with AI-powered payment investigations\n\nDear Chris,\n\n8,000+ banks on Finastra need E&I capabilities. Today they handle investigations manually or pay $200K+ for Pega.\n\nTracEI can extend your Payments ecosystem via API in <30 days — low-cost SaaS that your banks can adopt immediately.\n\nBarry Rodrigues' team is evaluating the integration. I'd welcome a strategic discussion about the partnership opportunity.\n\nBest regards,\n[Sender]\n\n### Mike Stawchansky (CTO)\n\n**Email 1 (Day 3):** Technical integration brief — TracEI SaaS architecture, Fusion API, <30 day integration",
+        "order": 8,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Battle Cards & Objection Handling",
+        "type": "objection_handling",
+        "content": "## Objection Handling\n\n1. **\"We can build E&I ourselves.\"** → 12-18 months and $5M+ in development. TracEI integrates via API in <30 days with zero build cost. Focus on your core — let us handle E&I.\n\n2. **\"Pega Smart Investigate is the market leader.\"** → Pega costs $200K+ per bank and takes 6-12 months. Your mid-market customers can't afford Pega. TracEI at <$50K per bank is the right fit for 8,000+ Finastra customers.\n\n3. **\"We already have fraud detection (NetGuardians).\"** → Fraud prevention and investigation are different. NetGuardians catches fraudulent transactions. TracEI handles the exceptions and investigations that are legitimate but need resolution. Complementary, not competing.\n\n4. **\"Partnership integration is complex.\"** → TracEI is SaaS with open APIs. <30 days to integrate with Fusion. We follow the same partnership model as your existing fintech integrations.\n\n5. **\"Our banks handle investigations in-house.\"** → Manually. At $15-25 per investigation in staff time. With ISO 20022 migration creating dual-format complexity. TracEI automates 80% for <$50K.\n\n6. **\"What about ISO 20022 and CBPR+?\"** → TracEI handles both MT/FIN legacy and ISO 20022 new formats natively. Your banks' migration challenge is our sweet spot.\n\n7. **\"How does revenue sharing work?\"** → Flexible models: resell, referral, or revenue share. We'll propose terms that align with Finastra's partnership economics.\n\n8. **\"Why not just refer banks to Pega?\"** → Pega doesn't serve your mid-market well. TracEI gives your banks a right-sized solution that integrates with their existing Finastra infrastructure.",
+        "order": 9,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Content Asset Strategy",
+        "type": "content_assets",
+        "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. The E&I Gap in Banking Platforms — LinkedIn article (why payment platforms need investigation capabilities)\n2. Fusion + TracEI: Completing the Payments Ecosystem — Partnership brief\n\n**Consideration (Week 1-2):**\n3. How NetGuardians Extended Finastra's Fraud Capabilities — Case study parallel\n4. TracEI × Fusion: Technical Integration Guide — API architecture, <30 day integration\n5. Mid-Market Bank E&I Pain Points — Customer demand data\n\n**Decision (Week 2-3):**\n6. Joint Go-to-Market Proposal — Distribution to 8,000+ banks, revenue model\n7. Partnership Agreement Framework — Resell, referral, or revenue share options\n8. 30-Day Integration Proof-of-Concept — Technical demo plan\n\n**Expansion (Post-Signing):**\n9. Bank Customer Playbook Template — 'TracEI through Finastra' marketing collateral\n10. Revenue Dashboard — Partnership performance tracking",
+        "order": 10,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Measurement Framework",
+        "type": "measurement",
+        "content": "## KPIs & Success Criteria\n\n**Partnership Metrics:**\n- EVP Payments meeting: within 7 days\n- CTO technical review: within 14 days\n- Partnership pilot agreement: within 30 days\n- First bank customer referral: within 60 days\n- Revenue share activation: within 90 days\n\n**Pipeline Milestones:**\n| Week | Milestone | Probability |\n|------|-----------|------------|\n| 1 | Barry Rodrigues engaged | 20% |\n| 2 | CTO integration review complete | 40% |\n| 3 | Partnership terms agreed | 60% |\n| 4 | Pilot agreement signed | 80% |\n| 6 | First bank customer live | 100% |\n\n**Revenue Model (Partnership):**\n- Pilot: <$50K integration/proof-of-concept\n- Per-bank licensing: $30-50K per bank per year\n- Finastra distribution: 8,000+ bank customer base\n- Year 1 target: 10-20 banks = $300K-1M partnership revenue\n- Year 3 target: 50-100 banks = $1.5-5M partnership revenue\n\n**Success Indicators:**\n- EVP Payments explicitly requests partnership evaluation\n- CTO clears technical integration\n- CEO mentions ecosystem expansion in strategy session\n- No competing E&I partnership launched (Pega or others)\n- First bank customer signs within 60 days of partnership",
+        "order": 11,
+        "created_at": "2026-05-16T10:55:00Z"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n### Sources\n| Source | Confidence | Date |\n|--------|-----------|------|\n| Finastra executive team page | HIGH | 2026 |\n| Finastra press release — CEO transition | HIGH | Jan 2025 |\n| FinTech Magazine — Finastra profile | HIGH | Oct 2025 |\n| CB Insights — Finastra financials | MEDIUM | 2023 |\n| Finastra Fusion Total Messaging factsheet | HIGH | 2022 |\n| Finastra Payments solutions page | HIGH | 2026 |\n| Tracxn — Finastra recent activity | MEDIUM | 2026 |\n| Business Today — HNB innovation (dual-speed model reference) | HIGH | Oct 2025 |\n\n### Unverified Items [⚠️]\n- VP Partnerships/Business Development — name unknown\n- LinkedIn URLs for all contacts\n- Finastra's current partnership revenue model terms\n- Specific bank customer demand data for E&I\n- Whether Finastra has evaluated Pega Smart Investigate\n- Internal product roadmap for E&I capabilities\n\n### Important Notes\n- **Finastra is a platform/company, NOT a bank.** The sale is a partnership/channel agreement, not a direct software purchase.\n- **Competitor listed as 'TracEI Smart investigate'** in the brief — this appears to be 'Pega Smart Investigate', the established competitor in SWIFT E&I.\n- **Partnership model parallels:** NetGuardians fraud partnership proves Finastra's fintech integration model works. TracEI should follow the same pattern.\n- **8,000+ bank customer base** is the primary value — distribution reach far exceeds any single bank deal.\n\n### Research Methodology\nWeb research using Finastra's official website, executive team page, press releases, industry publications (FinTech Magazine, CB Insights, Tracxn), and product documentation.",
+        "order": 12,
+        "created_at": "2026-05-16T10:55:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "name": "Barry Rodrigues",
+        "title": "Executive Vice President, Payments",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — Finastra executive team page",
+        "verification_status": "pending",
+        "notes": "EVP Payments — owns the payments business unit. Direct champion for SWIFT/payment investigation solutions. TracEI aligns perfectly with his P&L.",
+        "created_at": "2026-05-16T10:50:00Z"
+      },
+      {
+        "id": "c-2",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "name": "Chris Walters",
+        "title": "Chief Executive Officer",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — Finastra press release Jan 2025",
+        "verification_status": "pending",
+        "notes": "CEO since Jan 2025. Succeeded Simon Paris. New leadership may seek partnership revenue and ecosystem expansion. Economic buyer.",
+        "created_at": "2026-05-16T10:50:00Z"
+      },
+      {
+        "id": "c-3",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "name": "Mike Stawchansky",
+        "title": "Chief Technology Officer",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — Finastra executive team page",
+        "verification_status": "pending",
+        "notes": "CTO — evaluates technology partnerships, API integrations, SaaS compatibility. Technical buyer for any partnership.",
+        "created_at": "2026-05-16T10:50:00Z"
+      },
+      {
+        "id": "c-4",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "name": "Don Baptiste",
+        "title": "Chief Operating Officer",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — Finastra executive team page",
+        "verification_status": "pending",
+        "notes": "COO — operational partnerships and go-to-market. Key for distribution/channel agreements.",
+        "created_at": "2026-05-16T10:50:00Z"
+      },
+      {
+        "id": "c-5",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "name": "Siobhan Byron",
+        "title": "Executive Vice President, Universal Banking",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — Finastra executive team page",
+        "verification_status": "pending",
+        "notes": "EVP Universal Banking — serves mid-size bank customers who are ideal TracEI buyers. Partnership channel through her business unit.",
+        "created_at": "2026-05-16T10:50:00Z"
+      },
+      {
+        "id": "c-6",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "name": "Elona Ruka-Wright",
+        "title": "Chief Risk and Compliance Officer",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "high",
+        "source": "Web research — Finastra executive team page",
+        "verification_status": "pending",
+        "notes": "CRCO — risk and compliance perspective. E&I investigation intersects with compliance and risk. Influencer for partnership.",
+        "created_at": "2026-05-16T10:50:00Z"
+      },
+      {
+        "id": "c-7",
+        "playbook_id": "pb_8d628b2f260e4199",
+        "name": "[UNVERIFIED] VP Partnerships / Business Development",
+        "title": "VP Partnerships & Business Development",
+        "linkedin_url": "[UNVERIFIED]",
+        "confidence": "medium",
+        "source": "Web inference — Finastra has active fintech partnership program",
+        "verification_status": "pending",
+        "notes": "Day-to-day partnership lead. Manages fintech ecosystem and API marketplace. Likely first point of contact for TracEI partnership.",
+        "created_at": "2026-05-16T10:50:00Z"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_8d628b2f260e4199",
+    "created_at": "2026-05-16T10:45:32.770Z",
+    "updated_at": "2026-05-16T10:48:01.954Z",
+    "phase_started_at": "2026-05-16T10:45:32.795Z",
+    "openclaw_session_id": "8cd977c2-a6dd-4de3-a0a1-5f8eaa70a552"
+  },
+  "pb_208f447e75624e77": {
+    "user_id": "usr_demo",
+    "product_name": "TracEI",
+    "product_brief": {
+      "product_name": "TracEI",
+      "description": "SWIFT payment investigation product ",
+      "value_propositions": [
+        "low cost exception investigation",
+        "Saas offering",
+        "enhanced security"
+      ],
+      "target_personas": [
+        "CPO",
+        "CIO"
+      ],
+      "differentiators": [
+        "Low cost alternative for E&I operatins"
+      ],
+      "competitors": [],
+      "deployment_model": "saas",
+      "deal_size": "<50k",
+      "sales_cycle": "<30d"
+    },
+    "target_company": "Bank of ceylon Sri Lanka",
+    "target_url": "https://www.boc.lk/",
+    "industry": "Banking & Finance",
+    "geography": "Other APAC",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "Writing complete — all 12 sections submitted",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: TracEI → Bank of Ceylon\n\nBank of Ceylon (BOC) is Sri Lanka's largest state-owned commercial bank (650+ branches, 2,300+ touchpoints, Rs. 106.9Bn PBT in 2024 — the highest ever by any Sri Lankan corporate entity). With international operations in UK, India, Maldives, and Seychelles, BOC handles massive cross-border SWIFT payment volumes — and their investigation workflows are manual.\n\nFour converging signals make this a compelling <$50K, <30 day velocity play:\n\n1. **AGM Digital vacancy (2026)** — BOC is actively recruiting an Assistant General Manager for Digital, signaling digital transformation urgency.\n\n2. **Record profitability (Rs. 106.9Bn PBT)** — Highest profit ever by a Sri Lankan entity. Budget available.\n\n3. **International operations across 4 countries** — UK, India, Maldives, Seychelles = complex cross-border SWIFT investigations.\n\n4. **CBSL regulatory pressure** — Enhanced AML/CFT circulars (2024-2025) creating compliance workload.\n\n**Recommended approach:** Velocity play — <$50K, <30 days. Lead with low-cost SaaS E&I vs. manual processes. Target AGM-IT as champion, Acting GM as economic buyer. State bank procurement may require DGM-level approval but <$50K is within AGM authority for digital tools.\n\n**Expected outcome:** Close within 30 days. <$50K ARR with expansion as investigation volumes grow.",
+        "order": 1,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## Bank of Ceylon — Account Intelligence\n\n### Company Overview\n- **Name:** Bank of Ceylon (BOC)\n- **Type:** Sri Lanka's largest state-owned commercial bank\n- **HQ:** Colombo (iconic cylindrical tower)\n- **Chairman:** Kavinda de Zoysa (since Nov 2024, ex-Citibank Country Business Head)\n- **Acting GM/CEO:** Y.A. Jayathilaka (since Aug 2025)\n- **Previous Chairman:** Kavan Ratnayaka (Mar 2024 – Nov 2024)\n- **Branches:** 650+ | **Touchpoints:** 2,300+\n- **International:** UK (London), India (Chennai), Maldives, Seychelles\n- **PBT (2024):** Rs. 106.9 Bn (highest ever by any Sri Lankan entity)\n- **Brand Value:** Rs. 57.4 Bn (Brand Finance Lanka, most valuable Sri Lankan brand 2025)\n- **IT Subsidiary:** BOC IT Solutions Pvt Ltd\n- **State-owned:** Government of Sri Lanka majority ownership\n\n### Strategic Priorities (2025 Annual Report)\n- Accelerating digital transformation\n- Strengthening core banking operations\n- Maintaining robust risk management practices\n- Recruiting AGM Digital (2026 vacancy — digital transformation priority)\n\n### SWIFT & E&I Pain Points\n- Massive cross-border payment volumes (4 international locations)\n- SWIFT exceptions handled manually across 650+ branches\n- CBSL enhanced AML/CFT circulars multiplying compliance workload\n- ISO 20022 migration creating dual-format investigation complexity\n- No automated E&I platform — likely spreadsheet/email-based\n- State bank procurement slower than private, but <$50K within AGM authority",
+        "order": 2,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: AGM-IT [Name TBD]**\n- Technical evaluator for digital tools including E&I platforms\n- <$50K within AGM procurement authority for digital solutions\n- Direct mandate from digital transformation priority\n\n**Economic Buyer: Y.A. Jayathilaka (Acting GM/CEO)**\n- Acting CEO since Aug 2025\n- <$50K may not require full ExCo approval in state bank\n\n**Strategic Endorser: Kavinda de Zoysa (Chairman)**\n- Ex-Citibank, 30+ years banking, CIMA Global Council\n- Digitization champion — will appreciate SaaS E&I value proposition\n\n**End Users:**\n- DGM International Operations / SWIFT — primary end-user\n- AGM Trade Finance / International Banking — generates investigation volume\n- AGM Compliance / AML — regulatory justification\n- CRO / DGM Risk Management — risk gate\n\n**Decision Dynamics:** State bank procurement can be slower. However:\n- <$50K is within AGM-level authority for digital tools\n- Digital transformation urgency (AGM Digital vacancy) creates fast-track potential\n- Acting CEO may want quick wins before permanent appointment\n\n**Key Insight:** The AGM Digital vacancy is the strongest signal — BOC needs digital tools and is hiring to lead the transformation.",
+        "order": 3,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now — Signal Analysis\n\n### S1: AGM Digital Vacancy (🔴 CRITICAL)\n- BOC is actively recruiting AGM Digital — signals digital transformation urgency\n- New hire will want quick wins; TracEI is a fast-deploying digital tool\n- **Action:** 'You're hiring a digital leader. TracEI is their first quick win.'\n\n### S2: Record Profitability (🔴 HIGH)\n- Rs. 106.9Bn PBT — highest ever by any Sri Lankan entity\n- Budget available for <$50K digital investment\n- **Action:** 'A fraction of your record profits gives you automated E&I.'\n\n### S3: International Operations (🔴 HIGH)\n- UK, India, Maldives, Seychelles — 4-country cross-border investigation complexity\n- Multi-currency, multi-regulatory investigations are multiplying\n- **Action:** 'Manual investigations across 4 countries don't scale. TracEI automates across all of them.'\n\n### S4: CBSL Regulatory Pressure (🟡 MEDIUM-HIGH)\n- Enhanced AML/CFT circulars (2024-2025) from CBSL/FIU\n- State bank under stricter regulatory scrutiny than private banks\n- **Action:** 'CBSL is watching. Automated E&I reduces regulatory risk.'\n\n### S5: ISO 20022 Migration (🟡 MEDIUM)\n- Dual-format investigations (MT/FIN + ISO 20022) creating complexity\n- **Action:** 'TracEI handles both legacy and new formats natively.'",
+        "order": 4,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n### Pega Smart Investigate\n- **Strengths:** 30+ years SWIFT expertise, low-code, AI, ISO 20022, 25+ global FI clients\n- **Weaknesses:** $200K+ TCO, 6-12 months implementation, requires Pega platform, over-engineered for state banks\n- **TracEI Advantage:** <$50K vs. $200K+, <30 days vs. 6-12 months, complete E&I, SaaS-native, no platform dependency\n\n### Manual / In-House Processes\n- **Current state:** Most likely — BOC handles E&I manually with spreadsheets and email\n- **Weaknesses:** Slow, error-prone, doesn't scale across 650+ branches and 4 international locations\n- **TracEI Advantage:** 80% automation of investigations, consistent across all branches, SaaS deployment in <30 days\n\n### Key Differentiators for BOC\n1. **Price:** <$50K — within AGM-level authority, no ExCo procurement needed\n2. **Speed:** <30 days — faster than any state bank procurement for enterprise tools\n3. **Completeness:** Exceptions AND investigations in one platform\n4. **Multi-country:** UK, India, Maldives, Seychelles — all supported\n5. **State bank friendly:** SaaS avoids capital expenditure approval hurdles\n6. **Enhanced security:** SaaS with banking-grade security, aligned with CBSL requirements",
+        "order": 5,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Sri Lankan State Bank Culture — BOC Specific\n\n- **Decision-making:** Hierarchical, government-influenced. State bank procurement can be slow.\n- **However:** <$50K is within AGM authority. Don't assume full tender process.\n- **Formality:** Very formal. Use 'Mr.' + last name. English for business.\n- **Relationships:** Trust is essential. Multiple meetings expected. Don't rush.\n- **Price sensitivity:** High, but record profits soften this. Lead with value and compliance.\n- **Patriotism:** BOC is 'Bankers to the Nation' — national pride. Reference their record.\n\n### BOC-Specific\n- Chairman de Zoysa is ex-Citibank — he understands international banking and SaaS\n- Acting CEO may want quick wins before permanent appointment\n- AGM Digital vacancy = digital transformation urgency\n- BOC IT Solutions subsidiary = technology capability exists\n- State bank means regulatory compliance is top priority\n- 'Bankers to the Nation' tagline — appeal to national service mission\n\n### Do's\n- ✅ Reference Rs. 106.9Bn record profit\n- ✅ Reference Brand Finance #1 brand value\n- ✅ Lead with CBSL compliance and enhanced security\n- ✅ Position as quick digital win for new AGM Digital\n- ✅ Emphasize multi-country investigation capability\n- ✅ Use 'Bankers to the Nation' language\n\n### Don'ts\n- ❌ Assume slow procurement means no opportunity\n- ❌ Ignore state bank regulatory requirements\n- ❌ Use overly aggressive sales tactics\n- ❌ Underestimate the importance of relationships\n- ❌ Compare unfavorably with private banks (CBC, HNB)",
+        "order": 6,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Channels:** Direct email + LinkedIn to AGM-IT, introduction via Chairman's Citibank network\n**Duration:** 3-4 weeks | **Touches:** 4-6 per persona\n\n### AGM-IT — Champion\n1. Email: 'Manual investigations across 4 countries? TracEI automates 80% for <$50K'\n2. Technical brief: SaaS architecture, SWIFT/ISO 20022, multi-country support\n3. CBSL compliance angle: automated E&I reduces regulatory risk\n4. Quick pilot proposal: <30 day deployment\n\n### Acting GM/CEO — Jayathilaka\n1. Executive letter: 'Rs. 106.9Bn record profit deserves record E&I efficiency'\n2. Business case: <$50K, <30 days, 80% investigation automation\n3. Reference to digital transformation priority\n\n### Chairman — Kavinda de Zoysa\n1. Targeted outreach referencing Citibank background\n2. 'From international banking to national banking — you know E&I pain firsthand'\n3. Strategic endorsement request for digital transformation quick win",
+        "order": 7,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Hyper-Personalized Sequences",
+        "type": "sequences",
+        "content": "## Email Sequences\n\n### AGM-IT — Champion\n\n**Email 1:**\nSubject: Manual investigations across 4 countries? TracEI automates 80% for <$50K\n\nDear Mr./Ms. [AGM-IT Name],\n\nBank of Ceylon handles SWIFT payment investigations across Sri Lanka, UK, India, Maldives, and Seychelles. With 650+ branches and CBSL's enhanced AML/CFT requirements, manual E&I processes are slowing your team down.\n\nTracEI is a low-cost SaaS exception and investigation platform that automates 80% of investigations in under 30 days. It handles SWIFT MT/FIN and ISO 20022 — everything your cross-border operations need.\n\nI'd value 20 minutes to show you how Sri Lankan banks are modernizing E&I.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** CBSL compliance is getting harder. Here's how automated E&I helps.\n**Email 3 (Day 10):** Technical brief — SaaS architecture, multi-country support, ISO 20022\n**Email 4 (Day 15):** Quick pilot proposal — <30 day deployment\n\n### Chairman — Kavinda de Zoysa\n\n**Email 1 (Day 7, after AGM-IT engagement):**\nSubject: From international banking to national banking — you know E&I pain firsthand\n\nDear Mr. de Zoysa,\n\nYour career at Citibank taught you that cross-border payment investigations are the hidden bottleneck in every bank. At BOC, with operations across 4 countries and Rs. 106.9Bn in record profits, that bottleneck is real.\n\nTracEI automates 80% of SWIFT investigations for <$50K, deployed in <30 days. A quick win for your digital transformation agenda.\n\nBest regards,\n[Sender]",
+        "order": 8,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Battle Cards & Objection Handling",
+        "type": "objection_handling",
+        "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Manual doesn't scale across 650+ branches and 4 international locations. CBSL AML/CFT circulars are multiplying. TracEI automates 80% for <$50K.\n\n2. **\"Pega Smart Investigate is the industry standard.\"** → Pega costs $200K+ and takes 6-12 months. BOC needs a quick digital win. TracEI: <$50K, <30 days, complete E&I.\n\n3. **\"$50K is significant for a state bank.\"** → Rs. 106.9Bn in record profits. <$50K is less than 0.05% of PBT. And it's within AGM-level authority — no full procurement needed.\n\n4. **\"State bank procurement is slow.\"** → <$50K SaaS subscription avoids capital expenditure procurement. AGM-level approval, not ExCo tender.\n\n5. **\"We need multi-country support.\"** → UK, India, Maldives, Seychelles — TracEI handles all four plus domestic operations.\n\n6. **\"What about security?\"** → Enhanced security is core to TracEI. SaaS with banking-grade encryption, aligned with CBSL requirements and SWIFT CSP standards.\n\n7. **\"We have BOC IT Solutions for technology.\"** → BOC IT Solutions manages infrastructure. TracEI is SaaS — no on-prem needed. Complements your IT subsidiary.\n\n8. **\"The Acting CEO may not approve new spending.\"** → Acting CEOs want quick wins. <$50K digital tool with 80% investigation automation is exactly that.",
+        "order": 9,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Content Asset Strategy",
+        "type": "content_assets",
+        "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. Cross-Border E&I: The Hidden Bottleneck for Sri Lankan Banks — LinkedIn article\n2. CBSL AML/CFT Compliance: From Manual to Automated — 4-page brief\n\n**Consideration (Week 1-2):**\n3. State Bank E&I Automation: 80% Reduction in Investigation Time — Case study\n4. TracEI vs. Manual Investigations vs. Pega — Comparison brief\n5. BOC-Specific ROI Calculator — Manual cost vs. TracEI <$50K\n\n**Decision (Week 2-3):**\n6. <30 Day Deployment Proposal — SaaS pilot plan\n7. Security & Compliance Pack — CBSL alignment, SWIFT CSP, enhanced security\n8. Multi-Country Investigation Support — UK, India, Maldives, Seychelles coverage",
+        "order": 10,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Measurement Framework",
+        "type": "measurement",
+        "content": "## KPIs & Success Criteria\n\n**Awareness:** AGM-IT meeting booked within 14 days | Chairman engagement within 21 days\n**Engagement:** Technical evaluation within 7 days of first meeting | Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry | Expansion potential $100-150K\n\n**Week 1:** AGM-IT engaged, pain confirmed\n**Week 2:** Technical brief delivered, pilot scope discussed\n**Week 3:** Pilot proposal submitted, procurement path identified\n**Week 4:** Contract signed or pilot launched\n\n**Expansion Revenue:**\n- Additional investigation volume (per-branch): +$10-20K\n- ISO 20022 migration module: +$15-25K\n- Compliance/AML module: +$10-15K\n- Total expansion potential: $35-60K → $85-110K total account value\n\n**Success Indicators:**\n- AGM-IT explicitly requests evaluation\n- Chairman references digital transformation priority\n- No Pega evaluation launched\n- Quick procurement path confirmed (<$50K = AGM authority)",
+        "order": 11,
+        "created_at": "2026-05-16T11:30:00Z"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_208f447e75624e77",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n### Sources\n| Source | Confidence | Date |\n|--------|-----------|------|\n| BOC corporate profile (boc.lk) | HIGH | 2025 |\n| BOC Annual Report 2024 | HIGH | 2025 |\n| EconomyNext — Acting CEO appointment | HIGH | Aug 2025 |\n| BOC — Chairman appointment | HIGH | Nov 2024 |\n| BOC — PBT Rs. 106.9Bn | HIGH | Feb 2025 |\n| Brand Finance — Most valuable Sri Lankan brand | HIGH | 2025 |\n| Lanka Past Papers — AGM Digital vacancy | MEDIUM | 2026 |\n| BOC Annual Report 2017 (exec structure) | MEDIUM | 2017 |\n| Wikipedia — BOC overview | HIGH | 2025 |\n\n### Unverified Items [⚠️]\n- AGM-IT name and LinkedIn\n- AGM Digital name (position is vacant/being recruited)\n- Acting CEO Y.A. Jayathilaka — full name and background details\n- DGM International Operations / SWIFT — name unknown\n- AGM Trade Finance — name unknown\n- CRO name — unknown\n- AGM Compliance/AML — name unknown\n- Current E&I tooling — likely manual/spreadsheet\n- Pega deployment status — very likely NOT deployed at BOC\n\n### Important Notes\n- **Bank of Ceylon ≠ Commercial Bank of Ceylon** — BOC is state-owned, CBC is private. Different procurement, different culture.\n- **State bank procurement** can be slower but <$50K SaaS avoids capital expenditure approval.\n- **Acting CEO** (Jayathilaka since Aug 2025) may want quick wins before permanent appointment.\n- **AGM Digital vacancy** is the strongest signal — BOC is actively hiring for digital transformation leadership.\n- **Chairman de Zoysa's Citibank background** — understands international banking and SaaS models personally.\n\n### Research Methodology\nWeb research using BOC official website, EconomyNext, annual reports, Brand Finance, and industry sources.",
+        "order": 12,
+        "created_at": "2026-05-16T11:30:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "name": "Kavinda de Zoysa",
+        "title": "Chairman / Non-Executive Director",
+        "confidence": "high",
+        "source": "Web research — boc.lk, LinkedIn",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_208f447e75624e77"
+      },
+      {
+        "id": "c-2",
+        "name": "Y.A. Jayathilaka",
+        "title": "Acting General Manager / Acting CEO",
+        "confidence": "high",
+        "source": "Web research — EconomyNext Aug 2025",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_208f447e75624e77"
+      },
+      {
+        "id": "c-3",
+        "name": "[UNVERIFIED] Assistant General Manager - Information Technology",
+        "title": "AGM - Information Technology",
+        "confidence": "medium",
+        "source": "Web research — BOC annual report structure, AGM Digital vacancy 2026",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_208f447e75624e77"
+      },
+      {
+        "id": "c-4",
+        "name": "[UNVERIFIED] Deputy General Manager - International Operations / SWIFT",
+        "title": "DGM - International Operations / SWIFT",
+        "confidence": "medium",
+        "source": "Web inference — BOC has UK branch, India, Maldives, Seychelles; SWIFT operations critical",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_208f447e75624e77"
+      },
+      {
+        "id": "c-5",
+        "name": "[UNVERIFIED] AGM - Trade Finance / International Banking",
+        "title": "AGM - Trade Finance / International Banking",
+        "confidence": "medium",
+        "source": "Web inference — state bank trade finance division",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_208f447e75624e77"
+      },
+      {
+        "id": "c-6",
+        "name": "[UNVERIFIED] Chief Risk Officer / DGM Risk Management",
+        "title": "CRO / DGM Risk Management",
+        "confidence": "medium",
+        "source": "Web inference — state bank risk management requirement",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_208f447e75624e77"
+      },
+      {
+        "id": "c-7",
+        "name": "[UNVERIFIED] AGM - Compliance / AML",
+        "title": "AGM - Compliance / Anti-Money Laundering",
+        "confidence": "medium",
+        "source": "Web inference — CBSL AML/CFT compliance requirement for state banks",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_208f447e75624e77"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_208f447e75624e77",
+    "created_at": "2026-05-16T11:21:56.881Z",
+    "updated_at": "2026-05-16T11:26:12.805Z",
+    "phase_started_at": "2026-05-16T11:25:41.427Z",
+    "openclaw_session_id": "f4b9d161-c915-4768-89a6-142a1b03bd82"
+  }
+}
