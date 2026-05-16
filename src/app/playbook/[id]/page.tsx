@@ -265,6 +265,69 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
     setEditContent('')
   }
 
+  function handleExportPdf() {
+    if (!playbook) return
+    const win = window.open('', '_blank')
+    if (!win) return
+
+    const sectionsHtml = orderedSectionTypes
+      .map((sectionType) => {
+        const meta = SECTION_META[sectionType]
+        const section = sectionsByType.get(sectionType)
+        const content = section ? (savedContents[section.id] ?? section.content) : ''
+        if (!content?.trim()) return ''
+        // Minimal markdown → HTML for print
+        const htmlContent = content
+          .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+          .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+          .replace(/^\*\*(.+)\*\*$/gm, '<p><strong>$1</strong></p>')
+          .replace(/^- (.+)$/gm, '<li>$1</li>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
+          .replace(/^(?!<[hup]|<li|<ul|<blockquote)(.+)$/gm, '<p>$1</p>')
+        return `<section><h2 class="section-title">${meta.order}. ${meta.title}</h2><div class="section-content">${htmlContent}</div></section>`
+      })
+      .filter(Boolean)
+      .join('\n')
+
+    win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${playbook.product_name} → ${playbook.target_company} — ABM Playbook</title>
+<style>
+  body { font-family: Georgia, serif; font-size: 12pt; color: #111; margin: 0; padding: 0; }
+  .cover { page-break-after: always; display: flex; flex-direction: column; justify-content: center; padding: 80px 60px; }
+  .cover h1 { font-size: 28pt; margin: 0 0 12px; }
+  .cover p { font-size: 13pt; color: #555; margin: 4px 0; }
+  .cover .badge { display: inline-block; background: #1e3a5f; color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 10pt; margin-top: 24px; }
+  section { page-break-inside: avoid; padding: 40px 60px 20px; border-bottom: 1px solid #eee; }
+  section:last-child { border-bottom: none; }
+  .section-title { font-size: 16pt; color: #1e3a5f; margin: 0 0 16px; border-bottom: 2px solid #339af0; padding-bottom: 8px; }
+  .section-content h2 { font-size: 13pt; color: #222; margin: 16px 0 8px; }
+  .section-content h3 { font-size: 11pt; color: #444; margin: 12px 0 6px; }
+  .section-content p { margin: 6px 0; line-height: 1.6; }
+  .section-content ul { margin: 8px 0; padding-left: 20px; }
+  .section-content li { margin: 4px 0; line-height: 1.5; }
+  @page { margin: 0; }
+  @media print { body { -webkit-print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div class="cover">
+  <p style="color:#339af0;font-family:sans-serif;font-size:10pt;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">ABMSignal Playbook</p>
+  <h1>${playbook.product_name} → ${playbook.target_company}</h1>
+  <p>Generated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+  <span class="badge">Confidential</span>
+</div>
+${sectionsHtml}
+</body>
+</html>`)
+    win.document.close()
+    win.focus()
+    setTimeout(() => win.print(), 500)
+  }
+
   return (
     <div className="flex h-screen bg-[#0a0a0f] overflow-hidden">
       <AppSidebar />
@@ -293,7 +356,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                 Quality Review
               </Button>
             </Link>
-            <Button size="sm" className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
+            <Button size="sm" onClick={handleExportPdf} className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
               <Download className="w-3.5 h-3.5" />
               Export PDF
             </Button>
