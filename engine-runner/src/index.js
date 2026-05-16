@@ -222,7 +222,7 @@ app.get('/health', (_req, res) => {
 
 // Invoke orchestrator (fire-and-forget)
 app.post('/invoke', authCheck, async (req, res) => {
-  const { flowId, playbookId, goal } = req.body
+  const { flowId, playbookId, goal, phase } = req.body
   
   if (!flowId) {
     return res.status(400).json({ error: 'flowId is required' })
@@ -250,7 +250,84 @@ app.post('/invoke', authCheck, async (req, res) => {
     let enrichedGoal = goal
     if (!goal && playbookData) {
       const brief = playbookData.product_brief || {}
-: enrichedGoal = `GENERATE ABM PLAYBOOK\n\nPlaybook ID: ${playbookId}\nFlow ID: ${flowId}\n\nNEXTJS_API_URL: ${CONFIG.nextjsUrl}\n\nYou are connected to the ABMSignal gateway. You can spawn sub-agents (researcher, writer, reviewer) using sessions_spawn.\nUse curl to call the Next.js API to update status, push contacts, and submit sections.\n\nCRITICAL API ENDPOINTS (use curl with JSON payloads):\n- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — fetch full playbook data (product brief, target account)\n- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/status  — check current status\n- POST ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/contacts/review  — submit contacts (body: {contacts: [...]})\n- PATCH ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — update playbook fields\n\n## Product\nName: ${playbookData.product_name || 'Unknown'}\nDescription: ${brief.description || 'N/A'}\nValue Propositions: ${Array.isArray(brief.value_propositions) ? brief.value_propositions.join('; ') : (brief.value_propositions || 'N/A')}\nCompetitors: ${brief.competitors || 'N/A'}\nDeployment: ${brief.deployment_model || 'N/A'}\nDeal Size: ${brief.deal_size || 'N/A'}\nSales Cycle: ${brief.sales_cycle || 'N/A'}\n\n## Target Account\nCompany: ${playbookData.target_company || 'Unknown'}\nIndustry: ${playbookData.industry || 'N/A'}\nGeography: ${playbookData.geography || 'N/A'}\nPriority: ${playbookData.priority_tier || 'N/A'}\n\nIMPORTANT: Research the ACTUAL company specified above (${playbookData.target_company}). Do NOT use placeholder or example companies. All contacts, sections, and messaging must be specific to ${playbookData.target_company} in ${playbookData.geography}.\n\nRead your SOUL.md for full instructions on the playbook generation pipeline.`
+      if (phase === 'writing') {
+        // Second invocation: contacts approved, start writing phase
+        enrichedGoal = [
+          `CONTINUE ABM PLAYBOOK — WRITING PHASE`,
+          ``,
+          `Playbook ID: ${playbookId}`,
+          `Flow ID: ${flowId}`,
+          ``,
+          `NEXTJS_API_URL: ${CONFIG.nextjsUrl}`,
+          ``,
+          `Contact review is COMPLETE. The human has approved contacts.`,
+          `The playbook status is already set to "writing".`,
+          ``,
+          `CRITICAL: DO NOT run Phase 1 (Research) again. DO NOT push contacts again. DO NOT set status to contact_review.`,
+          `Jump directly to Phase 3 (Writing) in your SOUL.md instructions.`,
+          ``,
+          `CRITICAL API ENDPOINTS:`,
+          `- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — fetch full playbook data`,
+          `- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/contacts  — fetch approved contacts`,
+          `- PATCH ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — update playbook fields`,
+          ``,
+          `## Product`,
+          `Name: ${playbookData.product_name || 'Unknown'}`,
+          `Description: ${brief.description || 'N/A'}`,
+          `Value Propositions: ${Array.isArray(brief.value_propositions) ? brief.value_propositions.join('; ') : (brief.value_propositions || 'N/A')}`,
+          `Competitors: ${Array.isArray(brief.competitors) ? brief.competitors.join(', ') : (brief.competitors || 'N/A')}`,
+          `Deployment: ${brief.deployment_model || 'N/A'}`,
+          `Deal Size: ${brief.deal_size || 'N/A'}`,
+          `Sales Cycle: ${brief.sales_cycle || 'N/A'}`,
+          ``,
+          `## Target Account`,
+          `Company: ${playbookData.target_company || 'Unknown'}`,
+          `Industry: ${playbookData.industry || 'N/A'}`,
+          `Geography: ${playbookData.geography || 'N/A'}`,
+          `Priority: ${playbookData.priority_tier || 'N/A'}`,
+          ``,
+          `Read your SOUL.md for Phase 3 (Writing) and Phase 4 (Review) instructions.`,
+          `Begin with Phase 3 immediately — do not repeat research.`,
+        ].join('\n')
+      } else {
+        // First invocation: full pipeline starting from research
+        enrichedGoal = [
+          `GENERATE ABM PLAYBOOK`,
+          ``,
+          `Playbook ID: ${playbookId}`,
+          `Flow ID: ${flowId}`,
+          ``,
+          `NEXTJS_API_URL: ${CONFIG.nextjsUrl}`,
+          ``,
+          `You are connected to the ABMSignal gateway. You can spawn sub-agents (researcher, writer, reviewer) using sessions_spawn.`,
+          `Use curl to call the Next.js API to update status, push contacts, and submit sections.`,
+          ``,
+          `CRITICAL API ENDPOINTS (use curl with JSON payloads):`,
+          `- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — fetch full playbook data (product brief, target account)`,
+          `- GET  ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/status  — check current status`,
+          `- POST ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}/contacts/review  — submit contacts (body: {contacts: [...]})`,
+          `- PATCH ${CONFIG.nextjsUrl}/api/playbooks/${playbookId}  — update playbook fields`,
+          ``,
+          `## Product`,
+          `Name: ${playbookData.product_name || 'Unknown'}`,
+          `Description: ${brief.description || 'N/A'}`,
+          `Value Propositions: ${Array.isArray(brief.value_propositions) ? brief.value_propositions.join('; ') : (brief.value_propositions || 'N/A')}`,
+          `Competitors: ${Array.isArray(brief.competitors) ? brief.competitors.join(', ') : (brief.competitors || 'N/A')}`,
+          `Deployment: ${brief.deployment_model || 'N/A'}`,
+          `Deal Size: ${brief.deal_size || 'N/A'}`,
+          `Sales Cycle: ${brief.sales_cycle || 'N/A'}`,
+          ``,
+          `## Target Account`,
+          `Company: ${playbookData.target_company || 'Unknown'}`,
+          `Industry: ${playbookData.industry || 'N/A'}`,
+          `Geography: ${playbookData.geography || 'N/A'}`,
+          `Priority: ${playbookData.priority_tier || 'N/A'}`,
+          ``,
+          `IMPORTANT: Research the ACTUAL company specified above (${playbookData.target_company}). Do NOT use placeholder or example companies. All contacts, sections, and messaging must be specific to ${playbookData.target_company} in ${playbookData.geography}.`,
+          ``,
+          `Read your SOUL.md for full instructions on the playbook generation pipeline.`,
+        ].join('\n')
+      }
     }
     
     // Verify the flow exists

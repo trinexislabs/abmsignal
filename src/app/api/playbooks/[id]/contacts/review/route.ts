@@ -30,9 +30,21 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   updateContacts(id, body.contacts)
+
+  // If the playbook is still in researching status, this is the orchestrator pushing
+  // its discovered contacts — just store them and let the orchestrator continue
+  // (it will set status to contact_review via PATCH in the next step).
+  if (playbook.status === 'researching') {
+    return NextResponse.json({
+      data: { message: 'Contacts stored. Orchestrator continues.' },
+    })
+  }
+
+  // The playbook is in contact_review status — this is the human approving contacts.
+  // Transition to writing and re-invoke the orchestrator for phases 3-4.
   updatePlaybook(id, {
     status: 'writing',
-    progress_pct: 40,
+    progress_pct: 45,
     phase_started_at: new Date().toISOString(),
     agent_status: [
       {
@@ -45,13 +57,13 @@ export async function POST(request: Request, { params }: RouteContext) {
         agent: 'writer',
         task: 'Generating hyper-personalized sections',
         status: 'running',
-        detail: 'Starting section 1 of 8',
+        detail: 'Starting section 1 of 12',
       },
       { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
     ],
   })
 
-  // Re-invoke the orchestrator to continue with writing + reviewing phases.
+  // Re-invoke the orchestrator for the writing + reviewing phases.
   // First try the Engine Runner (same mechanism as generate), then fall back
   // to a direct OpenClaw task via continuePlaybookFlow.
   const flowId = playbook.openclaw_session_id
@@ -64,11 +76,12 @@ export async function POST(request: Request, { params }: RouteContext) {
           'Content-Type': 'application/json',
           'X-API-Key': ENGINE_RUNNER_API_KEY,
         },
-        body: JSON.stringify({ flowId, playbookId: id, phase: 'writing', contactsApproved: true }),
+        body: JSON.stringify({ flowId, playbookId: id, phase: 'writing' }),
       })
       invokedViaRunner = res.ok
       if (!invokedViaRunner) {
-        console.error('[contacts/review] Engine Runner returned', res.status)
+        const errText = await res.text().catch(() => '')
+        console.error('[contacts/review] Engine Runner returned', res.status, errText)
       }
     } catch (err) {
       console.error('[contacts/review] Engine Runner unreachable:', err instanceof Error ? err.message : err)
