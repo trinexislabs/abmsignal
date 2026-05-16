@@ -52,7 +52,7 @@ const orderedSectionTypes = Object.entries(SECTION_META)
   .sort((a, b) => a[1].order - b[1].order)
   .map(([type]) => type as SectionType)
 
-// Map API section type to SectionType
+// Map API section type to SectionType — handles orchestrator variant names
 function mapSectionType(type: string): SectionType {
   const map: Record<string, SectionType> = {
     executive_summary: 'executive_summary',
@@ -62,13 +62,20 @@ function mapSectionType(type: string): SectionType {
     competitive_landscape: 'competitive_landscape',
     cultural_context: 'cultural_context',
     outreach_strategy: 'outreach_strategy',
+    // canonical
     personalized_sequences: 'personalized_sequences',
     battle_cards: 'battle_cards',
     content_strategy: 'content_strategy',
     measurement_framework: 'measurement_framework',
     appendix: 'appendix',
+    // orchestrator variant names
+    sequences: 'personalized_sequences',
+    hyper_personalized_sequences: 'personalized_sequences',
+    objection_handling: 'battle_cards',
+    content_assets: 'content_strategy',
+    measurement: 'measurement_framework',
   }
-  return map[type] || 'executive_summary'
+  return map[type] ?? 'executive_summary'
 }
 
 interface ApiSection {
