@@ -145,7 +145,7 @@ Read your SOUL.md for full instructions on the playbook generation pipeline.`
   
   console.log(`[engine-runner] Spawning orchestrator for flow ${flowId}, log: ${logFile}`)
   
-: const args = [
+const args = [
     'agent',
     '--agent', CONFIG.orchestratorAgentId,
     '--message', message,

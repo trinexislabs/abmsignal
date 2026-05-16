@@ -1,13 +1,11 @@
 'use client'
-import { use } from 'react'
 
-import { useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AppSidebar } from '@/components/app-sidebar'
 import { PlaybookStatusBadge } from '@/components/playbook-status-badge'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { mockPlaybook } from '@/lib/mock-data/playbooks'
 import { SECTION_META, type SectionType } from '@/types'
 import {
   FileText,
@@ -32,6 +30,7 @@ import {
   Share2,
   ChevronRight,
   Bot,
+  Loader2,
 } from 'lucide-react'
 
 const SECTION_ICONS: Record<SectionType, React.ElementType> = {
@@ -49,10 +48,47 @@ const SECTION_ICONS: Record<SectionType, React.ElementType> = {
   appendix: Paperclip,
 }
 
-// Sections that exist in mock data, ordered by SECTION_META
 const orderedSectionTypes = Object.entries(SECTION_META)
   .sort((a, b) => a[1].order - b[1].order)
   .map(([type]) => type as SectionType)
+
+// Map API section type to SectionType
+function mapSectionType(type: string): SectionType {
+  const map: Record<string, SectionType> = {
+    executive_summary: 'executive_summary',
+    account_intelligence: 'account_intelligence',
+    buying_committee: 'buying_committee',
+    why_now: 'why_now',
+    competitive_landscape: 'competitive_landscape',
+    cultural_context: 'cultural_context',
+    outreach_strategy: 'outreach_strategy',
+    personalized_sequences: 'personalized_sequences',
+    battle_cards: 'battle_cards',
+    content_strategy: 'content_strategy',
+    measurement_framework: 'measurement_framework',
+    appendix: 'appendix',
+  }
+  return map[type] || 'executive_summary'
+}
+
+interface ApiSection {
+  id: string
+  playbook_id: string
+  title: string
+  type: string
+  content: string
+  order: number
+  created_at: string
+}
+
+interface PlaybookData {
+  id: string
+  product_name: string
+  target_company: string
+  status: string
+  sections: ApiSection[]
+  contacts: unknown[]
+}
 
 function renderMarkdown(content: string): React.ReactNode {
   const lines = content.split('\n')
@@ -96,7 +132,6 @@ function renderMarkdown(content: string): React.ReactNode {
     } else if (line.startsWith('---')) {
       elements.push(<hr key={i} className="border-white/10 my-4" />)
     } else if (line.startsWith('|') && line.includes('|')) {
-      // Table — collect rows
       const tableLines: string[] = []
       while (i < lines.length && lines[i].startsWith('|')) {
         tableLines.push(lines[i])
@@ -153,21 +188,68 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
   const [editingSection, setEditingSection] = useState<string | null>(null)
   const [editContent, setEditContent] = useState<string>('')
   const [savedContents, setSavedContents] = useState<Record<string, string>>({})
+  const [playbook, setPlaybook] = useState<PlaybookData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
-  const playbook = mockPlaybook
+  useEffect(() => { setMounted(true) }, [])
 
-  const activeSection = playbook.sections.find(s => s.section_type === activeSectionType)
-    ?? { id: activeSectionType, section_type: activeSectionType, title: SECTION_META[activeSectionType].title, content: '', status: 'pending' as const, playbook_id: playbook.id, created_at: '' }
+  useEffect(() => {
+    if (!id || !mounted) return
+    async function fetchPlaybook() {
+      try {
+        const res = await fetch(`/api/playbooks/${id}`)
+        if (res.ok) {
+          const json = await res.json()
+          setPlaybook(json.data)
+        }
+      } catch (err) {
+        console.error('[playbook] Failed to fetch:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPlaybook()
+  }, [id, mounted])
 
-  const currentContent = savedContents[activeSection.id] ?? activeSection.content
+  if (!mounted || loading) {
+    return (
+      <div className="flex h-screen bg-[#0a0a0f] items-center justify-center">
+        <Loader2 className="w-6 h-6 text-[#339af0] animate-spin" />
+      </div>
+    )
+  }
+
+  if (!playbook) {
+    return (
+      <div className="flex h-screen bg-[#0a0a0f] items-center justify-center">
+        <div className="text-center">
+          <p className="text-white/60 text-sm">Playbook not found</p>
+          <Link href="/dashboard" className="text-[#339af0] text-sm mt-2 inline-block hover:underline">Back to Dashboard</Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Map API sections to a lookup by section_type
+  const sectionsByType = new Map<SectionType, ApiSection>()
+  for (const s of playbook.sections) {
+    sectionsByType.set(mapSectionType(s.type), s)
+  }
+
+  const activeSection = sectionsByType.get(activeSectionType)
+  const currentContent = activeSection ? (savedContents[activeSection.id] ?? activeSection.content) : ''
+  const hasContent = currentContent && currentContent.trim().length > 0
 
   function startEdit() {
     setEditContent(currentContent)
-    setEditingSection(activeSection.id)
+    setEditingSection(activeSection?.id ?? null)
   }
 
   function saveEdit() {
-    setSavedContents(prev => ({ ...prev, [activeSection.id]: editContent }))
+    if (activeSection) {
+      setSavedContents(prev => ({ ...prev, [activeSection.id]: editContent }))
+    }
     setEditingSection(null)
   }
 
@@ -178,13 +260,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="flex h-screen bg-[#0a0a0f] overflow-hidden">
-      {/* App Sidebar */}
       <AppSidebar />
 
-      {/* Main layout */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-
-        {/* Top bar */}
         <header className="flex items-center justify-between h-14 px-6 border-b border-white/[0.06] bg-[#0d0d15] flex-shrink-0">
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="text-[#a1a1aa] hover:text-white transition-colors">
@@ -192,44 +270,30 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
             </Link>
             <div className="flex items-center gap-3">
               <h1 className="font-heading font-semibold text-white text-base">
-                FinFlow AI → Belfius Bank
+                {playbook.product_name} → {playbook.target_company}
               </h1>
-              <PlaybookStatusBadge status={playbook.status} />
+              <PlaybookStatusBadge status={playbook.status as 'draft' | 'researching' | 'contact_review' | 'writing' | 'reviewing' | 'complete' | 'error' | 'rejected'} />
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[#a1a1aa] hover:text-white hover:bg-white/5 gap-1.5"
-            >
+            <Button variant="ghost" size="sm" className="text-[#a1a1aa] hover:text-white hover:bg-white/5 gap-1.5">
               <Share2 className="w-3.5 h-3.5" />
               Share
             </Button>
             <Link href={`/playbook/${id}/review`}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-white/10 bg-white/5 text-white hover:bg-white/10 gap-1.5"
-              >
+              <Button variant="outline" size="sm" className="border-white/10 bg-white/5 text-white hover:bg-white/10 gap-1.5">
                 <Star className="w-3.5 h-3.5" />
                 Quality Review
               </Button>
             </Link>
-            <Button
-              size="sm"
-              className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5"
-            >
+            <Button size="sm" className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
               <Download className="w-3.5 h-3.5" />
               Export PDF
             </Button>
           </div>
         </header>
 
-        {/* Content area with sidebar */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
-
-          {/* Section navigation sidebar */}
           <aside className="w-60 flex-shrink-0 border-r border-white/[0.06] bg-[#0d0d15] overflow-y-auto">
             <div className="px-3 py-4">
               <p className="text-[10px] font-medium text-[#a1a1aa] uppercase tracking-widest px-3 mb-3">
@@ -239,9 +303,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                 {orderedSectionTypes.map((sectionType) => {
                   const meta = SECTION_META[sectionType]
                   const Icon = SECTION_ICONS[sectionType]
-                  const section = playbook.sections.find(s => s.section_type === sectionType)
+                  const section = sectionsByType.get(sectionType)
                   const isActive = activeSectionType === sectionType
-                  const status = section?.status ?? 'pending'
+                  const hasSection = !!section?.content?.trim()
 
                   return (
                     <button
@@ -262,11 +326,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                       </span>
                       <span
                         className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                          status === 'reviewed' || status === 'complete'
-                            ? 'bg-green-500'
-                            : status === 'generating'
-                            ? 'bg-amber-500 animate-pulse'
-                            : 'bg-white/20'
+                          hasSection ? 'bg-green-500' : 'bg-white/20'
                         }`}
                       />
                     </button>
@@ -276,11 +336,8 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </aside>
 
-          {/* Main content */}
           <main className="flex-1 overflow-y-auto bg-[#0a0a0f]">
             <div className="max-w-4xl mx-auto px-8 py-8">
-
-              {/* Section header */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
@@ -290,27 +347,19 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                     <Badge
                       variant="outline"
                       className={`text-[10px] px-2 py-0 ${
-                        activeSection.status === 'reviewed' || activeSection.status === 'complete'
+                        hasContent
                           ? 'border-green-500/30 text-green-400 bg-green-500/10'
-                          : activeSection.status === 'generating'
-                          ? 'border-amber-500/30 text-amber-400 bg-amber-500/10'
                           : 'border-white/20 text-[#a1a1aa]'
                       }`}
                     >
-                      {activeSection.status === 'reviewed'
-                        ? 'Reviewed'
-                        : activeSection.status === 'complete'
-                        ? 'Complete'
-                        : activeSection.status === 'generating'
-                        ? 'Generating...'
-                        : 'Pending'}
+                      {hasContent ? 'Complete' : 'Pending'}
                     </Badge>
                   </div>
                   <h2 className="font-heading text-2xl font-bold text-white">
                     {SECTION_META[activeSectionType].title}
                   </h2>
                 </div>
-                {editingSection !== activeSection.id && (
+                {hasContent && editingSection !== activeSection?.id && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -323,9 +372,8 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                 )}
               </div>
 
-              {/* Section content */}
               <div className="rounded-xl border border-white/[0.06] bg-[#141419] p-6">
-                {editingSection === activeSection.id ? (
+                {editingSection === activeSection?.id ? (
                   <div className="space-y-4">
                     <textarea
                       value={editContent}
@@ -334,26 +382,17 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                       placeholder="Section content (Markdown supported)..."
                     />
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        onClick={saveEdit}
-                        className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5"
-                      >
+                      <Button size="sm" onClick={saveEdit} className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
                         <Save className="w-3.5 h-3.5" />
                         Save Changes
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={cancelEdit}
-                        className="text-[#a1a1aa] hover:text-white gap-1.5"
-                      >
+                      <Button variant="ghost" size="sm" onClick={cancelEdit} className="text-[#a1a1aa] hover:text-white gap-1.5">
                         <X className="w-3.5 h-3.5" />
                         Cancel
                       </Button>
                     </div>
                   </div>
-                ) : currentContent ? (
+                ) : hasContent ? (
                   <div className="prose prose-invert max-w-none">
                     {renderMarkdown(currentContent)}
                   </div>
@@ -368,8 +407,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                 )}
               </div>
 
-              {/* Section metadata */}
-              {activeSection.created_at && (
+              {activeSection?.created_at && (
                 <div className="flex items-center gap-4 mt-4 px-1">
                   <div className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
                     <Bot className="w-3.5 h-3.5" />
@@ -379,13 +417,8 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                     <CheckCircle2 className="w-3.5 h-3.5 text-green-500/70" />
                     <span>Reviewed by Quality Agent</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>14 min ago</span>
-                  </div>
                 </div>
               )}
-
             </div>
           </main>
         </div>
