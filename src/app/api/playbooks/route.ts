@@ -22,7 +22,10 @@ export async function POST(request: Request) {
   const { product_brief, target_account } = body
 
   if (!product_brief?.product_name || !target_account?.target_company) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    const missing = []
+    if (!product_brief?.product_name) missing.push('product_name')
+    if (!target_account?.target_company) missing.push('target_company')
+    return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 })
   }
 
   const valuePropsArr = product_brief.value_propositions

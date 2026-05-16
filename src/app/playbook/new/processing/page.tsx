@@ -100,7 +100,12 @@ export default function NewPlaybookProcessingPage() {
         if (!createRes.ok) {
           const errorBody = await createRes.text()
           console.error('[new/processing] Create failed:', createRes.status, errorBody)
-          setError(`Failed to create playbook (${createRes.status}). Please try again.`)
+          let errorMsg = 'Failed to create playbook'
+          try {
+            const errorJson = JSON.parse(errorBody)
+            errorMsg = errorJson.error || errorMsg
+          } catch {}
+          setError(`${errorMsg} (${createRes.status}). Please go back and try again.`)
           return
         }
 
