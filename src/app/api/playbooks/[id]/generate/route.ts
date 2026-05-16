@@ -62,6 +62,9 @@ export async function POST(_req: Request, { params }: RouteContext) {
       mode = 'openclaw'
       flowId = result.flowId
 
+      // Persist flowId so contacts/review can re-invoke the orchestrator later
+      updatePlaybook(id, { openclaw_session_id: flowId })
+
       // Invoke the orchestrator via Engine Runner (fire-and-forget)
       try {
         await fetch(`${ENGINE_RUNNER_URL}/invoke`, {

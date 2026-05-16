@@ -78,13 +78,19 @@ export async function createPlaybookFlow(params: {
     `Geography: ${params.geography}`,
     `Priority: ${params.priorityTier}`,
     ``,
-    `Execute the full ABM playbook generation pipeline:`,
+    `Execute PHASE 1 ONLY of the ABM playbook generation pipeline:`,
     `1. Research the target account (Researcher agent)`,
-    `2. Present contacts for human review (Contact Gate)`,
-    `3. Write all 12 playbook sections (Writer agent)`,
-    `4. Review with 16-point quality checklist (Reviewer agent)`,
+    `   - Discover key contacts, company intelligence, buying signals`,
+    `   - Store contacts via POST /api/playbooks/${params.playbookId}/contacts/add (if available)`,
+    `   - Update progress via PATCH /api/playbooks/${params.playbookId}`,
     ``,
-    `Return results as structured JSON.`,
+    `MANDATORY STOP: After research is complete, you MUST:`,
+    `   a) Set playbook status to "contact_review" via PATCH /api/playbooks/${params.playbookId}`,
+    `      with body: {"status":"contact_review","progress_pct":25,"agent_status":[...]}`,
+    `   b) STOP IMMEDIATELY. Do NOT proceed to writing or reviewing.`,
+    ``,
+    `The system will invoke a separate task for phases 2-4 after the human reviews contacts.`,
+    `Do not attempt to do writing or reviewing in this invocation.`,
   ].join('\n')
 
   try {
@@ -131,6 +137,60 @@ export async function createPlaybookFlow(params: {
     }
 
     return { ok: true, flowId, taskId: taskData.result?.task?.taskId }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Unknown error' }
+  }
+}
+
+/**
+ * Continue a playbook flow after human contact review is approved.
+ * Runs a new orchestrator task in the existing flow for writing + reviewing phases.
+ */
+export async function continuePlaybookFlow(params: {
+  flowId: string
+  playbookId: string
+}): Promise<{ ok: boolean; taskId?: string; error?: string }> {
+  const goal = [
+    `CONTINUE ABM PLAYBOOK (PHASES 2-4) — ID: ${params.playbookId}`,
+    ``,
+    `Human contact review is complete and contacts are approved.`,
+    `The playbook status is now "writing". Execute phases 2-4:`,
+    ``,
+    `2. Write all 12 playbook sections (Writer agent)`,
+    `   - Fetch the approved contacts from GET /api/playbooks/${params.playbookId}/contacts`,
+    `   - Generate hyper-personalized content for each section`,
+    `   - Update progress via PATCH /api/playbooks/${params.playbookId}`,
+    ``,
+    `3. Review with 16-point quality checklist (Reviewer agent)`,
+    `   - Verify accuracy, personalization, cultural fit, and completeness`,
+    `   - Update quality_checks in the playbook`,
+    ``,
+    `4. Set status to "complete" with 100% progress`,
+    ``,
+    `Update playbook status throughout via PATCH /api/playbooks/${params.playbookId}.`,
+  ].join('\n')
+
+  try {
+    const taskRes = await fetch(`${OPENCLAW_URL}/api/generate`, {
+      method: 'POST',
+      headers: buildHeaders(),
+      body: JSON.stringify({
+        action: 'run_task',
+        flowId: params.flowId,
+        runtime: 'subagent',
+        agentId: 'orchestrator',
+        task: goal,
+        label: `playbook-${params.playbookId}-writing`,
+      }),
+    })
+
+    const taskData = await taskRes.json() as { ok: boolean; result?: { task?: { taskId: string } }; error?: string }
+
+    if (!taskData.ok) {
+      return { ok: false, error: taskData.error ?? `run_task failed: HTTP ${taskRes.status}` }
+    }
+
+    return { ok: true, taskId: taskData.result?.task?.taskId }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Unknown error' }
   }
