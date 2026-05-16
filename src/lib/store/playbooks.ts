@@ -1,3 +1,5 @@
+import fs from 'fs'
+import path from 'path'
 import type {
   Playbook,
   PlaybookStatus,
@@ -15,7 +17,33 @@ export interface StoredPlaybook extends Playbook {
   phase_started_at?: string
 }
 
-const store = new Map<string, StoredPlaybook>()
+const DATA_DIR = path.join(process.cwd(), 'data')
+const STORE_FILE = path.join(DATA_DIR, 'playbooks.json')
+
+function loadStore(): Map<string, StoredPlaybook> {
+  try {
+    if (!fs.existsSync(STORE_FILE)) return new Map()
+    const raw = fs.readFileSync(STORE_FILE, 'utf-8')
+    const data = JSON.parse(raw) as Record<string, StoredPlaybook>
+    return new Map(Object.entries(data))
+  } catch {
+    return new Map()
+  }
+}
+
+function saveStore(store: Map<string, StoredPlaybook>): void {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true })
+    }
+    const data = Object.fromEntries(store)
+    fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), 'utf-8')
+  } catch (err) {
+    console.error('[store] Failed to persist playbooks:', err)
+  }
+}
+
+const store = loadStore()
 
 export function createPlaybook(
   data: Omit<StoredPlaybook, 'id' | 'created_at' | 'updated_at'>,
@@ -24,6 +52,7 @@ export function createPlaybook(
   const now = new Date().toISOString()
   const playbook: StoredPlaybook = { ...data, id, created_at: now, updated_at: now }
   store.set(id, playbook)
+  saveStore(store)
   return playbook
 }
 
@@ -51,6 +80,7 @@ export function updatePlaybook(
     updated_at: new Date().toISOString(),
   }
   store.set(id, updated)
+  saveStore(store)
   return updated
 }
 
