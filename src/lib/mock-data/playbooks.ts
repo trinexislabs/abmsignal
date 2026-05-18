@@ -6,6 +6,9 @@ import {
   SectionStatus,
 } from '@/types'
 
+// TypeScript narrows string literals to the union types via structural typing —
+// no explicit casts needed for confidence / verification_status values.
+
 const MOCK_PLAYBOOK_ID = 'pb_belfius_fintech_2025'
 const MOCK_USER_ID = 'usr_demo_001'
 
@@ -84,6 +87,29 @@ export const mockPlaybook: MockPlaybook = {
       title: 'Executive Summary',
       content: `## Strategic Opportunity\n\nBelfius Bank is in the midst of its "Belfius 2030" digital transformation programme, having committed €500M to technology modernisation through 2027. The treasury function — currently running on a fragmented mix of legacy Murex modules and manual Excel workflows — is a critical dependency for this transformation.\n\n**Primary Trigger:** Belfius announced a €2.3B covered bond issuance in Q1 2025, exposing significant gaps in their multi-currency cash management capabilities. CFO Dirk Gyselinck publicly cited "treasury visibility" as a top-3 finance priority in the March 2025 annual report.\n\n**Why FinFlow AI Wins Here:** Our native Belgian regulatory compliance engine (including NBB reporting automation) eliminates the #1 objection for Belgian banks: "We'll need to customise everything for local regulations." We are the only vendor with a pre-certified NBB integration.\n\n**Recommended Approach:** Warm introduction via Karel Bogaert (Belfius CIO, connects to FinFlow board advisor Jan De Cock) → CFO-level executive briefing → Treasury technology pilot on Belgian subsidiary FX book.`,
       status: 'reviewed' as SectionStatus,
+      sources: [
+        {
+          id: 'src_001',
+          claim: 'Belfius committed €500M to technology modernisation through 2027',
+          source_url: 'https://belfius.be/annual-report-2024',
+          confidence: 'high' as const,
+          verification_status: 'verified' as const,
+        },
+        {
+          id: 'src_002',
+          claim: 'CFO Dirk Gyselinck cited "treasury visibility" as a top-3 finance priority in the March 2025 annual report',
+          source_url: 'https://belfius.be/press/annual-results-2024',
+          confidence: 'high' as const,
+          verification_status: 'needs_review' as const,
+        },
+        {
+          id: 'src_003',
+          claim: 'Jan De Cock board connection enables warm introduction pathway to CFO Gyselinck',
+          source_url: 'https://linkedin.com/in/jan-de-cock',
+          confidence: 'low' as const,
+          verification_status: 'unverified' as const,
+        },
+      ],
       created_at: '2025-03-12T13:00:00Z',
     },
     {
@@ -93,6 +119,36 @@ export const mockPlaybook: MockPlaybook = {
       title: 'Account Intelligence Dossier',
       content: `## Belfius Bank — Company Profile\n\n**Headquarters:** Brussels, Belgium\n**Revenue:** €3.1B (FY2024)\n**Employees:** 7,400\n**Assets Under Management:** €285B\n**Ownership:** Belgian state (100%)\n\n### Recent Strategic Signals\n\n| Signal | Date | Relevance Score |\n|--------|------|-----------------|\n| "Belfius 2030" digital transformation announced | Jan 2024 | 🔴 Critical |\n| €500M technology investment committed | Jan 2024 | 🔴 Critical |\n| Hired 3 new treasury technologists from ING Belgium | Feb 2025 | 🔴 Critical |\n| Q1 2025 covered bond issuance (€2.3B) | Mar 2025 | 🟠 High |\n| CFO Gyselinck speech at Belgian Finance Forum | Feb 2025 | 🟠 High |\n| Published sustainability bond framework update | Dec 2024 | 🟡 Medium |\n\n### Technology Stack (Research-Verified)\n- **Core Banking:** Temenos T24 (migrating to Temenos Transact)\n- **Treasury:** Legacy Murex + Excel (TARGET FOR DISPLACEMENT)\n- **ERP:** SAP S/4HANA (partial rollout)\n- **Data Platform:** Azure Data Lake (Microsoft partnership)\n- **Identity:** Microsoft Entra ID\n\n### Pain Points Confirmed Via LinkedIn + Job Postings\n1. "Senior Treasury Analyst" posting (Feb 2025) mentions "manual FX reconciliation" — 3 open roles\n2. Head of Finance Ops posted about "SWIFT integration challenges" in industry forum\n3. 2024 annual report notes €12M in FX hedging costs — above peer benchmark`,
       status: 'reviewed' as SectionStatus,
+      sources: [
+        {
+          id: 'src_004',
+          claim: 'Belfius FY2024 revenue €3.1B, 7,400 employees, €285B AUM',
+          source_url: 'https://belfius.be/press/fy2024-results',
+          confidence: 'high' as const,
+          verification_status: 'verified' as const,
+        },
+        {
+          id: 'src_005',
+          claim: '3 open "Senior Treasury Analyst" roles mentioning manual FX reconciliation (Feb 2025)',
+          source_url: 'https://linkedin.com/jobs/belfius-treasury-analyst-2025',
+          confidence: 'medium' as const,
+          verification_status: 'needs_review' as const,
+        },
+        {
+          id: 'src_006',
+          claim: 'Belfius annual report notes €12M in FX hedging costs — above peer benchmark',
+          source_url: 'https://belfius.be/annual-report-2024',
+          confidence: 'medium' as const,
+          verification_status: 'unverified' as const,
+        },
+        {
+          id: 'src_007',
+          claim: 'Karel Bogaert publicly endorsed Microsoft Azure-first strategy in Belfius Tech Blog Jan 2025',
+          source_url: 'https://tech.belfius.be/azure-first-2025',
+          confidence: 'high' as const,
+          verification_status: 'verified' as const,
+        },
+      ],
       created_at: '2025-03-12T13:05:00Z',
     },
     {
@@ -180,6 +236,18 @@ export const mockPlaybook: MockPlaybook = {
       verification_status: 'confirmed' as ContactVerificationStatus,
       email: 'd.gyselinck@belfius.be',
       notes: 'Decision authority for deals >€200K. Connect via Jan De Cock introduction.',
+      personalization_signals: [
+        { signal: 'Spoke at Belgian Finance Forum (Feb 2025) about "treasury as a strategic enabler, not a back-office function"', source_url: 'https://belgianfinanceforum.be/2025/keynote' },
+        { signal: 'Sits on board of Belgian Finance Federation alongside FinFlow advisor Jan De Cock', source_url: 'https://linkedin.com/in/dirk-gyselinck-belfius' },
+        { signal: 'Oversaw €500M digital transformation budget commitment in 2024 annual report', source_url: 'https://belfius.be/annual-report-2024' },
+      ],
+      direct_quotes: [
+        {
+          quote: 'Treasury must become a strategic asset, not just a back-office function. Banks that get this right will generate measurable alpha from their cash positions.',
+          context: 'Belgian Finance Forum keynote, February 2025',
+          source_url: 'https://belgianfinanceforum.be/2025/keynote',
+        },
+      ],
       created_at: '2025-03-12T11:30:00Z',
     },
     {
@@ -193,6 +261,11 @@ export const mockPlaybook: MockPlaybook = {
       verification_status: 'confirmed' as ContactVerificationStatus,
       email: 'k.bogaert@belfius.be',
       notes: 'Azure-first champion. Key technical gatekeeper.',
+      personalization_signals: [
+        { signal: 'Publicly endorsed Microsoft Azure-first strategy in Belfius Tech Blog post (Jan 2025)', source_url: 'https://tech.belfius.be/azure-first-2025' },
+        { signal: 'Spoke at Microsoft Financial Services Summit Brussels (Nov 2024)', source_url: 'https://linkedin.com/in/karel-bogaert-belfius' },
+      ],
+      direct_quotes: [],
       created_at: '2025-03-12T11:35:00Z',
     },
     {
@@ -206,6 +279,18 @@ export const mockPlaybook: MockPlaybook = {
       verification_status: 'confirmed' as ContactVerificationStatus,
       email: 's.vandermeersch@belfius.be',
       notes: 'Primary champion target. Euroclear background. Most reachable entry point.',
+      personalization_signals: [
+        { signal: '8 years at Euroclear specialising in TARGET2-Securities multi-currency reconciliation', source_url: 'https://linkedin.com/in/sophie-vandermeersch' },
+        { signal: 'Joined Belfius in January 2024 explicitly to lead treasury technology modernisation', source_url: 'https://linkedin.com/in/sophie-vandermeersch' },
+        { signal: 'Recently commented on an industry article about SWIFT gpi challenges in Belgian banks', source_url: 'https://linkedin.com/in/sophie-vandermeersch' },
+      ],
+      direct_quotes: [
+        {
+          quote: 'Our biggest challenge is real-time visibility across currencies — the legacy stack simply cannot keep up with the volumes we\'re processing post-covered-bond issuance.',
+          context: 'LinkedIn comment on "The Future of Treasury Technology" article, January 2025',
+          source_url: 'https://linkedin.com/in/sophie-vandermeersch',
+        },
+      ],
       created_at: '2025-03-12T11:40:00Z',
     },
     {

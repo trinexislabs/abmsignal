@@ -6,7 +6,7 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { PlaybookStatusBadge } from '@/components/playbook-status-badge'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { SECTION_META, type SectionType, type SourceReference, type SourceVerificationStatus } from '@/types'
+import { SECTION_META, type SectionType, type SourceReference, type SourceConfidence, type SourceVerificationStatus } from '@/types'
 import {
   FileText,
   Building2,
@@ -123,25 +123,46 @@ function processSourceMarkers(content: string): { processed: string; urls: strin
   return { processed, urls }
 }
 
-interface SourceBadgeProps {
-  refNumber: number
+interface UrlMapEntry {
   url: string
+  confidence?: SourceConfidence
+  verificationStatus?: SourceVerificationStatus
 }
 
-function SourceBadge({ refNumber, url }: SourceBadgeProps) {
+interface SourceBadgeProps {
+  refNumber: number
+  entry: UrlMapEntry
+}
+
+function SourceBadge({ refNumber, entry }: SourceBadgeProps) {
   const [open, setOpen] = useState(false)
+  const cfg = entry.verificationStatus ? VERIFICATION_CONFIG[entry.verificationStatus] : null
+  const VerifyIcon = cfg?.icon ?? null
+
   return (
     <span className="relative inline-block align-super">
+      {/* tap-outside backdrop — closes popup on mobile tap or desktop click */}
+      {open && (
+        <span
+          className="fixed inset-0 z-40"
+          style={{ cursor: 'default' }}
+          onClick={() => setOpen(false)}
+          aria-hidden
+        />
+      )}
       <button
-        onClick={() => setOpen(o => !o)}
-        className="text-[10px] font-bold text-[#339af0] bg-[#339af0]/15 border border-[#339af0]/30 rounded px-1 py-0 leading-tight hover:bg-[#339af0]/25 transition-colors ml-0.5"
+        onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
+        className="relative z-50 text-[10px] font-bold text-[#339af0] bg-[#339af0]/15 border border-[#339af0]/30 rounded px-1 py-0 leading-tight hover:bg-[#339af0]/25 transition-colors ml-0.5"
         aria-label={`Source ${refNumber}`}
       >
         {refNumber}
       </button>
       {open && (
-        <span className="absolute z-50 left-0 top-5 w-72 bg-[#141419] border border-white/10 rounded-lg shadow-xl p-3 text-left"
-          style={{ minWidth: '240px' }}>
+        <span
+          className="absolute z-50 left-0 top-5 w-72 bg-[#141419] border border-white/10 rounded-lg shadow-xl p-3 text-left"
+          style={{ minWidth: '240px' }}
+          onClick={e => e.stopPropagation()}
+        >
           <button
             onClick={() => setOpen(false)}
             className="absolute top-2 right-2 text-[#a1a1aa] hover:text-white"
@@ -149,17 +170,31 @@ function SourceBadge({ refNumber, url }: SourceBadgeProps) {
           >
             <X className="w-3 h-3" />
           </button>
-          <p className="text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-wider mb-1.5">Source {refNumber}</p>
+          <p className="text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-wider mb-2">Source {refNumber}</p>
           <a
-            href={url}
+            href={entry.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#339af0] hover:underline break-all flex items-start gap-1"
-            onClick={e => e.stopPropagation()}
+            className="text-xs text-[#339af0] hover:underline break-all flex items-start gap-1 mb-2"
           >
             <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5" />
-            {url}
+            {entry.url}
           </a>
+          {(entry.confidence || entry.verificationStatus) && (
+            <div className="flex items-center gap-1.5 pt-2 border-t border-white/[0.06]">
+              {entry.confidence && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium capitalize ${CONFIDENCE_COLORS[entry.confidence]}`}>
+                  {entry.confidence}
+                </span>
+              )}
+              {cfg && VerifyIcon && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border flex items-center gap-1 ${cfg.className}`}>
+                  <VerifyIcon className="w-2.5 h-2.5" />
+                  {cfg.label}
+                </span>
+              )}
+            </div>
+          )}
         </span>
       )}
     </span>
@@ -167,7 +202,7 @@ function SourceBadge({ refNumber, url }: SourceBadgeProps) {
 }
 
 // Render a single line with [N] markers replaced by SourceBadge components
-function renderLineWithSources(line: string, urlMap: string[]): React.ReactNode {
+function renderLineWithSources(line: string, urlMap: UrlMapEntry[]): React.ReactNode {
   if (urlMap.length === 0 || !line.includes('[')) return line
   const parts = line.split(/(\[\d+\])/g)
   return (
@@ -176,8 +211,8 @@ function renderLineWithSources(line: string, urlMap: string[]): React.ReactNode 
         const m = part.match(/^\[(\d+)\]$/)
         if (m) {
           const num = parseInt(m[1], 10)
-          const url = urlMap[num - 1]
-          if (url) return <SourceBadge key={i} refNumber={num} url={url} />
+          const entry = urlMap[num - 1]
+          if (entry) return <SourceBadge key={i} refNumber={num} entry={entry} />
         }
         return <span key={i} dangerouslySetInnerHTML={{ __html: part.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white/90">$1</strong>') }} />
       })}
@@ -185,7 +220,7 @@ function renderLineWithSources(line: string, urlMap: string[]): React.ReactNode 
   )
 }
 
-function renderMarkdown(content: string, urlMap: string[]): React.ReactNode {
+function renderMarkdown(content: string, urlMap: UrlMapEntry[]): React.ReactNode {
   const lines = content.split('\n')
   const elements: React.ReactNode[] = []
   let i = 0
@@ -444,7 +479,18 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
   const hasContent = currentContent && currentContent.trim().length > 0
 
   // Process inline (source: URL) markers
-  const { processed: processedContent, urls: inlineUrlMap } = processSourceMarkers(currentContent ?? '')
+  const { processed: processedContent, urls: inlineUrls } = processSourceMarkers(currentContent ?? '')
+
+  // Enrich inline URL entries with metadata from structured section sources (matched by URL)
+  const sectionSourcesByUrl = new Map((activeSection?.sources ?? []).map(s => [s.source_url, s]))
+  const inlineUrlMap: UrlMapEntry[] = inlineUrls.map(url => {
+    const match = sectionSourcesByUrl.get(url)
+    return {
+      url,
+      confidence: match?.confidence,
+      verificationStatus: match?.verification_status,
+    }
+  })
 
   // Aggregate all sources across all sections
   const allSources: { source: SourceReference; sectionId: string; sectionTitle: string }[] = []
@@ -711,11 +757,11 @@ ${sectionsHtml}
                   <div className="mt-4 p-3 rounded-lg border border-white/[0.06] bg-[#141419]">
                     <p className="text-xs text-[#a1a1aa] mb-2">Inline source references found in content:</p>
                     <ol className="space-y-1">
-                      {inlineUrlMap.map((url, i) => (
+                      {inlineUrlMap.map((entry, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs">
                           <span className="text-[#339af0] font-bold">[{i + 1}]</span>
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-[#339af0] hover:underline break-all">
-                            {url}
+                          <a href={entry.url} target="_blank" rel="noopener noreferrer" className="text-[#339af0] hover:underline break-all">
+                            {entry.url}
                           </a>
                         </li>
                       ))}
@@ -813,13 +859,13 @@ ${sectionsHtml}
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-500/70" />
                       <span>Reviewed by Quality Agent</span>
                     </div>
-                    {inlineUrlMap.length > 0 && (
+                    {inlineUrls.length > 0 && (
                       <button
                         onClick={() => setShowSources(true)}
                         className="flex items-center gap-1.5 text-xs text-[#339af0] hover:underline"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        {inlineUrlMap.length} inline reference{inlineUrlMap.length !== 1 ? 's' : ''}
+                        {inlineUrls.length} inline reference{inlineUrls.length !== 1 ? 's' : ''}
                       </button>
                     )}
                   </div>
