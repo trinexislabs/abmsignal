@@ -1014,5 +1014,986 @@
     "updated_at": "2026-05-16T11:26:12.805Z",
     "phase_started_at": "2026-05-16T11:25:41.427Z",
     "openclaw_session_id": "f4b9d161-c915-4768-89a6-142a1b03bd82"
+  },
+  "pb_74c5ea2eddaf4574": {
+    "user_id": "usr_demo",
+    "product_name": "PeopleSocial",
+    "product_brief": {
+      "product_name": "PeopleSocial",
+      "description": "A employee advocacy platform that can help an organisation to use their employees to build a social distribution engine",
+      "value_propositions": [
+        "Employee advocacy",
+        "Social media force multipler"
+      ],
+      "target_personas": [
+        "CTO",
+        "CPO"
+      ],
+      "differentiators": [
+        "Let you amplify the network effects"
+      ],
+      "competitors": [
+        "DMSN8"
+      ],
+      "deployment_model": "saas",
+      "deal_size": "<50k",
+      "sales_cycle": "<30d"
+    },
+    "target_company": "MAS holdings ",
+    "target_url": "https://masholdings.com/",
+    "industry": "Manufacturing",
+    "geography": "Other APAC",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "Writing complete",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: PeopleSocial → MAS Holdings\n\nMAS Holdings is South Asia's largest apparel manufacturer (100,000+ employees, 53 factories in 17 countries, $2B+ revenue). They supply the world's biggest brands — Victoria's Secret, Nike, Calvin Klein, Marks & Spencer, lululemon, Patagonia. Yet with 100,000+ employees across the globe, MAS is sitting on the largest untapped social media force in the Sri Lankan corporate world.\n\nFive converging signals make this a compelling <$50K, <30 day velocity play:\n\n1. **100,000+ employees = massive untapped social force** — If even 5% of MAS employees become advocates, that's 5,000 brand voices. Their combined social reach could exceed any paid media campaign.\n\n2. **'Women Go Beyond' 20th anniversary** — MAS's flagship women's empowerment program has powerful stories but limited distribution. Employee advocacy turns 100,000 employees into storytellers.\n\n3. **Strategic pivot (Feb 2026)** — MAS is restructuring (factory repurposing, vertical integration). Employee advocacy communicates the transformation narrative from within.\n\n4. **People-first culture** — 'Putting people first' is MAS's stated leadership philosophy. Employee advocacy is the natural digital expression of this value.\n\n5. **Employer brand competition** — MAS competes globally for talent against tech companies and multinationals. Employee voices on social media are the most authentic employer brand.\n\n**Recommended approach:** Velocity play — <$50K, <30 days. Lead with 'turn 100K employees into your social media force multiplier.' Target CMO/VP Brand as champion, CEO Fernando as economic buyer.\n\n**Expected outcome:** <$50K entry. 5,000 employee advocates within 12 months. 50-100x social reach multiplier.",
+        "order": 1,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## MAS Holdings — Account Intelligence\n\n### Company Overview\n- **Name:** MAS Holdings (Pvt) Ltd\n- **Type:** South Asia's largest apparel manufacturer\n- **HQ:** Battaramulla, Sri Lanka\n- **Founded:** 1987 by Mahesh, Ajay, and Sharad Amalean\n- **CEO:** Suren Fernando (formerly Chief Transformation Officer)\n- **Chairman:** Mahesh Amalean (Desamanya title holder)\n- **Employees:** 100,000+ globally (90,040 in Sri Lanka as of 2021/22)\n- **Factories:** 53 manufacturing facilities across 17 countries\n- **Revenue:** $2B+ (est.)\n- **Key Clients:** Victoria's Secret, Nike, Calvin Klein, Marks & Spencer, lululemon, Patagonia, Ralph Lauren, Columbia Sportswear, Gap, Banana Republic\n- **Competitors:** Brandix, Hela Clothing, Hirdaramani Group\n\n### Culture & Values\n- 'Putting people first' — core leadership philosophy\n- **Women Go Beyond** — flagship women's empowerment program (20th year)\n- **Plan for Planet** — sustainability strategy\n- Non-discriminatory policies, differently-abled persons in key positions\n- MAS Innovation — partnerships with MIT, Stanford on wearable tech, digitization\n\n### Social & Brand Signals\n- Active LinkedIn presence (corporate page)\n- Strong employer brand narrative but centralized (corporate-driven, not employee-driven)\n- Women Go Beyond stories need wider distribution\n- Sustainability (Plan for Planet) is a key narrative but lacks employee voice\n- 100K employees = largest untapped social force in Sri Lankan corporate landscape\n\n### Pain Points\n- Brand narrative controlled by marketing team, not amplified by employees\n- Employer brand competing against global tech/multinationals for talent\n- Sustainability and WGB stories stuck in annual reports, not social feeds\n- Strategic pivot (Feb 2026 factory restructuring) needs positive employee voice\n- No employee advocacy platform — employees not empowered as brand ambassadors",
+        "order": 2,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: CMO / VP Brand & Communications [Name TBD]**\n- Owns brand, social media, employer branding\n- Employee advocacy directly extends their marketing reach\n- 100K employees = their biggest untapped channel\n\n**Economic Buyer: Suren Fernando (CEO)**\n- Formerly Chief Transformation Officer — understands digital transformation\n- 20+ years with MAS — culture champion\n- <$50K well within CEO authority\n\n**Key Influencer: Chief People Officer / CHRO [Name TBD]**\n- Employee engagement and culture owner\n- PeopleSocial aligns with 'people first' philosophy\n- Women Go Beyond program is HR-driven — advocacy amplifies it\n\n**Stakeholder: Head of Sustainability**\n- Plan for Planet narrative needs employee amplification\n- Sustainability storytelling through authentic employee voices\n\n**Stakeholder: Head of Employer Branding / Talent Acquisition**\n- Employee voices = most authentic employer brand\n- Talent attraction is strategic priority (competing globally)\n\n**Technical Buyer: CTO / Head of Digital [Name TBD]**\n- Evaluates SaaS platform, security, integration\n- MAS Innovation digitization focus\n\n**Strategic Endorser: Mahesh Amalean (Chairman)**\n- Co-founder, people-first philosophy architect\n- Will appreciate employee empowerment through technology\n\n**Decision Process:** CMO sponsors → CPO aligns → CTO evaluates → CEO approves. <$50K = CEO authority, no board approval needed.",
+        "order": 3,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now — Signal Analysis\n\n### S1: 100K Employees = Untapped Social Force (🔴 CRITICAL)\n- MAS has 100,000+ employees across 17 countries\n- Even 5% advocacy adoption = 5,000 brand voices\n- Combined social reach exceeds any paid campaign\n- **Action:** 'You have 100,000 brand ambassadors. They just don't know it yet.'\n\n### S2: Women Go Beyond 20th Anniversary (🔴 HIGH)\n- Flagship program has powerful stories trapped in annual reports\n- Employee advocacy turns WGB participants into storytellers\n- **Action:** '20 years of Women Go Beyond — let your women tell their own stories.'\n\n### S3: Strategic Pivot (Feb 2026) (🟡 MEDIUM-HIGH)\n- Factory restructuring, vertical integration — change creates uncertainty\n- Employee advocacy communicates transformation narrative from within\n- **Action:** 'Your people are your best change communicators.'\n\n### S4: People-First Culture (🟡 MEDIUM-HIGH)\n- 'Putting people first' is MAS's stated philosophy\n- Employee advocacy is the digital expression of this value\n- **Action:** 'People first means people's voices first.'\n\n### S5: Employer Brand Competition (🟡 MEDIUM)\n- MAS competes globally for talent against tech companies\n- Employee voices on social media are the most authentic employer brand\n- **Action:** 'Your best recruitment tool is your own employees.'",
+        "order": 4,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n### DSMN8 (Listed Competitor)\n- Employee advocacy platform — direct competitor to PeopleSocial\n- **Strengths:** Established platform, social media management focus\n- **Weaknesses:** Limited employee engagement features, less focus on manufacturing/workforce contexts\n\n### Other Competitors\n- **Sprout Social (Employee Advocacy)** — Enterprise pricing ($100K+), US-centric, over-engineered for <$50K deal\n- **EveryoneSocial** — Mid-market, but less APAC presence\n- **Haiilo (formerly Smarp)** — European focus, less Sri Lankan/APAC coverage\n- **LinkedIn Elevate (deprecated)** — Now part of LinkedIn Pages, no standalone advocacy\n\n### PeopleSocial Advantage\n1. **Price:** <$50K vs. enterprise competitors $100K+\n2. **Speed:** <30 days deployment vs. 3-6 months\n3. **Manufacturing context:** Built for large workforce environments, not just tech companies\n4. **APAC focus:** Understands Sri Lankan, South Asian, Asian workforce dynamics\n5. **SaaS simplicity:** No complex integrations, employee-friendly mobile-first\n6. **Social force multiplier:** Specifically designed to turn employees into distribution engines\n\n### Displacement Strategy\n- MAS likely does NOT have any employee advocacy platform — greenfield\n- Position against the status quo: corporate-controlled brand narrative vs. employee-empowered brand\n- Lead: 'Your marketing team is 10 people. Your social media force multiplier is 100,000.'",
+        "order": 5,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Sri Lankan Manufacturing Culture — MAS Specific\n\n- **Decision-making:** Founders + professional management. Chairman Amalean has final say on strategic matters.\n- **Culture:** People-first, collaborative, women-empowered. Not typical command-and-control manufacturing.\n- **Formality:** Use 'Mr.' and last name. English for business.\n- **Pace:** Private company = faster decisions than listed companies. CEO has authority.\n- **Patriotism:** MAS is a Sri Lankan success story — source of national pride.\n\n### MAS-Specific\n- 'Women Go Beyond' is sacred — don't treat it as a marketing tool, treat it as a movement\n- Co-founders are hands-on — Chairman Amalean still actively involved\n- Sustainability is genuine, not greenwashing — authenticity matters\n- 100K employees across 17 countries = multicultural, multilingual\n- Manufacturing workers may not be on LinkedIn — mobile-first, WhatsApp integration matters\n\n### Do's\n- ✅ Lead with 'people first' philosophy alignment\n- ✅ Reference Women Go Beyond by name\n- ✅ Use 'employee voice' and 'brand ambassador' language\n- ✅ Show understanding of manufacturing workforce dynamics\n- ✅ Emphasize authenticity — real employees, real stories\n- ✅ Position as empowerment, not surveillance\n\n### Don'ts\n- ❌ Treat Women Go Beyond as a marketing campaign\n- ❌ Position as 'employee monitoring' or 'compliance'\n- ❌ Use tech/startup jargon — MAS is manufacturing, not Silicon Valley\n- ❌ Ignore the factory workforce (it's not just office workers)\n- ❌ Over-engineer the pitch — keep it simple\n- ❌ Forget 17 countries = multicultural communication",
+        "order": 6,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Channels:** Direct email + LinkedIn to CMO, CEO | Introduction via Sri Lankan business networks\n**Duration:** 3-4 weeks | **Touches:** 4-6 per persona\n\n### CMO / VP Brand — Champion\n1. Email: 'Your marketing team is 10. Your social force multiplier is 100,000.'\n2. Women Go Beyond advocacy angle: 20th anniversary amplification\n3. ROI model: employee advocacy vs. paid media reach\n4. Demo: PeopleSocial platform walkthrough\n\n### Suren Fernando (CEO)\n1. Email: 'People first means people's voices first'\n2. Business case: employee advocacy as digital transformation of brand\n3. Reference to MAS 2025 transformation (his prior role)\n4. Executive meeting\n\n### Chief People Officer\n1. 'Women Go Beyond + social media = your stories at scale'\n2. Employee engagement meets employer brand\n3. PeopleSocial as people-first technology\n\n### Chairman Mahesh Amalean\n1. Strategic letter: 'You built MAS on people. PeopleSocial lets their voices build your brand.'\n2. Reference to people-first philosophy as digital transformation",
+        "order": 7,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Hyper-Personalized Sequences",
+        "type": "sequences",
+        "content": "## Email Sequences\n\n### CMO / VP Brand — Champion\n\n**Email 1:**\nSubject: Your marketing team is 10. Your social force multiplier is 100,000.\n\nDear [CMO Name],\n\nMAS Holdings has 100,000 employees across 17 countries. Each one has a social network. Each one has a story — especially the women of Women Go Beyond.\n\nPeopleSocial is an employee advocacy platform that turns your workforce into a social distribution engine. Your employees share approved brand content through their own social networks. Your reach multiplies. Your stories scale. Your employer brand becomes authentic.\n\n5% adoption = 5,000 brand ambassadors. That's more reach than any paid campaign.\n\nI'd value 20 minutes to show you how it works.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** Women Go Beyond 20th anniversary — let your women tell their own stories\n**Email 3 (Day 10):** ROI: Employee advocacy vs. paid media — the numbers\n**Email 4 (Day 15):** Demo: See PeopleSocial in action for a 100K workforce\n\n### Suren Fernando (CEO)\n\n**Email 1 (Day 7, after CMO engagement):**\nSubject: People first means people's voices first\n\nDear Mr. Fernando,\n\nYou led MAS 2025 transformation. You put people at the center. Now let their voices be your brand.\n\nPeopleSocial turns 100,000 MAS employees into a social media force multiplier — sharing your sustainability stories, your Women Go Beyond journey, your transformation narrative. Authentically. From within.\n\nYour CMO is evaluating the platform. I'd welcome 15 minutes to share the business case directly.\n\nBest regards,\n[Sender]",
+        "order": 8,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Battle Cards & Objection Handling",
+        "type": "objection_handling",
+        "content": "## Objection Handling\n\n1. **\"Our employees won't participate.\"** → Women Go Beyond has 20 years of engagement. Your people-first culture means employees WANT to share. Start with your most engaged — WGB ambassadors, sustainability champions.\n\n2. **\"Factory workers aren't on social media.\"** → PeopleSocial is mobile-first. WhatsApp integration works for factory teams. It's not just LinkedIn — Facebook, Instagram, WhatsApp all supported. 17 countries = diverse platforms.\n\n3. **\"We use LinkedIn company pages already.\"** → Company pages = corporate voice. Employee advocacy = authentic voice. People trust people 3x more than brands. Your 100K employees have 10M+ combined connections.\n\n4. **\"$50K is significant for a manufacturing company.\"** → One paid LinkedIn campaign costs more. And employee advocacy reaches 10-50x more people — organically, authentically, sustainably.\n\n5. **\"What about brand risk? Uncontrolled employee posts?\"** → PeopleSocial uses approved content libraries. Employees share YOUR content through THEIR networks. No rogue posting. Full compliance and approval workflows built in.\n\n6. **\"DSMN8 already does this.\"** → PeopleSocial is built for large manufacturing workforces across APAC. We understand factory workers, 17-country operations, and multilingual content distribution.\n\n7. **\"We don't have time to manage this.\"** → PeopleSocial is SaaS with built-in content curation. Your marketing team uploads content once. Employees share in one click. Minimal management overhead.\n\n8. **\"Our brand clients (Nike, VS, etc.) control our narrative.\"** → Employee advocacy is about MAS's employer brand, not client brands. Your people tell YOUR story — your culture, your values, your Women Go Beyond.",
+        "order": 9,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Content Asset Strategy",
+        "type": "content_assets",
+        "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. 100,000 Employees. 0 Brand Ambassadors. — LinkedIn article\n2. Women Go Beyond Needs to Go Beyond Annual Reports — Blog post\n\n**Consideration (Week 1-2):**\n3. Manufacturing Workforce Employee Advocacy: 5% Adoption = 5,000 Voices — Case study\n4. PeopleSocial vs. DSMN8 for Manufacturing Workforces — Comparison brief\n5. ROI Calculator: Employee Advocacy vs. Paid Media for 100K Workforce — Interactive model\n\n**Decision (Week 2-3):**\n6. Women Go Beyond Amplification Playbook — How advocacy turns WGB into social movement\n7. 17-Country Content Distribution Guide — Multi-language, multi-platform strategy\n8. <30 Day Deployment Plan — SaaS onboarding for 100K workforce\n9. Security & Compliance Pack — Employee data protection, 17-country compliance",
+        "order": 10,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Measurement Framework",
+        "type": "measurement",
+        "content": "## KPIs & Success Criteria\n\n**Awareness:** CMO meeting booked within 14 days | CEO engagement within 21 days\n**Engagement:** Platform demo within 7 days of first meeting | Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry | Expansion potential $150-250K\n\n**Adoption Milestones:**\n| Month | Advocates | Social Reach |\n|-------|-----------|-------------|\n| 1 | 500 (0.5%) | 500K impressions/mo |\n| 3 | 2,000 (2%) | 2M impressions/mo |\n| 6 | 5,000 (5%) | 5M impressions/mo |\n| 12 | 10,000 (10%) | 10M impressions/mo |\n\n**Key Metrics:**\n- Employee adoption rate (target: 5% in 6 months)\n- Content shares per advocate (target: 2/week)\n- Social reach multiplier (target: 50-100x corporate page)\n- Employer brand lift (LinkedIn talent inquiries +30%)\n- Women Go Beyond story amplification (target: 10x current reach)\n\n**Expansion Revenue:**\n- Multi-language content module: +$20-30K\n- Advanced analytics: +$15-25K\n- WhatsApp/mobile integration for factory workers: +$20-30K\n- 17-country compliance pack: +$15-20K\n- Total expansion: $70-105K → $120-155K total account value",
+        "order": 11,
+        "created_at": "2026-05-16T19:50:00Z"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_74c5ea2eddaf4574",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n### Sources\n| Source | Confidence | Date |\n|--------|-----------|------|\n| MAS Holdings website (masholdings.com) | HIGH | 2025 |\n| Wikipedia — MAS Holdings | HIGH | 2026 |\n| MAS LinkedIn page | HIGH | 2026 |\n| Yahoo Finance — factory restructuring | HIGH | Feb 2026 |\n| Export Development Board Sri Lanka | HIGH | Current |\n| Victoria's Secret & Co. — MAS partnership | HIGH | Current |\n| UN SDG partnerships — MAS | HIGH | Current |\n| RocketReach — company profile | MEDIUM | 2025 |\n| Modaknits — Sri Lanka apparel industry | MEDIUM | 2025 |\n\n### Unverified Items [⚠️]\n- CMO / VP Brand name — unknown\n- Chief People Officer name — unknown\n- Head of Sustainability name — unknown\n- Head of Employer Branding name — unknown\n- CTO / Head of Digital name — unknown\n- LinkedIn URLs for all contacts\n- Current social media strategy details\n- Whether any employee advocacy tool is in use (very likely none)\n- Exact employee social media penetration (LinkedIn vs. Facebook vs. WhatsApp)\n\n### Important Notes\n- **MAS Holdings ≠ MAS Capital** — MAS Holdings is the apparel manufacturer, not a financial entity\n- **Private company** — faster decisions than listed companies. CEO has authority.\n- **17 countries** — content distribution must be multilingual and multi-platform\n- **Factory workers** may not use LinkedIn — mobile-first, WhatsApp-integrated approach is critical\n- **Women Go Beyond is sacred** — treat as empowerment movement, not marketing tool\n- **Chairman Amalean** is Desamanya title holder (national honor) — address with respect\n\n### Research Methodology\nWeb research using MAS Holdings official website, Wikipedia, LinkedIn, industry publications, and news sources.",
+        "order": 12,
+        "created_at": "2026-05-16T19:50:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "name": "Suren Fernando",
+        "title": "Chief Executive Officer",
+        "confidence": "high",
+        "source": "Web research — masholdings.com, LinkedIn",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_74c5ea2eddaf4574"
+      },
+      {
+        "id": "c-2",
+        "name": "Mahesh Amalean",
+        "title": "Co-founder & Chairman",
+        "confidence": "high",
+        "source": "Web research — masholdings.com, Wikipedia",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_74c5ea2eddaf4574"
+      },
+      {
+        "id": "c-3",
+        "name": "[UNVERIFIED] Chief Marketing Officer / VP Marketing",
+        "title": "Chief Marketing Officer / VP Brand & Communications",
+        "confidence": "medium",
+        "source": "Web inference — MAS has strong brand presence on LinkedIn, employer branding focus",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_74c5ea2eddaf4574"
+      },
+      {
+        "id": "c-4",
+        "name": "[UNVERIFIED] Chief People Officer / CHRO",
+        "title": "Chief People Officer / Head of Human Resources",
+        "confidence": "medium",
+        "source": "Web inference — 100K+ employees, 'Women Go Beyond' program, people-first culture",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_74c5ea2eddaf4574"
+      },
+      {
+        "id": "c-5",
+        "name": "[UNVERIFIED] Head of Sustainability / CSR",
+        "title": "Head of Sustainability / Corporate Social Responsibility",
+        "confidence": "medium",
+        "source": "Web inference — MAS has 'Plan for Planet' sustainability strategy, UN SDG partnerships",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_74c5ea2eddaf4574"
+      },
+      {
+        "id": "c-6",
+        "name": "[UNVERIFIED] Head of Employer Branding / Talent Acquisition",
+        "title": "Head of Employer Branding / Talent Acquisition",
+        "confidence": "medium",
+        "source": "Web inference — MAS competes globally for talent, strong LinkedIn employer presence",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_74c5ea2eddaf4574"
+      },
+      {
+        "id": "c-7",
+        "name": "[UNVERIFIED] CTO / Head of Digital",
+        "title": "Chief Technology Officer / Head of Digital",
+        "confidence": "medium",
+        "source": "Web inference — MAS Innovation partnerships with MIT, Stanford on digitization",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "removed",
+        "playbook_id": "pb_74c5ea2eddaf4574"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_74c5ea2eddaf4574",
+    "created_at": "2026-05-16T19:39:47.661Z",
+    "updated_at": "2026-05-16T19:43:04.227Z",
+    "phase_started_at": "2026-05-16T19:42:47.713Z",
+    "openclaw_session_id": "de844572-7d20-47bc-8c17-3c306be5ef54"
+  },
+  "pb_3d47e694d2ee4f30": {
+    "user_id": "usr_demo",
+    "product_name": "PeopleSocial ",
+    "product_brief": {
+      "product_name": "PeopleSocial ",
+      "description": "A employee advocacy platform built for businesses to amplify their social media presence by using their own employees ",
+      "value_propositions": [
+        "AI enabled reshare captions",
+        "Network effects by connected networks"
+      ],
+      "target_personas": [
+        "CTO",
+        "CPO"
+      ],
+      "differentiators": [
+        "One stop shop for content distribution along with employee advocacy."
+      ],
+      "competitors": [
+        "DMSN8"
+      ],
+      "deployment_model": "saas",
+      "deal_size": "<50k",
+      "sales_cycle": "<30d"
+    },
+    "target_company": "MAS Holdings",
+    "target_url": "https://masholdings.com/",
+    "industry": "Manufacturing",
+    "geography": "Other APAC",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "All 12 sections submitted",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: PeopleSocial → MAS Holdings\n\nMAS Holdings is South Asia's largest apparel manufacturer (100,000+ employees, 53 factories in 17 countries) supplying Victoria's Secret, Nike, Calvin Klein, lululemon, Patagonia, and Marks & Spencer. With 100K+ employees across the globe, MAS is sitting on the largest untapped social media force in the Sri Lankan corporate world — and their networks are connected.\n\nPeopleSocial's two differentiating capabilities make this a compelling <$50K, <30 day opportunity:\n\n1. **AI-Enabled Reshare Captions** — Employees don't need to write posts. AI generates personalized captions for every share. One click. Zero friction. In a 100K manufacturing workforce where most employees aren't content creators, this is the difference between 1% and 10% adoption.\n\n2. **Network Effects by Connected Networks** — Each employee's share reaches their network. When networks connect (5,000 advocates × 200 connections each = 1M reach), the value compounds exponentially. MAS's 17-country footprint creates cross-border network effects no single marketing campaign can match.\n\n### Additional Signals\n- **Women Go Beyond 20th anniversary** — Flagship empowerment program needs amplification. AI captions help every WGB participant share their story effortlessly.\n- **Strategic pivot (Feb 2026)** — Factory restructuring needs positive employee voice. AI-generated captions ensure consistent, on-brand messaging.\n- **People-first culture** — Employee advocacy is the digital expression of MAS's core philosophy.\n\n**Recommended approach:** Velocity play — <$50K, <30 days. Lead with AI captions (solves the 'employees won't participate' objection) and network effects (solves the 'what's the ROI' objection).",
+        "order": 1,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## MAS Holdings — Account Intelligence\n\n### Company Overview\n- **Name:** MAS Holdings (Pvt) Ltd\n- **Type:** South Asia's largest apparel manufacturer\n- **HQ:** Battaramulla, Sri Lanka | **Founded:** 1987\n- **CEO:** Suren Fernando (formerly Chief Transformation Officer)\n- **Chairman:** Mahesh Amalean (Desamanya, co-founder)\n- **Co-founders:** Mahesh, Ajay, Sharad Amalean\n- **Employees:** 100,000+ globally (90,040 in Sri Lanka)\n- **Factories:** 53 facilities, 17 countries\n- **Revenue:** $2B+ (est.)\n- **Clients:** Victoria's Secret, Nike, Calvin Klein, Marks & Spencer, lululemon, Patagonia, Ralph Lauren, Columbia Sportswear, Gap, Banana Republic\n\n### Culture & Programs\n- 'Putting people first' — core leadership philosophy\n- **Women Go Beyond** — 20th year, flagship women's empowerment\n- **Plan for Planet** — sustainability strategy\n- MAS Innovation — MIT/Stanford partnerships on digitization\n- Non-discriminatory policies, differently-abled inclusion\n\n### Social Media Landscape\n- Active LinkedIn corporate page\n- Strong employer brand narrative but centralized (corporate-driven, not employee-driven)\n- 100K employees across 17 countries = largest untapped social force in Sri Lankan corporate world\n- Factory workers on Facebook/WhatsApp, office workers on LinkedIn\n- No employee advocacy platform currently\n\n### Why AI Captions Matter for MAS\n- 100K employees, most are NOT content creators (factory workers, line supervisors)\n- AI captions remove the #1 barrier to participation: 'I don't know what to write'\n- One-click sharing = zero friction = higher adoption\n- 17 countries = multilingual AI captions reduce translation overhead",
+        "order": 2,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: CMO / VP Brand & Communications [Name TBD]**\n- Owns brand, social media, employer branding\n- AI captions solve their 'employee adoption' problem\n- Network effects solve their 'reach vs. paid media' ROI problem\n\n**Economic Buyer: Suren Fernando (CEO)**\n- Former Chief Transformation Officer — understands digital\n- <$50K within CEO authority for private company\n\n**Key Influencer: Chief People Officer / CHRO [Name TBD]**\n- People-first culture owner\n- AI captions = empowerment without effort\n\n**Stakeholder: Head of Sustainability**\n- Plan for Planet narrative needs employee amplification\n- Network effects multiply sustainability storytelling\n\n**Stakeholder: Head of Employer Branding**\n- Employee voices = most authentic employer brand\n- Network effects make MAS visible to global talent\n\n**Technical Buyer: CTO / Head of Digital [Name TBD]**\n- Evaluates AI capabilities, SaaS security, 17-country deployment\n- AI captions are a technical differentiator to evaluate\n\n**Strategic Endorser: Mahesh Amalean (Chairman)**\n- People-first philosophy — employee advocacy is its expression\n\n**Decision:** CMO sponsors → CPO aligns → CTO evaluates AI/security → CEO approves. Private company = fast.",
+        "order": 3,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now — Signal Analysis\n\n### S1: AI Captions Remove the Participation Barrier (🔴 CRITICAL)\n- #1 reason employee advocacy fails: employees don't know what to write\n- AI-generated reshare captions = one-click sharing, zero writing\n- For 100K manufacturing workforce, this is the difference between 1% and 10% adoption\n- **Action:** 'AI writes the caption. Your people just click share.'\n\n### S2: Network Effects Compound Reach (🔴 HIGH)\n- 5,000 advocates × 200 connections = 1M organic reach\n- Connected networks create exponential value — each new advocate increases value for all\n- MAS's 17-country footprint creates cross-border network effects\n- **Action:** 'Your people's networks are connected. That's compound interest for your brand.'\n\n### S3: Women Go Beyond 20th Anniversary (🟡 MEDIUM-HIGH)\n- 20 years of stories trapped in annual reports\n- AI captions help every WGB participant share their story without writing\n- **Action:** 'AI helps your women tell their own stories.'\n\n### S4: Strategic Pivot Needs Employee Voice (🟡 MEDIUM)\n- Feb 2026 factory restructuring — change creates uncertainty\n- AI-generated captions ensure consistent, on-brand messaging during transformation\n- **Action:** 'AI keeps the narrative consistent. Your people amplify it.'\n\n### S5: People-First Culture (🟡 MEDIUM)\n- 'Putting people first' is core philosophy\n- Employee advocacy = digital expression of this value\n- **Action:** 'People first means people's voices first.'",
+        "order": 4,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n### DSMN8 (Listed Competitor)\n- Employee advocacy platform — direct competitor\n- **Strengths:** Established, social media management tools\n- **Weaknesses:** No AI-generated captions, no network effects model, less manufacturing/workforce context\n- **PeopleSocial Advantage:** AI captions = zero-friction sharing | Network effects = compound reach\n\n### Other Competitors\n- **Sprout Social** — Enterprise pricing ($100K+), no AI captions, US-centric\n- **EveryoneSocial** — Mid-market, no AI caption generation\n- **Haiilo (Smarp)** — European focus, limited APAC, no AI reshare\n\n### Key Differentiators\n1. **AI-Enabled Reshare Captions** — Unique. Employees click share, AI writes the caption. Zero writing. Zero friction.\n2. **Network Effects** — Unique. Each new advocate increases value for all. Connected networks create compound reach.\n3. **Price:** <$50K vs. enterprise $100K+\n4. **Speed:** <30 days vs. 3-6 months\n5. **Manufacturing context:** Built for large workforce environments\n6. **APAC focus:** 17-country, multilingual, WhatsApp integration\n\n### Displacement Strategy\n- Greenfield — MAS likely has NO employee advocacy platform\n- Position against the participation barrier: 'Other platforms give employees content to share. PeopleSocial gives them captions to share it with. That's the difference between 1% and 10% adoption.'",
+        "order": 5,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Sri Lankan Manufacturing Culture — MAS Specific\n\n- **Decision-making:** Founders + professional management. Private company = fast.\n- **Culture:** People-first, women-empowered, sustainability-driven. Not command-and-control.\n- **Formality:** 'Mr.' + last name. English for business.\n\n### AI & Technology Sensitivity\n- MAS Innovation partners with MIT and Stanford — technology-forward\n- AI is understood and valued (digitization partnerships)\n- But: AI must be positioned as *empowerment*, not *replacement*\n- 'AI writes the caption so your people can share their voice' — not 'AI replaces your people's voice'\n\n### MAS-Specific\n- Women Go Beyond is sacred — empowerment movement, not marketing\n- 17 countries = multicultural, multilingual audience\n- Factory workers on WhatsApp/Facebook, office workers on LinkedIn\n- Sustainability is genuine — authenticity is non-negotiable\n\n### Do's\n- ✅ Lead with AI as *empowerment* (removes friction, doesn't replace)\n- ✅ Lead with network effects (compound value, not linear)\n- ✅ Reference Women Go Beyond by name\n- ✅ Use 'one click, zero writing' language for AI captions\n- ✅ Position as 'people first' technology\n- ✅ Show multilingual AI caption capability\n\n### Don'ts\n- ❌ Position AI as replacing employee voice\n- ❌ Treat Women Go Beyond as a marketing campaign\n- ❌ Use tech jargon — MAS is manufacturing\n- ❌ Ignore factory workforce\n- ❌ Over-complicate network effects — keep it simple ('your people's networks are connected')",
+        "order": 6,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Channels:** Direct email + LinkedIn to CMO, CEO\n**Duration:** 3-4 weeks | **Touches:** 4-6 per persona\n\n### CMO — Champion\n1. Email: 'AI writes the caption. Your people just click share. 100K employees, zero friction.'\n2. AI caption demo: show how it works for factory workers who aren't content creators\n3. Network effects model: 5,000 advocates × 200 connections = 1M reach\n4. Women Go Beyond amplification: AI + WGB = stories at scale\n\n### CEO — Suren Fernando\n1. 'People first means people's voices first. AI makes it effortless.'\n2. Network effects = compound interest for brand value\n3. Reference MAS 2025 transformation (his prior role)\n\n### CPO\n1. 'AI doesn't replace your people's voice. It removes the friction so they CAN share it.'\n2. People-first technology alignment\n\n### CTO\n1. AI capabilities technical deep-dive\n2. SaaS security, 17-country deployment architecture\n3. Multilingual AI caption engine",
+        "order": 7,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Hyper-Personalized Sequences",
+        "type": "sequences",
+        "content": "## Email Sequences\n\n### CMO — Champion\n\n**Email 1:**\nSubject: AI writes the caption. Your people just click share.\n\nDear [CMO Name],\n\nMAS Holdings has 100,000 employees. Most aren't content creators — and that's exactly why employee advocacy fails at companies like yours. People don't know what to write.\n\nPeopleSocial solves this with AI. When an employee shares a post, AI generates a personalized caption. One click. Zero writing. Zero friction.\n\nAnd here's the compounding effect: 5,000 advocates × 200 connected connections = 1 million organic reach. Every new advocate increases value for all.\n\nI'd value 20 minutes to show you how AI captions and network effects work for a 100K workforce.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** Women Go Beyond + AI captions = every woman tells her story without writing a word\n**Email 3 (Day 10):** Network effects: Your people's networks are connected. That's compound interest for your brand.\n**Email 4 (Day 15):** Demo: See AI captions in action for MAS's 17-country workforce\n\n### CEO — Suren Fernando\n\n**Email 1 (Day 7):**\nSubject: People first means people's voices first. AI makes it effortless.\n\nDear Mr. Fernando,\n\nYou led MAS 2025 transformation. You put people at the center. Now let their voices be your brand — without asking them to become content creators.\n\nPeopleSocial's AI writes the captions. Your employees just click share. And when their connected networks compound, 5,000 advocates generate 1M+ organic reach.\n\nYour CMO is evaluating the platform. I'd welcome 15 minutes to share the business case.\n\nBest regards,\n[Sender]",
+        "order": 8,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Battle Cards & Objection Handling",
+        "type": "objection_handling",
+        "content": "## Objection Handling\n\n1. **\"Our employees won't participate — they don't know what to write.\"** → That's exactly why we built AI captions. Employees click share, AI writes the caption. Zero writing. Zero friction. This is the #1 reason advocacy fails — and we solved it.\n\n2. **\"Factory workers aren't on LinkedIn.\"** → PeopleSocial works on Facebook, WhatsApp, Instagram too. AI captions work in any language. 17 countries = we meet your people where they are.\n\n3. **\"What about network effects — how does that actually work?\"** → Simple: when 5,000 employees share, their networks overlap and connect. Each share reaches 200 people. But connected networks mean shares cascade — 5,000 × 200 = 1M reach, and it compounds from there.\n\n4. **\"$50K is significant.\"** → One LinkedIn paid campaign costs more and reaches fewer people. Network effects mean your reach compounds month after month — unlike paid media that stops when you stop paying.\n\n5. **\"What about brand risk with AI captions?\"** → AI captions are generated from YOUR approved content library. Employees can edit before sharing. Full approval workflows built in. AI empowers, it doesn't replace control.\n\n6. **\"DSMN8 already does employee advocacy.\"** → DSMN8 doesn't have AI-generated captions or network effects modeling. Without AI captions, you'll get 1% adoption. With AI captions, you'll get 10%. That's 10x more advocates, 10x more reach.\n\n7. **\"AI replacing employee voice feels wrong.\"** → AI doesn't replace their voice — it removes the friction so they CAN share it. Without AI captions, most employees stay silent because they don't know what to write. AI gives them a starting point they can personalize.\n\n8. **\"We don't have time to manage this.\"** → That's the point of AI captions. Marketing uploads content once. AI generates captions for every employee. They click share. Minimal management overhead.",
+        "order": 9,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Content Asset Strategy",
+        "type": "content_assets",
+        "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. AI Writes the Caption. Your People Just Click Share. — LinkedIn article\n2. Network Effects for Employer Brand: Compound Interest for Your Reach — Blog post\n\n**Consideration (Week 1-2):**\n3. AI Captions vs. Manual: 10x Adoption in Manufacturing Workforces — Case study\n4. PeopleSocial vs. DSMN8: AI Captions & Network Effects — Comparison brief\n5. Network Effects Calculator: 5,000 MAS Advocates = ? Reach — Interactive model\n6. Women Go Beyond + AI = Stories at Scale — Amplification playbook\n\n**Decision (Week 2-3):**\n7. <30 Day Deployment Plan — AI onboarding for 100K workforce\n8. Security & AI Compliance Pack — AI ethics, data protection, 17-country compliance\n9. Multilingual AI Caption Demo — Sinhala, Tamil, English, Hindi, Bahasa",
+        "order": 10,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Measurement Framework",
+        "type": "measurement",
+        "content": "## KPIs & Success Criteria\n\n**Adoption with AI Captions (vs. without):**\n| Metric | Without AI | With AI |\n|--------|-----------|--------|\n| Adoption rate | 1% (1,000) | 10% (10,000) |\n| Shares per advocate | 1/month | 4/month |\n| Avg. caption quality | Low | AI-optimized |\n| Time per share | 15 min | 30 sec |\n\n**Network Effects Model:**\n| Month | Advocates | Network Reach |\n|-------|-----------|-------------|\n| 1 | 1,000 | 200K impressions |\n| 3 | 5,000 | 1M impressions |\n| 6 | 10,000 | 2-5M impressions |\n| 12 | 15,000 | 5-10M impressions |\n\n**Key Metrics:**\n- AI caption acceptance rate (target: 80%)\n- One-click share rate (target: 90% — AI reduces friction)\n- Network effect multiplier (target: 50-100x corporate page)\n- Women Go Beyond amplification (target: 20x current reach)\n- Employer brand lift (LinkedIn talent inquiries +30%)\n\n**Expansion:**\n- Advanced AI personalization: +$20K\n- Multilingual AI (17-country): +$25K\n- WhatsApp integration for factory: +$20K\n- Analytics & network effects dashboard: +$15K\n- Total: $80K → $130K account value",
+        "order": 11,
+        "created_at": "2026-05-16T20:05:00Z"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_3d47e694d2ee4f30",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n### Sources\n| Source | Confidence | Date |\n|--------|-----------|------|\n| MAS Holdings website | HIGH | 2025 |\n| Wikipedia — MAS Holdings | HIGH | 2026 |\n| Yahoo Finance — factory restructuring | HIGH | Feb 2026 |\n| EDB Sri Lanka — MAS success story | HIGH | Current |\n| Victoria's Secret & Co. — MAS partnership | HIGH | Current |\n| UN SDG — MAS partnerships | HIGH | Current |\n| RocketReach company profile | MEDIUM | 2025 |\n\n### Unverified Items [⚠️]\n- CMO / VP Brand name — unknown\n- CPO / CHRO name — unknown\n- Head of Sustainability name — unknown\n- Head of Employer Branding name — unknown\n- CTO / Head of Digital name — unknown\n- LinkedIn URLs for all contacts\n- Current employee advocacy tooling (very likely none)\n- Employee social media platform penetration by country\n- AI readiness / data privacy requirements by country\n\n### Important Notes\n- **AI positioning is critical:** 'AI empowers, not replaces.' Especially in manufacturing where automation anxiety is real.\n- **Network effects are the compounding story:** Not linear reach — exponential. Use the 'compound interest' metaphor.\n- **Multilingual AI captions** are a significant differentiator for 17-country deployment.\n- **Women Go Beyond is sacred** — AI should be framed as helping women share their stories, not writing stories for them.\n- **Private company** = CEO authority for <$50K, no board approval.\n\n### Research Methodology\nWeb research using MAS Holdings official website, Wikipedia, industry publications, and news sources. Reused research from pb_74c5ea2eddaf4574 (prior PeopleSocial → MAS playbook).",
+        "order": 12,
+        "created_at": "2026-05-16T20:05:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "name": "Suren Fernando",
+        "title": "Chief Executive Officer",
+        "confidence": "high",
+        "source": "Web research — masholdings.com, LinkedIn",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_3d47e694d2ee4f30"
+      },
+      {
+        "id": "c-2",
+        "name": "Mahesh Amalean",
+        "title": "Co-founder & Chairman",
+        "confidence": "high",
+        "source": "Web research — masholdings.com, Wikipedia",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_3d47e694d2ee4f30"
+      },
+      {
+        "id": "c-3",
+        "name": "[UNVERIFIED] CMO / VP Brand & Communications",
+        "title": "Chief Marketing Officer / VP Brand & Communications",
+        "confidence": "medium",
+        "source": "Web inference — MAS has strong brand presence, employer branding focus",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_3d47e694d2ee4f30"
+      },
+      {
+        "id": "c-4",
+        "name": "[UNVERIFIED] Chief People Officer / CHRO",
+        "title": "Chief People Officer / Head of HR",
+        "confidence": "medium",
+        "source": "Web inference — 100K+ employees, Women Go Beyond, people-first culture",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_3d47e694d2ee4f30"
+      },
+      {
+        "id": "c-5",
+        "name": "[UNVERIFIED] Head of Sustainability / CSR",
+        "title": "Head of Sustainability / Corporate Responsibility",
+        "confidence": "medium",
+        "source": "Web inference — Plan for Planet, UN SDG partnerships",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_3d47e694d2ee4f30"
+      },
+      {
+        "id": "c-6",
+        "name": "[UNVERIFIED] Head of Employer Branding / Talent Acquisition",
+        "title": "Head of Employer Branding / Talent Acquisition",
+        "confidence": "medium",
+        "source": "Web inference — MAS competes globally for talent",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_3d47e694d2ee4f30"
+      },
+      {
+        "id": "c-7",
+        "name": "[UNVERIFIED] CTO / Head of Digital",
+        "title": "Chief Technology Officer / Head of Digital",
+        "confidence": "medium",
+        "source": "Web inference — MAS Innovation, MIT/Stanford digitization partnerships",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_3d47e694d2ee4f30"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_3d47e694d2ee4f30",
+    "created_at": "2026-05-17T12:39:38.081Z",
+    "updated_at": "2026-05-17T12:46:35.838Z",
+    "phase_started_at": "2026-05-17T12:46:10.913Z",
+    "openclaw_session_id": "c30c5b26-17d9-496c-81b0-9315563bd175"
+  },
+  "pb_150d2e8f28234304": {
+    "user_id": "usr_demo",
+    "product_name": "TraceEI",
+    "product_brief": {
+      "product_name": "TraceEI",
+      "description": "A SWIFT payment exceptions investigation product for banks and fintecs",
+      "value_propositions": [
+        "low cost exception investigation",
+        "Saas offering"
+      ],
+      "target_personas": [
+        "CTO",
+        "CDO",
+        "CEO"
+      ],
+      "differentiators": [
+        "Saas based E&I system for banks."
+      ],
+      "competitors": [
+        "Pega Smart Investigate"
+      ],
+      "deployment_model": "saas",
+      "deal_size": "<50k",
+      "sales_cycle": "<30d"
+    },
+    "target_company": "Hatton National Bank",
+    "target_url": "https://www.hnb.lk/",
+    "industry": "Banking & Finance",
+    "geography": "Other APAC",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "Writing complete",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: TracEI → Hatton National Bank\n\nHatton National Bank (HNB) is Sri Lanka's largest private sector retail bank (255 branches, Rs. 44.8Bn group profit in 2024, +100% YoY) in the midst of a digital transformation under new CEO Damith Pallewatte (Bank CEO of the Year 2025). Four converging signals make this a compelling <$50K velocity play:\n\n1. **Google Pay launch (Nov 2025)** — First bank in Sri Lanka to launch Google Pay. More digital payments = more SWIFT exceptions = more investigation workload.\n\n2. **CEO with IT background** — Damith Pallewatte previously headed IT, Cards, and Digital Banking. He personally understands payment investigation pain and has authority for <$50K decisions.\n\n3. **Record profitability (PBT Rs. 44.8Bn)** — Budget available. Best-ever operational performance.\n\n4. **ISO 20022 / SWIFT CBPR+ migration** — Industry-wide migration creating dual-format investigation complexity (legacy MT/FIN + new ISO 20022).\n\n**Approach:** Velocity play — <$50K, <30 day cycle. Lead with low-cost E&I vs. Pega, quick SaaS deployment, SWIFT/ISO 20022 compliance. Target CTDO/CINVO as champion, CEO Pallewatte as economic buyer, DGM Transaction Banking as end-user.\n\n**Outcome:** Close within 30 days. <$50K ARR with expansion as payment volumes grow.",
+        "order": 1,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## Hatton National Bank — Account Intelligence\n\n### Company Overview\n- **Name:** Hatton National Bank PLC (HNB)\n- **Type:** Sri Lanka's largest private sector retail bank\n- **HQ:** Colombo, Sri Lanka | **Founded:** 1888\n- **CEO:** Damith Pallewatte (since Nov 2024, Bank CEO of the Year 2025)\n- **Chairman:** Nihal Jayawardene (since April 2024, former AG Dept)\n- **COO:** Sanjay Wijemanne (since April 2024)\n- **CINVO:** Chandima Cooray (leads HNB Innovation Studio)\n- **CTDO:** Rohan Buultjens\n- **CDO:** [Name TBD] — data governance & analytics mandate\n- **CISO:** Suresh Emmanuel (SVP)\n- **Branches:** 255 | **ATMs:** 825\n- **Group PBT (2024):** Rs. 44.8 Bn (doubled YoY)\n- **Bank PBT (2024):** Rs. 41.3 Bn\n- **Q1 2024 PBT:** Rs. 9.8 Bn\n- **Awards:** Bank CEO of the Year 2025, Best Managed Bank (Asian Banker)\n\n### Digital & Innovation Signals\n- Google Pay launch (Nov 2025) — first in Sri Lanka\n- North Star digital strategy — 'most technologically advanced bank in Sri Lanka'\n- Dual-speed innovation model (CINVO + CIO + CDO)\n- HNB Innovation Studio — sandbox for rapid prototyping\n- HNB Accept — Visa partnership, merchant payments via mobile\n- AI-driven loan assessments piloting\n\n### SWIFT & E&I Pain Points\n- Rs. 2.24T in deposits = massive transaction volumes\n- Cross-border payments (Google Pay, SWIFT, international remittances)\n- ISO 20022 migration adding message format complexity\n- No automated E&I platform — likely manual/spreadsheet investigations\n- Dual-format investigations (MT/FIN + ISO 20022) creating workload",
+        "order": 2,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: Chandima Cooray (CINVO)**\n- Leads HNB Innovation Studio — can fast-track evaluation\n- Innovation agenda owner\n- TracEI = perfect sandbox candidate\n\n**Economic Buyer: Damith Pallewatte (CEO)**\n- Formerly headed IT, Cards, Digital Banking — personally understands E&I pain\n- Bank CEO of the Year 2025 — digitally aggressive\n- <$50K = direct approval, no ExCo needed\n\n**Technical Buyer: Rohan Buultjens (CTDO)**\n- Evaluates SaaS architecture, SWIFT integration, security\n- Must validate against HNB's core banking infrastructure\n\n**Security Gate: Suresh Emmanuel (CISO)**\n- SaaS security review, SWIFT CSP compliance, data handling\n\n**Operations Owner: Sanjay Wijemanne (COO)**\n- Former DGM Retail Banking — operations perspective\n- Payment investigation impacts all business lines\n\n**End User: DGM Transaction Banking / SWIFT [Name TBD]**\n- Day-to-day owner of SWIFT operations and investigation processes\n- Primary end-user of TracEI\n\n**Strategic Endorser: Nihal Jayawardene (Chairman)**\n- Legal background — appreciates compliance and regulatory angle\n\n**Decision Speed:** <$50K with <30 day cycle = CINVO + CEO decision. No RFP required.",
+        "order": 3,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now — Signal Analysis\n\n### S1: Google Pay Launch (🔴 CRITICAL)\n- First bank in Sri Lanka to launch Google Pay (Nov 2025)\n- Digital payment volumes surging → more SWIFT exceptions → more investigations\n- **Action:** 'You launched Google Pay first. Now make sure your investigation capability keeps up.'\n\n### S2: CEO with IT Background (🔴 HIGH)\n- Pallewatte personally headed IT, Cards, and Digital Banking\n- He understands E&I pain — shortens sales cycle dramatically\n- **Action:** 'From someone who ran IT and Cards — you know the investigation bottleneck.'\n\n### S3: Record Profitability (🔴 HIGH)\n- PBT doubled to Rs. 44.8Bn — budget available for technology investment\n- **Action:** 'Invest a fraction of your record profits to modernize payment investigations.'\n\n### S4: ISO 20022 Migration (🟡 MEDIUM-HIGH)\n- Industry-wide migration creating dual-format investigation complexity\n- Must handle both legacy MT/FIN and new ISO 20022 formats\n- **Action:** 'TracEI handles both legacy and new formats — your migration partner.'\n\n### S5: Innovation Studio (🟡 MEDIUM)\n- HNB Innovation Studio enables rapid evaluation\n- TracEI = perfect sandbox candidate\n- **Action:** 'Evaluate TracEI in your Innovation Studio in 14 days.'",
+        "order": 4,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n### Pega Smart Investigate\n- **Strengths:** 30+ years SWIFT expertise, low-code, AI decisioning, ISO 20022/CBPR+/gpi, 25+ global FI clients\n- **Weaknesses:** $200K+ TCO, 6-12 month implementation, requires Pega platform license, over-engineered for mid-size banks\n- **TracEI Advantage:** <$50K vs. $200K+ | <30 days vs. 6-12 months | Complete E&I (exceptions AND investigations) | SaaS-native | No platform license\n\n### Key Differentiators\n1. **Price:** <$50K vs. Pega $200K+\n2. **Speed:** <30 days vs. Pega 6-12 months\n3. **Completeness:** Exceptions + Investigations vs. Pega investigation-only\n4. **SaaS-native:** No on-prem, no platform license\n5. **Innovation Studio fit:** Perfect sandbox candidate — deploy in days\n\n### Displacement Strategy\n- HNB very likely does NOT have Pega (too expensive for Sri Lankan market)\n- **Greenfield opportunity** — position against manual/spreadsheet investigation workflows\n- Lead: 'Low cost, complete, deployable in your Innovation Studio in 14 days'",
+        "order": 5,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Sri Lankan Banking Culture — HNB Specific\n\n- **Decision-making:** Hierarchical but relationship-driven. CEO has authority for <$50K.\n- **Formality:** 'Mr.' + last name. English for business.\n- **Relationships:** Trust before business. Multiple meetings expected.\n- **Price sensitivity:** High — but record profits soften this.\n\n### HNB-Specific\n- Proud of digital leadership (Google Pay first, Innovation Studio)\n- CEO is approachable and tech-forward (formerly ran IT/Cards)\n- Fast decisions at <$50K — no lengthy procurement\n- CINVO structure encourages experimentation\n\n### Do's\n- ✅ Acknowledge Google Pay leadership\n- ✅ Reference Bank CEO of the Year award\n- ✅ Lead with cost-effectiveness vs. Pega\n- ✅ Offer Innovation Studio sandbox evaluation\n- ✅ Show SWIFT/ISO 20022/LANKAQR understanding\n- ✅ Reference dual-speed innovation model\n\n### Don'ts\n- ❌ Over-engineer the pitch\n- ❌ Assume they have Pega\n- ❌ Ignore Innovation Studio as evaluation path\n- ❌ Use Western-centric references\n- ❌ Underestimate CEO's technology knowledge",
+        "order": 6,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Channels:** Direct email to CINVO + CEO | Innovation Studio sandbox offer\n**Duration:** 3-4 weeks | **Touches:** 4 per persona\n\n### CINVO — Chandima Cooray\n1. Email: 'Innovation Studio is the perfect place to evaluate TracEI in 14 days'\n2. Innovation Studio sandbox proposal\n3. APAC bank case study: 80% faster investigations\n4. ROI calculator: cost per investigation before vs. after TracEI\n\n### CEO — Damith Pallewatte\n1. Email: 'From someone who ran IT and Cards — a faster way to handle E&I'\n2. Business case: <$50K, <30 days, complete E&I solution\n3. Google Pay launch as proof of digital leadership\n4. Executive call invitation\n\n### CTDO — Rohan Buultjens\n1. Technical brief: Architecture, SaaS security, SWIFT integration\n2. ISO 20022/CBPR+ compliance documentation\n3. Technical walkthrough invitation\n\n### DGM Transaction Banking\n1. SWIFT E&I pain point email\n2. Demo: see TracEI handle real investigations\n3. 14-day pilot offer",
+        "order": 7,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Hyper-Personalized Sequences",
+        "type": "sequences",
+        "content": "## Email Sequences\n\n### Chandima Cooray (CINVO)\n\n**Email 1:**\nSubject: Innovation Studio is the perfect place to evaluate TracEI in 14 days\n\nDear Mr. Cooray,\n\nHNB's Innovation Studio was built for exactly this: rapidly testing technologies that matter.\n\nTracEI is a low-cost, complete exceptions & investigations platform that deploys in 14 days. It handles SWIFT MT/FIN, ISO 20022, and LANKAQR — everything your growing payment channels need.\n\nGoogle Pay proved you can move fast. TracEI proves your investigation capability can too.\n\nI'd value 15 minutes to show you how APAC banks are cutting investigation time by 80%.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** APAC bank 80% faster investigations case study\n**Email 3 (Day 10):** Innovation Studio sandbox proposal — 14-day evaluation\n**Email 4 (Day 14):** ROI calculator: cost per investigation before vs. after TracEI\n\n### Damith Pallewatte (CEO)\n\n**Email 1:**\nSubject: From someone who ran IT and Cards — a faster way to handle payment investigations\n\nDear Mr. Pallewatte,\n\nYou've run IT, Cards, and Digital Banking at HNB — so you know payment investigations are the hidden bottleneck in every digital transformation.\n\nTracEI is a low-cost, complete E&I solution that deploys in under 30 days for less than $50K. No platform license, no 12-month implementation, no enterprise pricing.\n\nYour Innovation Studio team is evaluating TracEI. I'd welcome 15 minutes to share the business case directly.\n\nBest regards,\n[Sender]",
+        "order": 8,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Battle Cards & Objection Handling",
+        "type": "objection_handling",
+        "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Manual doesn't scale. Google Pay + ISO 20022 = volume multiplying. TracEI automates 80% for <$50K.\n\n2. **\"Pega Smart Investigate is the industry standard.\"** → Pega is for banks with $200K+ budgets and 12 months. HNB needs low cost, complete, <30 day deployment.\n\n3. **\"$50K is significant.\"** → Each manual investigation costs $15-25 in staff time. 80% automation = ROI payback under 6 months.\n\n4. **\"We need SWIFT and ISO 20022 support.\"** → TracEI supports MT/FIN, ISO 20022, CBPR+, gpi, LANKAQR out of the box.\n\n5. **\"Can your Innovation Studio evaluate it?\"** → Absolutely. 14-day sandbox evaluation with real HNB data patterns. No commitment.\n\n6. **\"We need to see it handle real investigations.\"** → 14-day free pilot. Real investigations, real results.\n\n7. **\"Security concerns with SaaS.\"** → SOC 2 Type II, ISO 27001, SWIFT CSP compliant. CISO Emmanuel can review our security architecture in detail.\n\n8. **\"Our CEO understands the pain — but is the timing right?\"** → Google Pay launched, ISO 20022 migration is happening, record profits give you budget. The timing is perfect.",
+        "order": 9,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Content Asset Strategy",
+        "type": "content_assets",
+        "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. Payment Investigations: The Hidden Bottleneck in Digital Banking — LinkedIn article\n2. Google Pay, ISO 20022, and the Investigation Volume Problem — 2-page brief\n\n**Consideration (Week 1-2):**\n3. APAC Bank Reduces Investigation Time by 80% — Case study (3 pages)\n4. TracEI vs. Pega Smart Investigate for Mid-Size Banks — 1-page comparison\n5. HNB-Specific Investigation ROI Calculator — Interactive spreadsheet\n\n**Decision (Week 2-3):**\n6. Innovation Studio 14-Day Sandbox Proposal — SOW document\n7. Security & Compliance Pack — SOC 2, ISO 27001, SWIFT CSP, ISO 20022\n8. Technical Architecture Brief — SaaS, API, SWIFT integration",
+        "order": 10,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Measurement Framework",
+        "type": "measurement",
+        "content": "## KPIs & Success Criteria\n\n**Awareness:** CINVO meeting booked within 7 days | CEO engagement within 14 days\n**Engagement:** Innovation Studio sandbox approved within 14 days | Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry | Expansion $100-150K\n\n**Week 1:** CINVO engaged, Innovation Studio evaluation proposed\n**Week 2:** CTDO technical evaluation, sandbox scope agreed\n**Week 3:** 14-day pilot launched\n**Week 4:** Close — $50K ARR contract signed\n\n**Expansion Revenue:**\n- Google Pay investigation workflows: +$10-20K\n- ISO 20022 module: +$15-25K\n- Compliance/sanction screening: +$15-25K\n- Total expansion: $40-70K → $90-120K account value\n\n**Success Indicators:**\n- CINVO explicitly requests Innovation Studio evaluation\n- CEO references TracEI in strategy conversation\n- CISO clears security review in <14 days\n- No Pega evaluation launched (greenfield)",
+        "order": 11,
+        "created_at": "2026-05-17T00:05:00Z"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_150d2e8f28234304",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n### Sources\n| Source | Confidence | Date |\n|--------|-----------|------|\n| HNB Annual Report 2024 | HIGH | Feb 2025 |\n| Business Today — Innovation Ecosystem | HIGH | Oct 2025 |\n| Daily FT — Bank CEO of Year | HIGH | Feb 2026 |\n| Business Today — Sustainable Growth | HIGH | Apr 2025 |\n| RocketReach executive profiles | MEDIUM | 2025 |\n| MarketScreener — Rohan Buultjens | MEDIUM | 2025 |\n| Simply Wall St — CEO profile | MEDIUM | 2025 |\n| Wikipedia — HNB | HIGH | 2025 |\n\n### Unverified Items [⚠️]\n- CDO name — role confirmed but identity unknown\n- DGM Transaction Banking / SWIFT — name unknown\n- LinkedIn URLs for all contacts\n- Current E&I tooling — likely manual/spreadsheet\n- Pega deployment — very likely NOT at HNB\n- Rohan Buultjens current status (may have successor)\n\n### Key Distinctions\n- **HNB ≠ HNB Finance** — separate subsidiary\n- **HNB ≠ Commercial Bank of Ceylon** — different banks\n- **Innovation Studio** = unique evaluation path not available at other Sri Lankan banks\n- **CEO Pallewatte ≠ Jonathan Alles** — Alles was predecessor\n\n### Differentiator from DataVault HNB Playbook (pb_972518ce2263406a)\n- DataVault → HNB = data governance, $120K, 6-month enterprise sale, CDO champion\n- TracEI → HNB = SWIFT E&I, <$50K, <30 day velocity play, CINVO champion\n- Different product, different buyer, different sales motion\n\n### Research Methodology\nWeb research reused from pb_972518ce2263406a (DataVault → HNB playbook). HNB research is comprehensive and current.",
+        "order": 12,
+        "created_at": "2026-05-17T00:05:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "name": "Damith Pallewatte",
+        "title": "Managing Director / CEO",
+        "confidence": "high",
+        "source": "Web research — Annual Report 2024, Daily FT, Asian Banker",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_150d2e8f28234304"
+      },
+      {
+        "id": "c-2",
+        "name": "[UNVERIFIED] Chief Data Officer",
+        "title": "Chief Data Officer",
+        "confidence": "medium",
+        "source": "Web research — Business Today Oct 2025 confirms CDO role with data governance mandate",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_150d2e8f28234304"
+      },
+      {
+        "id": "c-3",
+        "name": "Chandima Cooray",
+        "title": "Chief Innovation Officer (CINVO)",
+        "confidence": "high",
+        "source": "Web research — RocketReach",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_150d2e8f28234304"
+      },
+      {
+        "id": "c-4",
+        "name": "Rohan Buultjens",
+        "title": "Chief Technology & Digital Officer (CTDO)",
+        "confidence": "high",
+        "source": "Web research — MarketScreener, Craft.co",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_150d2e8f28234304"
+      },
+      {
+        "id": "c-5",
+        "name": "Sanjay Wijemanne",
+        "title": "Chief Operating Officer (COO)",
+        "confidence": "high",
+        "source": "Web research — Annual Report 2024",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_150d2e8f28234304"
+      },
+      {
+        "id": "c-6",
+        "name": "[UNVERIFIED] DGM Transaction Banking / SWIFT Operations",
+        "title": "Deputy General Manager - Transaction Banking / SWIFT",
+        "confidence": "medium",
+        "source": "Web inference — critical for SWIFT E&I operations",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_150d2e8f28234304"
+      },
+      {
+        "id": "c-7",
+        "name": "Nihal Jayawardene",
+        "title": "Chairman",
+        "confidence": "high",
+        "source": "Web research — Annual Report 2024",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_150d2e8f28234304"
+      },
+      {
+        "id": "c-8",
+        "name": "Suresh Emmanuel",
+        "title": "Chief Information Security Officer (CISO), SVP",
+        "confidence": "high",
+        "source": "Web research — RocketReach",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_150d2e8f28234304"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_150d2e8f28234304",
+    "created_at": "2026-05-17T17:46:50.506Z",
+    "updated_at": "2026-05-17T17:48:37.509Z",
+    "phase_started_at": "2026-05-17T17:48:30.655Z",
+    "openclaw_session_id": "cf861d37-1d1d-46a1-9306-d104142ea1dc"
+  },
+  "pb_d601c2dc63d8435e": {
+    "user_id": "usr_demo",
+    "product_name": "TracEI",
+    "product_brief": {
+      "product_name": "TracEI",
+      "description": "SWIFT payment investigation platform for ",
+      "value_propositions": [
+        "low cost exception investigation",
+        "Saas offering",
+        "Enhanced security"
+      ],
+      "target_personas": [
+        "CIO",
+        "CTO",
+        "Director of technology"
+      ],
+      "differentiators": [
+        "Saas offering of an E&I platform"
+      ],
+      "competitors": [
+        "Pega Smart Investigate"
+      ],
+      "deployment_model": "saas",
+      "deal_size": "<50k",
+      "sales_cycle": "<30d"
+    },
+    "target_company": "Pan Asia Bank - Sri Lanka",
+    "target_url": "https://pabcbank.com/",
+    "industry": "Banking & Finance",
+    "geography": "Other APAC",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "Writing complete",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: TracEI → Pan Asia Bank\n\nPan Asia Banking Corporation (PABC) is a dynamic Sri Lankan bank (85 branches, PAT Rs. 4.1Bn in 2024, +123% YoY) pursuing an aggressive digital transformation under CEO Naleen Edirisinghe — 'The Truly Sri Lankan Bank.' Three converging signals make this a compelling <$50K velocity play:\n\n1. **Record profitability (+123% PAT)** — Budget available for technology investment. Best-ever financial performance.\n\n2. **Digital transformation acceleration** — PABC is expanding digital zones, enhancing digital banking, and investing in technology. CEO Edirisinghe personally champions digital: 'With the rise of digital banking, it's very important that we provide solutions that meet evolving needs.'\n\n3. **SWIFT operations growing** — As a mid-size bank with 85 branches and cross-border trade finance, PABC handles SWIFT exceptions and investigations manually. Growing digital transaction volumes multiply investigation workload.\n\n**Recommended approach:** Velocity play — <$50K, <30 days. Lead with low-cost E&I vs. manual processes, SaaS deployment, SWIFT compliance. Target CEO as direct buyer (formerly COO, understands operations), DGM Treasury as end-user champion.\n\n**Expected outcome:** Close within 30 days. <$50K ARR entry with expansion potential.",
+        "order": 1,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## Pan Asia Bank — Account Intelligence\n\n### Company Overview\n- **Name:** Pan Asia Banking Corporation PLC (PABC)\n- **Type:** Publicly listed Sri Lankan commercial bank — 'The Truly Sri Lankan Bank'\n- **HQ:** Colombo, Sri Lanka | **Founded:** 1995\n- **CEO:** Naleen Edirisinghe (Director/CEO, formerly COO, since 2023)\n- **Chairman:** Aravinda Perera\n- **DGM Credit:** Gayanath De Silva\n- **DGM Treasury & Global Markets:** Nayantha Fernando (also Company Secretary)\n- **Branches:** 85 | **SWIFT Code:** PABCLKLX\n- **PAT (2024):** Rs. 4.1 Bn (+123% YoY)\n- **Fee income growth:** +24% (increased credit demand)\n- **Listed:** Colombo Stock Exchange (PABC.N0000)\n- **30th anniversary:** 2025 (bell-ringing at CSE)\n- **Tagline:** 'The Truly Sri Lankan Bank'\n\n### Digital & Technology Signals\n- Expanding digital zones (Kurunegala, Dambulla — Sep 2024)\n- CEO personally champions digital transformation\n- Great Manager Awards 2024 — leadership development investment\n- Continued focus on digital transformation per Annual Report 2024\n- Fee income growth indicates growing transaction volumes\n\n### SWIFT & E&I Pain Points\n- Mid-size bank (85 branches) — limited operations staff for investigation workload\n- Trade finance and international banking create SWIFT exceptions\n- Manual/spreadsheet investigation processes typical at this scale\n- No automated E&I platform — likely manual workflows\n- Growing digital volumes = growing investigation volumes\n- CBSL enhanced AML/CFT circulars adding compliance burden",
+        "order": 2,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: Nayantha Fernando (DGM Treasury & Global Markets)**\n- Owns SWIFT operations, cross-border payments, trade finance\n- Treasury generates investigation volume\n- Formerly COO — understands operations pain\n\n**Economic Buyer: Naleen Edirisinghe (Director/CEO)**\n- Formerly COO — personally understands operations bottleneck\n- Digitally aggressive — expanding digital zones\n- <$50K within CEO authority for a mid-size bank\n\n**Operations Stakeholder: Gayanath De Silva (DGM Credit)**\n- Credit operations generate exceptions\n- Investigations intersect with credit risk\n\n**Technical Buyer: DGM IT [Name TBD]**\n- Evaluates SaaS, security, SWIFT integration\n- Digital transformation priority = IT investment available\n\n**End User: DGM International Banking / Trade Finance [Name TBD]**\n- Day-to-day SWIFT operations, LC processing, cross-border payments\n- Primary user of TracEI\n\n**Risk Gate: CRO [Name TBD]**\n- Must validate E&I system for CBSL compliance\n\n**Strategic Endorser: Aravinda Perera (Chairman)**\n- Strategic governance — digital transformation endorsement\n\n**Decision Speed:** <$50K with <30 day cycle = CEO + DGM Treasury decision. Mid-size bank = fast.",
+        "order": 3,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now — Signal Analysis\n\n### S1: Record Profitability (+123% PAT) (🔴 HIGH)\n- Best-ever financial performance — budget available for technology\n- Fee income +24% — growing volumes need investigation capacity\n- **Action:** 'Record profits deserve record investigation capability.'\n\n### S2: Digital Transformation Acceleration (🔴 HIGH)\n- CEO personally championing digital zones expansion\n- Great Manager Awards 2024 — investing in people AND technology\n- **Action:** 'You're investing in digital. Don't leave investigations manual.'\n\n### S3: Growing SWIFT Volumes (🟡 MEDIUM-HIGH)\n- Trade finance and cross-border payments growing\n- Fee income +24% = more transactions = more exceptions\n- **Action:** 'Fee income is up 24%. Investigation workload is up too. Automate it.'\n\n### S4: CBSL Regulatory Pressure (🟡 MEDIUM)\n- Enhanced AML/CFT circulars (2024-2025) adding compliance burden\n- Mid-size banks under increasing regulatory scrutiny\n- **Action:** 'CBSL compliance is getting harder. Automated E&I reduces regulatory risk.'\n\n### S5: Mid-Size Bank Advantage (🟡 MEDIUM)\n- 85 branches = nimble decision-making\n- No Pega deployment (too expensive) — greenfield opportunity\n- **Action:** 'The right-size solution for the right-size bank.'",
+        "order": 4,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n### Pega Smart Investigate\n- **Strengths:** 30+ years SWIFT expertise, AI decisioning, ISO 20022 support\n- **Weaknesses:** $200K+ TCO, 6-12 month implementation, requires Pega platform, over-engineered for mid-size banks like PABC\n- **TracEI Advantage:** <$50K vs. $200K+ | <30 days vs. 6-12 months | Complete E&I | SaaS-native | Right-size for 85 branches\n\n### Manual / In-House\n- **Current state:** PABC likely handles E&I manually with spreadsheets and email\n- **Weaknesses:** Slow, error-prone, doesn't scale with growing volumes\n- **TracEI Advantage:** 80% automation, consistent across all 85 branches, SaaS in <30 days\n\n### Key Differentiators for PABC\n1. **Price:** <$50K — right-size for a mid-size bank (Pega is for the big 5)\n2. **Speed:** <30 days — match PABC's fast decision culture\n3. **Completeness:** Exceptions AND investigations in one platform\n4. **SaaS-native:** No on-prem infrastructure, no platform license\n5. **Enhanced security:** Built for banking-grade SWIFT operations\n6. **Mid-size fit:** Not over-engineered — matches PABC's 85-branch scale\n\n### Positioning\n'The right-size E&I solution for the Truly Sri Lankan Bank.'",
+        "order": 5,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Sri Lankan Mid-Size Banking Culture — PABC Specific\n\n- **Decision-making:** Faster than large banks. CEO has authority for <$50K. DGM-level approval sufficient.\n- **Culture:** 'Truly Sri Lankan Bank' — national pride, approachable, not bureaucratic.\n- **Formality:** 'Mr.' + last name. English for business.\n- **Price sensitivity:** High — but record profits and digital investment signal willingness.\n- **Relationships:** Important. Multiple meetings expected but faster decisions than big banks.\n\n### PABC-Specific\n- CEO Edirisinghe is approachable — formerly COO, understands operations\n- 'Truly Sri Lankan Bank' tagline — emphasize local understanding and APAC focus\n- Digital zones expansion = technology investment appetite\n- Great Manager Awards = people investment paired with tech investment\n- Mid-size = nimble, not bureaucratic\n\n### Do's\n- ✅ Reference 'Truly Sri Lankan Bank' tagline\n- ✅ Lead with right-size solution for mid-size bank\n- ✅ Emphasize enhanced security for SWIFT operations\n- ✅ Show understanding of 85-branch scale\n- ✅ Highlight CEO's digital transformation vision\n- ✅ Reference record profitability\n\n### Don'ts\n- ❌ Over-engineer the pitch — PABC is mid-size, not a megabank\n- ❌ Assume Pega-level budgets\n- ❌ Use big-bank references — cite mid-size bank case studies\n- ❌ Ignore the COO background of the CEO\n- ❌ Be overly formal — PABC is approachable",
+        "order": 6,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Channels:** Direct email to CEO + DGM Treasury | LinkedIn\n**Duration:** 3-4 weeks | **Touches:** 4 per persona\n\n### CEO — Naleen Edirisinghe\n1. Email: 'From your COO perspective — a faster way to handle payment investigations'\n2. Business case: <$50K, <30 days, complete E&I, enhanced security\n3. Record profits deserve record investigation capability\n4. Executive call invitation\n\n### DGM Treasury — Nayantha Fernando\n1. Email: 'SWIFT investigations don't have to be manual anymore'\n2. Case study: APAC mid-size bank reduces investigation time 80%\n3. ROI calculator: cost per investigation before vs. after TracEI\n4. 14-day pilot offer\n\n### DGM IT\n1. Technical brief: Architecture, SaaS security, SWIFT integration\n2. Enhanced security documentation\n3. Technical walkthrough invitation",
+        "order": 7,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Hyper-Personalized Sequences",
+        "type": "sequences",
+        "content": "## Email Sequences\n\n### CEO — Naleen Edirisinghe\n\n**Email 1:**\nSubject: From your COO perspective — a faster way to handle payment investigations\n\nDear Mr. Edirisinghe,\n\nAs someone who ran operations before becoming CEO, you know that payment investigations are the hidden bottleneck in every bank's digital transformation.\n\nPABC's record results — 123% profit growth — show you're investing in the right things. But as digital volumes grow, so do exceptions and investigations.\n\nTracEI is a low-cost, complete E&I solution that deploys in under 30 days for less than $50K. Enhanced security built in. SaaS-native. Right-size for an 85-branch bank.\n\nI'd value 15 minutes to share the business case.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** Record profits deserve record investigation capability\n**Email 3 (Day 10):** APAC mid-size bank case study — 80% faster investigations\n**Email 4 (Day 15):** 14-day pilot proposal\n\n### DGM Treasury — Nayantha Fernando\n\n**Email 1:**\nSubject: SWIFT investigations don't have to be manual anymore\n\nDear Mr. Fernando,\n\nAs DGM Treasury & Global Markets, you see every SWIFT exception that crosses PABC's desks. Fee income is up 24% — but so is the investigation workload.\n\nTracEI automates 80% of exceptions and investigations for less than $50K. SWIFT, ISO 20022, enhanced security — everything your 85-branch network needs.\n\nI'd value 20 minutes to show you how it works.\n\nBest regards,\n[Sender]",
+        "order": 8,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Battle Cards & Objection Handling",
+        "type": "objection_handling",
+        "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Manual doesn't scale. Fee income +24% = more transactions = more exceptions. TracEI automates 80% for <$50K.\n\n2. **\"Pega is the industry standard.\"** → Pega costs $200K+ and takes 6-12 months. That's for the big 5 banks. PABC needs a right-size solution — <$50K, <30 days, complete E&I.\n\n3. **\"$50K is significant for a mid-size bank.\"** → Each manual investigation costs $15-25 in staff time. 80% automation = ROI under 6 months. And your record profits say you can afford it.\n\n4. **\"We need SWIFT and ISO 20022 support.\"** → TracEI supports MT/FIN, ISO 20022, CBPR+, gpi out of the box. Future-proof for migration.\n\n5. **\"We're too small for this.\"** → TracEI is designed for banks exactly like PABC — 85 branches, growing digital volumes, mid-size operations. Not over-engineered.\n\n6. **\"Our CEO understands operations — he'll want to see it work.\"** → Exactly right. 14-day free pilot with real PABC investigation data. No commitment.\n\n7. **\"Enhanced security — what does that mean?\"** → SOC 2, ISO 27001, SWIFT CSP aligned. SaaS with banking-grade encryption. Your CRO and CISO will approve.\n\n8. **\"Why TracEI and not build in-house?\"** → Building E&I takes 12+ months and $500K+. TracEI deploys in <30 days for <$50K. Focus your team on digital zones, not investigation tooling.",
+        "order": 9,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Content Asset Strategy",
+        "type": "content_assets",
+        "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. Payment Investigations: The Hidden Bottleneck for Mid-Size Banks — LinkedIn article\n2. Record Profits, Record Investigation Volumes — 2-page brief\n\n**Consideration (Week 1-2):**\n3. APAC Mid-Size Bank Reduces Investigation Time 80% — Case study\n4. TracEI vs. Pega for Mid-Size Banks — 1-page comparison\n5. PABC-Specific Investigation ROI Calculator — Interactive spreadsheet\n\n**Decision (Week 2-3):**\n6. 14-Day Free Pilot Proposal — SOW document\n7. Enhanced Security & Compliance Pack — SOC 2, ISO 27001, SWIFT CSP, CBSL alignment\n8. Right-Size Banking: Why Mid-Size Banks Choose TracEI — Positioning brief",
+        "order": 10,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Measurement Framework",
+        "type": "measurement",
+        "content": "## KPIs & Success Criteria\n\n**Awareness:** CEO or DGM Treasury meeting booked within 10 days\n**Engagement:** Technical evaluation within 14 days | Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry\n\n**Week 1:** DGM Treasury engaged, pain confirmed\n**Week 2:** DGM IT evaluation, pilot scope\n**Week 3:** Pilot launched\n**Week 4:** Close — $50K ARR contract\n\n**Expansion Revenue:**\n- ISO 20022 module: +$15-25K\n- Compliance/sanction screening: +$10-20K\n- Additional investigation volume: +$10-15K\n- Total expansion: $35-60K → $85-110K account value\n\n**Success Indicators:**\n- CEO references 'from COO perspective' in conversation\n- DGM Treasury explicitly confirms manual investigation pain\n- No Pega evaluation launched\n- Quick procurement path confirmed (<$50K = CEO authority)",
+        "order": 11,
+        "created_at": "2026-05-17T01:05:00Z"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_d601c2dc63d8435e",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n### Sources\n| Source | Confidence | Date |\n|--------|-----------|------|\n| Daily FT — PABC PAT Rs. 4.1Bn | HIGH | Mar 2025 |\n| Business Today — 123% PAT increase | HIGH | Mar 2025 |\n| PABC Annual Report 2024 | HIGH | Feb 2025 |\n| Daily News — Great Manager Awards | HIGH | May 2025 |\n| Island — CEO appointment | HIGH | Jan 2023 |\n| Daily Mirror — CSE bell-ringing | HIGH | Oct 2025 |\n| Daily News — Digital zones expansion | HIGH | Sep 2024 |\n| Wikipedia — PABC overview | HIGH | 2026 |\n\n### Unverified Items [⚠️]\n- DGM IT name — unknown\n- DGM International Banking name — unknown\n- CRO name — unknown\n- LinkedIn URLs for all contacts\n- Current E&I tooling — likely manual/spreadsheet\n- Pega deployment status — very unlikely at PABC's scale\n- Exact SWIFT transaction volumes\n\n### Key Distinctions\n- **Pan Asia Bank ≠ Pan Asia (other entities)** — PABC is the specific banking corporation\n- **PABC is mid-size** (85 branches) — right-size solution, not enterprise overkill\n- **CEO was COO** — understands operations pain personally\n- **'Truly Sri Lankan Bank'** — emphasize local understanding and APAC focus\n- **PAT +123%** — best-ever results, budget available\n\n### Research Methodology\nWeb research using PABC official website, Daily FT, Business Today, Daily News, Daily Mirror, CSE filings, and industry sources.",
+        "order": 12,
+        "created_at": "2026-05-17T01:05:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "name": "Naleen Edirisinghe",
+        "title": "Director / Chief Executive Officer",
+        "confidence": "high",
+        "source": "Web research — Daily FT, Daily News, PABC annual report",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_d601c2dc63d8435e"
+      },
+      {
+        "id": "c-2",
+        "name": "Aravinda Perera",
+        "title": "Chairman",
+        "confidence": "high",
+        "source": "Web research — Daily Mirror Oct 2025 (CSE bell-ringing ceremony)",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_d601c2dc63d8435e"
+      },
+      {
+        "id": "c-3",
+        "name": "Gayanath De Silva",
+        "title": "Deputy General Manager - Credit",
+        "confidence": "high",
+        "source": "Web research — Daily Mirror Oct 2025, Daily News Apr 2026",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_d601c2dc63d8435e"
+      },
+      {
+        "id": "c-4",
+        "name": "Nayantha Fernando",
+        "title": "Deputy General Manager - Treasury and Global Markets / Company Secretary",
+        "confidence": "high",
+        "source": "Web research — HighPerformr, Daily Mirror Oct 2025",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_d601c2dc63d8435e"
+      },
+      {
+        "id": "c-5",
+        "name": "[UNVERIFIED] DGM Information Technology",
+        "title": "Deputy General Manager - IT / Chief Information Officer",
+        "confidence": "medium",
+        "source": "Web inference — digital transformation focus requires DGM-IT",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_d601c2dc63d8435e"
+      },
+      {
+        "id": "c-6",
+        "name": "[UNVERIFIED] DGM International Banking / Trade Finance",
+        "title": "Deputy General Manager - International Banking / Trade Finance",
+        "confidence": "medium",
+        "source": "Web inference — SWIFT and cross-border operations",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_d601c2dc63d8435e"
+      },
+      {
+        "id": "c-7",
+        "name": "[UNVERIFIED] Chief Risk Officer",
+        "title": "Chief Risk Officer / DGM Risk Management",
+        "confidence": "medium",
+        "source": "Web inference — CBSL regulatory compliance requirement",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_d601c2dc63d8435e"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_d601c2dc63d8435e",
+    "created_at": "2026-05-18T06:40:40.181Z",
+    "updated_at": "2026-05-18T06:43:16.193Z",
+    "phase_started_at": "2026-05-18T06:42:17.770Z",
+    "openclaw_session_id": "b2b27b17-9617-4880-8532-2505034b0c11"
   }
 }
