@@ -56,7 +56,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 
   // Allowed fields for update
-  const allowedFields = ['status', 'progress_pct', 'agent_status', 'sections', 'phase_started_at']
+  const allowedFields = ['status', 'progress_pct', 'agent_status', 'sections', 'phase_started_at', 'contacts']
   const updates: Record<string, unknown> = {}
   for (const key of allowedFields) {
     if (key in body) {

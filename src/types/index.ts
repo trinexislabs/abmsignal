@@ -54,6 +54,28 @@ export interface AgentStatus {
   completed_at?: string
 }
 
+export type SourceConfidence = 'high' | 'medium' | 'low'
+export type SourceVerificationStatus = 'verified' | 'needs_review' | 'unverified'
+
+export interface SourceReference {
+  id: string
+  claim: string
+  source_url: string
+  confidence: SourceConfidence
+  verification_status: SourceVerificationStatus
+}
+
+export interface PersonalizationSignal {
+  signal: string
+  source_url?: string
+}
+
+export interface DirectQuote {
+  quote: string
+  context: string
+  source_url?: string
+}
+
 export interface PlaybookSection {
   id: string
   playbook_id: string
@@ -61,6 +83,7 @@ export interface PlaybookSection {
   title: string
   content: string
   status: SectionStatus
+  sources?: SourceReference[]
   created_at: string
 }
 
@@ -104,6 +127,8 @@ export interface Contact {
   verification_status: ContactVerificationStatus
   email?: string
   notes?: string
+  personalization_signals?: PersonalizationSignal[]
+  direct_quotes?: DirectQuote[]
   created_at: string
 }
 
@@ -135,6 +160,14 @@ export const QUALITY_CHECKS: { number: number; name: string; category: string }[
   { number: 14, name: "Outreach strategy accounts for the target's preferred communication channels", category: 'Cultural Fit' },
   { number: 15, name: 'No internal inconsistencies between sections', category: 'Consistency' },
   { number: 16, name: 'All sources cited with confidence scores', category: 'Transparency' },
+  { number: 17, name: 'Every factual claim in outreach emails has a traceable source link', category: 'Integrity' },
+  { number: 18, name: 'Contact personalization signals are sourced (LinkedIn, press release, etc.)', category: 'Transparency' },
+  { number: 19, name: 'Direct quotes attributed to named individuals are verifiable', category: 'Accuracy' },
+  { number: 20, name: 'Revenue and financial figures reference specific public disclosures', category: 'Accuracy' },
+  { number: 21, name: 'Technology stack claims backed by job postings or verified vendor disclosures', category: 'Integrity' },
+  { number: 22, name: 'Regulatory deadlines and compliance dates match official published sources', category: 'Accuracy' },
+  { number: 23, name: 'Competitive intelligence sourced from verifiable data (not assumptions)', category: 'Integrity' },
+  { number: 24, name: 'All [UNVERIFIED] markers have associated action items for manual verification', category: 'Completeness' },
 ]
 
 // ===== Form Input Types =====

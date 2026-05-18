@@ -1,12 +1,12 @@
 'use client'
 
-import { use, useEffect, useState } from 'react'
+import { use, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { AppSidebar } from '@/components/app-sidebar'
 import { PlaybookStatusBadge } from '@/components/playbook-status-badge'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { SECTION_META, type SectionType } from '@/types'
+import { SECTION_META, type SectionType, type SourceReference, type SourceVerificationStatus } from '@/types'
 import {
   FileText,
   Building2,
@@ -31,6 +31,11 @@ import {
   ChevronRight,
   Bot,
   Loader2,
+  ExternalLink,
+  AlertTriangle,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 
 const SECTION_ICONS: Record<SectionType, React.ElementType> = {
@@ -52,7 +57,6 @@ const orderedSectionTypes = Object.entries(SECTION_META)
   .sort((a, b) => a[1].order - b[1].order)
   .map(([type]) => type as SectionType)
 
-// Map API section type to SectionType — handles orchestrator variant names
 function mapSectionType(type: string): SectionType {
   const map: Record<string, SectionType> = {
     executive_summary: 'executive_summary',
@@ -62,13 +66,11 @@ function mapSectionType(type: string): SectionType {
     competitive_landscape: 'competitive_landscape',
     cultural_context: 'cultural_context',
     outreach_strategy: 'outreach_strategy',
-    // canonical
     personalized_sequences: 'personalized_sequences',
     battle_cards: 'battle_cards',
     content_strategy: 'content_strategy',
     measurement_framework: 'measurement_framework',
     appendix: 'appendix',
-    // orchestrator variant names
     sequences: 'personalized_sequences',
     hyper_personalized_sequences: 'personalized_sequences',
     objection_handling: 'battle_cards',
@@ -85,6 +87,7 @@ interface ApiSection {
   type: string
   content: string
   order: number
+  sources?: SourceReference[]
   created_at: string
 }
 
@@ -97,7 +100,92 @@ interface PlaybookData {
   contacts: unknown[]
 }
 
-function renderMarkdown(content: string): React.ReactNode {
+// Parse (source: URL) patterns from content and return index positions
+function parseInlineSources(content: string): { url: string; index: number }[] {
+  const results: { url: string; index: number }[] = []
+  const regex = /\(source:\s*(https?:\/\/[^\s)]+)\)/gi
+  let match
+  while ((match = regex.exec(content)) !== null) {
+    results.push({ url: match[1], index: match.index })
+  }
+  return results
+}
+
+// Replace (source: URL) with numbered superscript markers and return modified content + url list
+function processSourceMarkers(content: string): { processed: string; urls: string[] } {
+  const urls: string[] = []
+  const processed = content.replace(/\(source:\s*(https?:\/\/[^\s)]+)\)/gi, (_match, url) => {
+    const existing = urls.indexOf(url)
+    if (existing !== -1) return `[${existing + 1}]`
+    urls.push(url)
+    return `[${urls.length}]`
+  })
+  return { processed, urls }
+}
+
+interface SourceBadgeProps {
+  refNumber: number
+  url: string
+}
+
+function SourceBadge({ refNumber, url }: SourceBadgeProps) {
+  const [open, setOpen] = useState(false)
+  return (
+    <span className="relative inline-block align-super">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="text-[10px] font-bold text-[#339af0] bg-[#339af0]/15 border border-[#339af0]/30 rounded px-1 py-0 leading-tight hover:bg-[#339af0]/25 transition-colors ml-0.5"
+        aria-label={`Source ${refNumber}`}
+      >
+        {refNumber}
+      </button>
+      {open && (
+        <span className="absolute z-50 left-0 top-5 w-72 bg-[#141419] border border-white/10 rounded-lg shadow-xl p-3 text-left"
+          style={{ minWidth: '240px' }}>
+          <button
+            onClick={() => setOpen(false)}
+            className="absolute top-2 right-2 text-[#a1a1aa] hover:text-white"
+            aria-label="Close"
+          >
+            <X className="w-3 h-3" />
+          </button>
+          <p className="text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-wider mb-1.5">Source {refNumber}</p>
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-[#339af0] hover:underline break-all flex items-start gap-1"
+            onClick={e => e.stopPropagation()}
+          >
+            <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5" />
+            {url}
+          </a>
+        </span>
+      )}
+    </span>
+  )
+}
+
+// Render a single line with [N] markers replaced by SourceBadge components
+function renderLineWithSources(line: string, urlMap: string[]): React.ReactNode {
+  if (urlMap.length === 0 || !line.includes('[')) return line
+  const parts = line.split(/(\[\d+\])/g)
+  return (
+    <>
+      {parts.map((part, i) => {
+        const m = part.match(/^\[(\d+)\]$/)
+        if (m) {
+          const num = parseInt(m[1], 10)
+          const url = urlMap[num - 1]
+          if (url) return <SourceBadge key={i} refNumber={num} url={url} />
+        }
+        return <span key={i} dangerouslySetInnerHTML={{ __html: part.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white/90">$1</strong>') }} />
+      })}
+    </>
+  )
+}
+
+function renderMarkdown(content: string, urlMap: string[]): React.ReactNode {
   const lines = content.split('\n')
   const elements: React.ReactNode[] = []
   let i = 0
@@ -108,32 +196,32 @@ function renderMarkdown(content: string): React.ReactNode {
     if (line.startsWith('## ')) {
       elements.push(
         <h2 key={i} className="font-heading text-lg font-semibold text-white mt-6 mb-3 first:mt-0">
-          {line.slice(3)}
+          {renderLineWithSources(line.slice(3), urlMap)}
         </h2>
       )
     } else if (line.startsWith('### ')) {
       elements.push(
         <h3 key={i} className="font-heading text-base font-semibold text-white/90 mt-4 mb-2">
-          {line.slice(4)}
+          {renderLineWithSources(line.slice(4), urlMap)}
         </h3>
       )
     } else if (line.startsWith('**') && line.endsWith('**')) {
       elements.push(
         <p key={i} className="font-semibold text-white/90 mb-1">
-          {line.slice(2, -2)}
+          {renderLineWithSources(line.slice(2, -2), urlMap)}
         </p>
       )
     } else if (line.startsWith('- ') || line.startsWith('• ')) {
       elements.push(
         <li key={i} className="text-[#a1a1aa] text-sm ml-4 mb-1 list-none flex gap-2">
           <span className="text-[#339af0] mt-1.5 flex-shrink-0">•</span>
-          <span dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong class="text-white/90">$1</strong>') }} />
+          <span>{renderLineWithSources(line.slice(2), urlMap)}</span>
         </li>
       )
     } else if (line.startsWith('> ')) {
       elements.push(
         <blockquote key={i} className="border-l-2 border-[#339af0]/40 pl-4 my-2 text-[#a1a1aa] text-sm italic">
-          {line.slice(2)}
+          {renderLineWithSources(line.slice(2), urlMap)}
         </blockquote>
       )
     } else if (line.startsWith('---')) {
@@ -164,7 +252,9 @@ function renderMarkdown(content: string): React.ReactNode {
                 return (
                   <tr key={ri} className="hover:bg-white/[0.02]">
                     {cells.map((cell, ci) => (
-                      <td key={ci} className="px-3 py-2 text-[#a1a1aa] border border-white/10" dangerouslySetInnerHTML={{ __html: cell.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white/90">$1</strong>') }} />
+                      <td key={ci} className="px-3 py-2 text-[#a1a1aa] border border-white/10">
+                        {renderLineWithSources(cell, urlMap)}
+                      </td>
                     ))}
                   </tr>
                 )
@@ -178,15 +268,111 @@ function renderMarkdown(content: string): React.ReactNode {
       // skip empty lines
     } else {
       elements.push(
-        <p key={i} className="text-[#a1a1aa] text-sm leading-relaxed mb-2"
-          dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white/90">$1</strong>') }}
-        />
+        <p key={i} className="text-[#a1a1aa] text-sm leading-relaxed mb-2">
+          {renderLineWithSources(line, urlMap)}
+        </p>
       )
     }
     i++
   }
 
   return <>{elements}</>
+}
+
+const VERIFICATION_CONFIG: Record<SourceVerificationStatus, { label: string; icon: React.ElementType; className: string }> = {
+  verified: { label: 'Verified', icon: CheckCircle2, className: 'text-green-400 bg-green-500/10 border-green-500/30' },
+  needs_review: { label: 'Needs Review', icon: AlertTriangle, className: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+  unverified: { label: 'Unverified', icon: X, className: 'text-red-400 bg-red-500/10 border-red-500/30' },
+}
+
+const CONFIDENCE_COLORS: Record<string, string> = {
+  high: 'text-green-400 bg-green-500/10 border-green-500/30',
+  medium: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+  low: 'text-red-400 bg-red-500/10 border-red-500/30',
+}
+
+interface SourceRowProps {
+  source: SourceReference
+  sectionId: string
+  sectionTitle: string
+  playbookId: string
+  onUpdate: (sectionId: string, sourceId: string, status: SourceVerificationStatus) => void
+}
+
+function SourceRow({ source, sectionId, sectionTitle, playbookId, onUpdate }: SourceRowProps) {
+  const [saving, setSaving] = useState(false)
+  const cfg = VERIFICATION_CONFIG[source.verification_status]
+  const Icon = cfg.icon
+
+  async function setStatus(status: SourceVerificationStatus) {
+    if (saving) return
+    setSaving(true)
+    try {
+      await fetch(`/api/playbooks/${playbookId}/verify`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section_id: sectionId, source_id: source.id, verification_status: status }),
+      })
+      onUpdate(sectionId, source.id, status)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-start gap-3 p-4 border-b border-white/[0.04] last:border-b-0">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-white/80 mb-1">{source.claim}</p>
+        <div className="flex flex-wrap items-center gap-2 mt-1">
+          <span className="text-[10px] text-[#a1a1aa]">{sectionTitle}</span>
+          <a
+            href={source.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-[#339af0] hover:underline truncate max-w-xs"
+          >
+            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{source.source_url}</span>
+          </a>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+        <Badge variant="outline" className={`text-[10px] px-2 py-0 capitalize ${CONFIDENCE_COLORS[source.confidence]}`}>
+          {source.confidence}
+        </Badge>
+        <Badge variant="outline" className={`text-[10px] px-2 py-0 flex items-center gap-1 ${cfg.className}`}>
+          <Icon className="w-2.5 h-2.5" />
+          {cfg.label}
+        </Badge>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setStatus('verified')}
+            disabled={saving || source.verification_status === 'verified'}
+            title="Mark verified"
+            className={`p-1 rounded transition-colors text-xs ${source.verification_status === 'verified' ? 'text-green-400 bg-green-500/10 cursor-default' : 'text-[#a1a1aa] hover:text-green-400 hover:bg-green-500/10'}`}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setStatus('needs_review')}
+            disabled={saving || source.verification_status === 'needs_review'}
+            title="Needs review"
+            className={`p-1 rounded transition-colors ${source.verification_status === 'needs_review' ? 'text-amber-400 bg-amber-500/10 cursor-default' : 'text-[#a1a1aa] hover:text-amber-400 hover:bg-amber-500/10'}`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setStatus('unverified')}
+            disabled={saving || source.verification_status === 'unverified'}
+            title="Mark unverified"
+            className={`p-1 rounded transition-colors ${source.verification_status === 'unverified' ? 'text-red-400 bg-red-500/10 cursor-default' : 'text-[#a1a1aa] hover:text-red-400 hover:bg-red-500/10'}`}
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function PlaybookDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -198,6 +384,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
   const [playbook, setPlaybook] = useState<PlaybookData | null>(null)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const [showSources, setShowSources] = useState(false)
+  // local source verification state keyed by sectionId -> sourceId -> status
+  const [sourceStatuses, setSourceStatuses] = useState<Record<string, Record<string, SourceVerificationStatus>>>({})
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -219,6 +408,13 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
     fetchPlaybook()
   }, [id, mounted])
 
+  const handleSourceUpdate = useCallback((sectionId: string, sourceId: string, status: SourceVerificationStatus) => {
+    setSourceStatuses(prev => ({
+      ...prev,
+      [sectionId]: { ...(prev[sectionId] ?? {}), [sourceId]: status },
+    }))
+  }, [])
+
   if (!mounted || loading) {
     return (
       <div className="flex h-screen bg-[#0a0a0f] items-center justify-center">
@@ -238,7 +434,6 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
     )
   }
 
-  // Map API sections to a lookup by section_type
   const sectionsByType = new Map<SectionType, ApiSection>()
   for (const s of playbook.sections) {
     sectionsByType.set(mapSectionType(s.type), s)
@@ -247,6 +442,28 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
   const activeSection = sectionsByType.get(activeSectionType)
   const currentContent = activeSection ? (savedContents[activeSection.id] ?? activeSection.content) : ''
   const hasContent = currentContent && currentContent.trim().length > 0
+
+  // Process inline (source: URL) markers
+  const { processed: processedContent, urls: inlineUrlMap } = processSourceMarkers(currentContent ?? '')
+
+  // Aggregate all sources across all sections
+  const allSources: { source: SourceReference; sectionId: string; sectionTitle: string }[] = []
+  for (const section of playbook.sections) {
+    if (section.sources?.length) {
+      for (const src of section.sources) {
+        const effectiveStatus = sourceStatuses[section.id]?.[src.id] ?? src.verification_status
+        allSources.push({
+          source: { ...src, verification_status: effectiveStatus },
+          sectionId: section.id,
+          sectionTitle: SECTION_META[mapSectionType(section.type)]?.title ?? section.title,
+        })
+      }
+    }
+  }
+
+  const verifiedCount = allSources.filter(s => s.source.verification_status === 'verified').length
+  const needsReviewCount = allSources.filter(s => s.source.verification_status === 'needs_review').length
+  const unverifiedCount = allSources.filter(s => s.source.verification_status === 'unverified').length
 
   function startEdit() {
     setEditContent(currentContent)
@@ -276,8 +493,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
         const section = sectionsByType.get(sectionType)
         const content = section ? (savedContents[section.id] ?? section.content) : ''
         if (!content?.trim()) return ''
-        // Minimal markdown → HTML for print
         const htmlContent = content
+          .replace(/\(source:\s*(https?:\/\/[^\s)]+)\)/gi, '')
+          .replace(/\[\d+\]/g, '')
           .replace(/^## (.+)$/gm, '<h2>$1</h2>')
           .replace(/^### (.+)$/gm, '<h3>$1</h3>')
           .replace(/^\*\*(.+)\*\*$/gm, '<p><strong>$1</strong></p>')
@@ -383,14 +601,15 @@ ${sectionsHtml}
                       onClick={() => {
                         setActiveSectionType(sectionType)
                         setEditingSection(null)
+                        setShowSources(false)
                       }}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all duration-150 group ${
-                        isActive
+                        isActive && !showSources
                           ? 'bg-[#1e3a5f] border border-[#339af0]/20 text-white'
                           : 'text-[#a1a1aa] hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-[#339af0]' : 'text-[#a1a1aa] group-hover:text-white/70'}`} />
+                      <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive && !showSources ? 'text-[#339af0]' : 'text-[#a1a1aa] group-hover:text-white/70'}`} />
                       <span className="text-xs font-medium flex-1 truncate leading-tight">
                         {meta.title}
                       </span>
@@ -402,94 +621,211 @@ ${sectionsHtml}
                     </button>
                   )
                 })}
+
+                {/* Sources nav item */}
+                {allSources.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setShowSources(true)
+                      setEditingSection(null)
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all duration-150 group mt-2 ${
+                      showSources
+                        ? 'bg-[#1e3a5f] border border-[#339af0]/20 text-white'
+                        : 'text-[#a1a1aa] hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${showSources ? 'text-[#339af0]' : 'text-[#a1a1aa] group-hover:text-white/70'}`} />
+                    <span className="text-xs font-medium flex-1 truncate leading-tight">
+                      Sources & Verification
+                    </span>
+                    <span className="text-[10px] bg-[#339af0]/20 text-[#339af0] rounded px-1 font-semibold">
+                      {allSources.length}
+                    </span>
+                  </button>
+                )}
               </nav>
             </div>
           </aside>
 
           <main className="flex-1 overflow-y-auto bg-[#0a0a0f]">
-            <div className="max-w-4xl mx-auto px-8 py-8">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-medium text-[#a1a1aa] uppercase tracking-widest">
-                      Section {SECTION_META[activeSectionType].order} of 12
-                    </span>
-                    <Badge
+            {showSources ? (
+              <div className="max-w-4xl mx-auto px-8 py-8">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <h2 className="font-heading text-2xl font-bold text-white mb-1">Sources & Verification</h2>
+                    <p className="text-sm text-[#a1a1aa]">
+                      Review and verify every claim the AI agents made in this playbook.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CheckCircle2 className="w-4 h-4 text-green-400" />
+                      <span className="text-xs font-medium text-green-400">Verified</span>
+                    </div>
+                    <p className="text-2xl font-bold text-white">{verifiedCount}</p>
+                  </div>
+                  <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertTriangle className="w-4 h-4 text-amber-400" />
+                      <span className="text-xs font-medium text-amber-400">Needs Review</span>
+                    </div>
+                    <p className="text-2xl font-bold text-white">{needsReviewCount}</p>
+                  </div>
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <X className="w-4 h-4 text-red-400" />
+                      <span className="text-xs font-medium text-red-400">Unverified</span>
+                    </div>
+                    <p className="text-2xl font-bold text-white">{unverifiedCount}</p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-white/[0.06] bg-[#141419] overflow-hidden">
+                  {allSources.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <ShieldCheck className="w-10 h-10 text-[#a1a1aa] mb-3" />
+                      <p className="text-white/60 text-sm">No sources attached to this playbook yet.</p>
+                      <p className="text-[#a1a1aa] text-xs mt-1">Sources will appear here when the AI agents add them to sections.</p>
+                    </div>
+                  ) : (
+                    allSources.map(({ source, sectionId, sectionTitle }) => (
+                      <SourceRow
+                        key={`${sectionId}-${source.id}`}
+                        source={source}
+                        sectionId={sectionId}
+                        sectionTitle={sectionTitle}
+                        playbookId={id}
+                        onUpdate={handleSourceUpdate}
+                      />
+                    ))
+                  )}
+                </div>
+
+                {/* Inline URL sources note */}
+                {inlineUrlMap.length > 0 && (
+                  <div className="mt-4 p-3 rounded-lg border border-white/[0.06] bg-[#141419]">
+                    <p className="text-xs text-[#a1a1aa] mb-2">Inline source references found in content:</p>
+                    <ol className="space-y-1">
+                      {inlineUrlMap.map((url, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs">
+                          <span className="text-[#339af0] font-bold">[{i + 1}]</span>
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-[#339af0] hover:underline break-all">
+                            {url}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="max-w-4xl mx-auto px-8 py-8">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-[10px] font-medium text-[#a1a1aa] uppercase tracking-widest">
+                        Section {SECTION_META[activeSectionType].order} of 12
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] px-2 py-0 ${
+                          hasContent
+                            ? 'border-green-500/30 text-green-400 bg-green-500/10'
+                            : 'border-white/20 text-[#a1a1aa]'
+                        }`}
+                      >
+                        {hasContent ? 'Complete' : 'Pending'}
+                      </Badge>
+                      {activeSection?.sources && activeSection.sources.length > 0 && (
+                        <button
+                          onClick={() => setShowSources(true)}
+                          className="inline-flex items-center gap-1 text-[10px] text-[#339af0] bg-[#339af0]/10 border border-[#339af0]/20 rounded px-2 py-0.5 hover:bg-[#339af0]/20 transition-colors"
+                        >
+                          <ShieldCheck className="w-2.5 h-2.5" />
+                          {activeSection.sources.length} source{activeSection.sources.length !== 1 ? 's' : ''}
+                        </button>
+                      )}
+                    </div>
+                    <h2 className="font-heading text-2xl font-bold text-white">
+                      {SECTION_META[activeSectionType].title}
+                    </h2>
+                  </div>
+                  {hasContent && editingSection !== activeSection?.id && (
+                    <Button
                       variant="outline"
-                      className={`text-[10px] px-2 py-0 ${
-                        hasContent
-                          ? 'border-green-500/30 text-green-400 bg-green-500/10'
-                          : 'border-white/20 text-[#a1a1aa]'
-                      }`}
+                      size="sm"
+                      onClick={startEdit}
+                      className="border-white/10 bg-white/5 text-white hover:bg-white/10 gap-1.5 flex-shrink-0 ml-4"
                     >
-                      {hasContent ? 'Complete' : 'Pending'}
-                    </Badge>
-                  </div>
-                  <h2 className="font-heading text-2xl font-bold text-white">
-                    {SECTION_META[activeSectionType].title}
-                  </h2>
+                      <Pencil className="w-3.5 h-3.5" />
+                      Edit
+                    </Button>
+                  )}
                 </div>
-                {hasContent && editingSection !== activeSection?.id && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={startEdit}
-                    className="border-white/10 bg-white/5 text-white hover:bg-white/10 gap-1.5 flex-shrink-0 ml-4"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    Edit
-                  </Button>
+
+                <div className="rounded-xl border border-white/[0.06] bg-[#141419] p-6">
+                  {editingSection === activeSection?.id ? (
+                    <div className="space-y-4">
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        className="w-full h-96 bg-[#0a0a0f] border border-white/10 rounded-lg p-4 text-sm text-[#a1a1aa] font-mono resize-none focus:outline-none focus:border-[#339af0]/40 leading-relaxed"
+                        placeholder="Section content (Markdown supported)..."
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" onClick={saveEdit} className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
+                          <Save className="w-3.5 h-3.5" />
+                          Save Changes
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={cancelEdit} className="text-[#a1a1aa] hover:text-white gap-1.5">
+                          <X className="w-3.5 h-3.5" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : hasContent ? (
+                    <div className="prose prose-invert max-w-none">
+                      {renderMarkdown(processedContent, inlineUrlMap)}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                        <Clock className="w-5 h-5 text-[#a1a1aa]" />
+                      </div>
+                      <p className="text-white/60 text-sm font-medium">Section not yet generated</p>
+                      <p className="text-[#a1a1aa] text-xs mt-1">This section will appear once the AI agents complete it</p>
+                    </div>
+                  )}
+                </div>
+
+                {activeSection?.created_at && (
+                  <div className="flex items-center gap-4 mt-4 px-1">
+                    <div className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+                      <Bot className="w-3.5 h-3.5" />
+                      <span>Generated by Writer Agent</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500/70" />
+                      <span>Reviewed by Quality Agent</span>
+                    </div>
+                    {inlineUrlMap.length > 0 && (
+                      <button
+                        onClick={() => setShowSources(true)}
+                        className="flex items-center gap-1.5 text-xs text-[#339af0] hover:underline"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        {inlineUrlMap.length} inline reference{inlineUrlMap.length !== 1 ? 's' : ''}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
-
-              <div className="rounded-xl border border-white/[0.06] bg-[#141419] p-6">
-                {editingSection === activeSection?.id ? (
-                  <div className="space-y-4">
-                    <textarea
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      className="w-full h-96 bg-[#0a0a0f] border border-white/10 rounded-lg p-4 text-sm text-[#a1a1aa] font-mono resize-none focus:outline-none focus:border-[#339af0]/40 leading-relaxed"
-                      placeholder="Section content (Markdown supported)..."
-                    />
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" onClick={saveEdit} className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
-                        <Save className="w-3.5 h-3.5" />
-                        Save Changes
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={cancelEdit} className="text-[#a1a1aa] hover:text-white gap-1.5">
-                        <X className="w-3.5 h-3.5" />
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : hasContent ? (
-                  <div className="prose prose-invert max-w-none">
-                    {renderMarkdown(currentContent)}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                      <Clock className="w-5 h-5 text-[#a1a1aa]" />
-                    </div>
-                    <p className="text-white/60 text-sm font-medium">Section not yet generated</p>
-                    <p className="text-[#a1a1aa] text-xs mt-1">This section will appear once the AI agents complete it</p>
-                  </div>
-                )}
-              </div>
-
-              {activeSection?.created_at && (
-                <div className="flex items-center gap-4 mt-4 px-1">
-                  <div className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
-                    <Bot className="w-3.5 h-3.5" />
-                    <span>Generated by Writer Agent</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500/70" />
-                    <span>Reviewed by Quality Agent</span>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </main>
         </div>
       </div>

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { AppSidebar } from '@/components/app-sidebar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { Contact, ContactVerificationStatus, ContactConfidence } from '@/types'
+import type { Contact, ContactVerificationStatus, ContactConfidence, PersonalizationSignal, DirectQuote } from '@/types'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -19,6 +19,8 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
+  Quote,
+  Zap,
 } from 'lucide-react'
 
 interface ResearchedContact {
@@ -31,6 +33,8 @@ interface ResearchedContact {
   linkedinUrl: string
   status: ContactVerificationStatus
   notes?: string
+  personalization_signals?: PersonalizationSignal[]
+  direct_quotes?: DirectQuote[]
 }
 
 const CONFIDENCE_CONFIG: Record<ContactConfidence, { label: string; className: string }> = {
@@ -69,6 +73,8 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
             linkedinUrl: c.linkedin_url || '',
             status: c.verification_status || 'pending',
             notes: c.notes,
+            personalization_signals: c.personalization_signals,
+            direct_quotes: c.direct_quotes,
           }))
           setContacts(fetched)
         }
@@ -92,6 +98,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
   })
 
   const [submitting, setSubmitting] = useState(false)
+  const [expandedContact, setExpandedContact] = useState<string | null>(null)
 
   const handleContinue = async () => {
     if (!allActioned || submitting) return
@@ -279,87 +286,168 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredContacts.map((contact, idx) => (
-                    <tr
-                      key={contact.id}
-                      className={`border-b border-white/[0.04] transition-colors hover:bg-white/[0.02] ${
-                        contact.status === 'removed' ? 'opacity-50' : ''
-                      } ${idx === filteredContacts.length - 1 ? 'border-b-0' : ''}`}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-white">{contact.name}</span>
-                          <a
-                            href={contact.linkedinUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#339af0] hover:text-[#339af0]/80 transition-colors"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-[#a1a1aa]">{contact.title}</td>
-                      <td className="px-4 py-3 text-sm text-[#a1a1aa]">{contact.department}</td>
-                      <td className="px-4 py-3">
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] px-2 py-0 ${CONFIDENCE_CONFIG[contact.confidence].className}`}
+                  {filteredContacts.map((contact, idx) => {
+                    const hasDetails = (contact.personalization_signals?.length ?? 0) > 0 || (contact.direct_quotes?.length ?? 0) > 0
+                    const isExpanded = expandedContact === contact.id
+                    return (
+                      <>
+                        <tr
+                          key={contact.id}
+                          className={`border-b border-white/[0.04] transition-colors hover:bg-white/[0.02] ${
+                            contact.status === 'removed' ? 'opacity-50' : ''
+                          } ${idx === filteredContacts.length - 1 && !isExpanded ? 'border-b-0' : ''}`}
                         >
-                          {CONFIDENCE_CONFIG[contact.confidence].label}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-[#a1a1aa]">{contact.source}</td>
-                      <td className="px-4 py-3">
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] px-2 py-0 ${STATUS_CONFIG[contact.status].className}`}
-                        >
-                          {STATUS_CONFIG[contact.status].label}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => setStatus(contact.id, 'confirmed')}
-                            disabled={contact.status === 'confirmed'}
-                            title="Confirm"
-                            className={`p-1.5 rounded-md transition-colors ${
-                              contact.status === 'confirmed'
-                                ? 'text-green-400 bg-green-500/10 cursor-default'
-                                : 'text-[#a1a1aa] hover:text-green-400 hover:bg-green-500/10'
-                            }`}
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setStatus(contact.id, 'needs_review')}
-                            disabled={contact.status === 'needs_review'}
-                            title="Flag for review"
-                            className={`p-1.5 rounded-md transition-colors ${
-                              contact.status === 'needs_review'
-                                ? 'text-amber-400 bg-amber-500/10 cursor-default'
-                                : 'text-[#a1a1aa] hover:text-amber-400 hover:bg-amber-500/10'
-                            }`}
-                          >
-                            <Flag className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setStatus(contact.id, 'removed')}
-                            disabled={contact.status === 'removed'}
-                            title="Remove"
-                            className={`p-1.5 rounded-md transition-colors ${
-                              contact.status === 'removed'
-                                ? 'text-red-400 bg-red-500/10 cursor-default'
-                                : 'text-[#a1a1aa] hover:text-red-400 hover:bg-red-500/10'
-                            }`}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-white">{contact.name}</span>
+                              <a
+                                href={contact.linkedinUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#339af0] hover:text-[#339af0]/80 transition-colors"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                              {hasDetails && (
+                                <button
+                                  onClick={() => setExpandedContact(isExpanded ? null : contact.id)}
+                                  className="text-[#a1a1aa] hover:text-white transition-colors"
+                                  title={isExpanded ? 'Hide details' : 'Show signals & quotes'}
+                                >
+                                  {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-[#a1a1aa]">{contact.title}</td>
+                          <td className="px-4 py-3 text-sm text-[#a1a1aa]">{contact.department}</td>
+                          <td className="px-4 py-3">
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] px-2 py-0 ${CONFIDENCE_CONFIG[contact.confidence].className}`}
+                            >
+                              {CONFIDENCE_CONFIG[contact.confidence].label}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-[#a1a1aa]">{contact.source}</td>
+                          <td className="px-4 py-3">
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] px-2 py-0 ${STATUS_CONFIG[contact.status].className}`}
+                            >
+                              {STATUS_CONFIG[contact.status].label}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setStatus(contact.id, 'confirmed')}
+                                disabled={contact.status === 'confirmed'}
+                                title="Confirm"
+                                className={`p-1.5 rounded-md transition-colors ${
+                                  contact.status === 'confirmed'
+                                    ? 'text-green-400 bg-green-500/10 cursor-default'
+                                    : 'text-[#a1a1aa] hover:text-green-400 hover:bg-green-500/10'
+                                }`}
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => setStatus(contact.id, 'needs_review')}
+                                disabled={contact.status === 'needs_review'}
+                                title="Flag for review"
+                                className={`p-1.5 rounded-md transition-colors ${
+                                  contact.status === 'needs_review'
+                                    ? 'text-amber-400 bg-amber-500/10 cursor-default'
+                                    : 'text-[#a1a1aa] hover:text-amber-400 hover:bg-amber-500/10'
+                                }`}
+                              >
+                                <Flag className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => setStatus(contact.id, 'removed')}
+                                disabled={contact.status === 'removed'}
+                                title="Remove"
+                                className={`p-1.5 rounded-md transition-colors ${
+                                  contact.status === 'removed'
+                                    ? 'text-red-400 bg-red-500/10 cursor-default'
+                                    : 'text-[#a1a1aa] hover:text-red-400 hover:bg-red-500/10'
+                                }`}
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {isExpanded && hasDetails && (
+                          <tr key={`${contact.id}-detail`} className="border-b border-white/[0.04] bg-white/[0.01]">
+                            <td colSpan={7} className="px-4 py-4">
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                {contact.personalization_signals && contact.personalization_signals.length > 0 && (
+                                  <div>
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                      <Zap className="w-3.5 h-3.5 text-[#339af0]" />
+                                      <span className="text-xs font-semibold text-white">Personalization Signals</span>
+                                    </div>
+                                    <ul className="space-y-1.5">
+                                      {contact.personalization_signals.map((sig, si) => (
+                                        <li key={si} className="flex items-start gap-2">
+                                          <span className="text-[#339af0] mt-1 text-xs">•</span>
+                                          <div>
+                                            <span className="text-xs text-[#a1a1aa]">{sig.signal}</span>
+                                            {sig.source_url && (
+                                              <a
+                                                href={sig.source_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-[#339af0] hover:underline"
+                                              >
+                                                <ExternalLink className="w-2.5 h-2.5" />
+                                                source
+                                              </a>
+                                            )}
+                                          </div>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {contact.direct_quotes && contact.direct_quotes.length > 0 && (
+                                  <div>
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                      <Quote className="w-3.5 h-3.5 text-[#339af0]" />
+                                      <span className="text-xs font-semibold text-white">Direct Quotes</span>
+                                    </div>
+                                    <ul className="space-y-2">
+                                      {contact.direct_quotes.map((dq, di) => (
+                                        <li key={di} className="border-l-2 border-[#339af0]/30 pl-3">
+                                          <p className="text-xs text-white/80 italic">&ldquo;{dq.quote}&rdquo;</p>
+                                          <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="text-[10px] text-[#a1a1aa]">{dq.context}</span>
+                                            {dq.source_url && (
+                                              <a
+                                                href={dq.source_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-0.5 text-[10px] text-[#339af0] hover:underline"
+                                              >
+                                                <ExternalLink className="w-2.5 h-2.5" />
+                                                verify
+                                              </a>
+                                            )}
+                                          </div>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
