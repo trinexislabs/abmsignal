@@ -66,6 +66,23 @@ async function runAgent(
     throw Object.assign(new Error(stderr || 'OpenClaw process failed'), { logPath, stdout })
   }
 
+  // OpenClaw --json mode wraps the agent response in a JSON envelope.
+  // Extract the actual agent text from result.payloads[0].text so that
+  // parseAgentOutput receives a plain string with real newlines and quotes,
+  // not JSON-escaped sequences that break JSON.parse downstream.
+  try {
+    const envelope = JSON.parse(stdout) as {
+      status?: string
+      result?: { payloads?: Array<{ text?: string }> }
+    }
+    const text = envelope.result?.payloads?.[0]?.text
+    if (typeof text === 'string') {
+      stdout = text
+    }
+  } catch {
+    // Not an OpenClaw JSON envelope — use stdout as-is
+  }
+
   const logPath = saveLog(runId, phase, stdout, stderr)
   return { stdout, stderr, logPath }
 }
