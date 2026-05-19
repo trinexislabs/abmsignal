@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -12,21 +12,50 @@ import {
   Zap,
   CheckCircle2,
   Loader2,
+  ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { formState } from '@/lib/form-state'
+
+// Native select styled to match the dark form theme
+function FormSelect({
+  value,
+  onChange,
+  placeholder,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(
+          'w-full h-10 rounded-xl bg-[#0a0a0f] border border-white/10 px-3 pr-8 text-sm appearance-none cursor-pointer',
+          'focus:outline-none focus:border-[#339af0]/50',
+          value ? 'text-white' : 'text-[#a1a1aa]/60'
+        )}
+      >
+        <option value="" disabled>{placeholder}</option>
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value} className="bg-[#141419] text-white">
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa]" />
+    </div>
+  )
+}
 
 // ──────────────────────────────────────────────────────────
 // Step Indicator
@@ -184,6 +213,24 @@ export default function ProductBriefPage() {
   const [urlInput, setUrlInput] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzed, setAnalyzed] = useState(false)
+
+  // Restore from localStorage on mount
+  useEffect(() => {
+    const saved = formState.readBrief()
+    if (!saved) return
+    try {
+      const parsed = JSON.parse(saved) as Partial<ProductFormState & { mode: Mode; url: string }>
+      if (parsed.mode) setMode(parsed.mode)
+      if (parsed.url) setUrlInput(parsed.url)
+      setForm((prev) => ({ ...prev, ...parsed }))
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Auto-save to localStorage on every change
+  useEffect(() => {
+    formState.saveBrief({ ...form, mode, url: urlInput })
+  }, [form, mode, urlInput])
 
   const set = <K extends keyof ProductFormState>(key: K, value: ProductFormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -408,62 +455,51 @@ export default function ProductBriefPage() {
                 <Label className="text-sm font-medium text-white mb-1.5 block">
                   Deployment Model
                 </Label>
-                <Select
+                <FormSelect
                   value={form.deployment_model}
-                  onValueChange={(v) =>
-                    set('deployment_model', v as ProductFormState['deployment_model'])
-                  }
-                >
-                  <SelectTrigger className="bg-[#0a0a0f] border-white/10 text-white h-10 focus:border-[#339af0]/50">
-                    <SelectValue placeholder="Select…" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#141419] border-white/10">
-                    <SelectItem value="saas">SaaS</SelectItem>
-                    <SelectItem value="on-prem">On-Premise</SelectItem>
-                    <SelectItem value="hybrid">Hybrid</SelectItem>
-                    <SelectItem value="open-source">Open Source</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => set('deployment_model', v as ProductFormState['deployment_model'])}
+                  placeholder="Select…"
+                  options={[
+                    { value: 'saas', label: 'SaaS' },
+                    { value: 'on-prem', label: 'On-Premise' },
+                    { value: 'hybrid', label: 'Hybrid' },
+                    { value: 'open-source', label: 'Open Source' },
+                  ]}
+                />
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-white mb-1.5 block">
                   Typical Deal Size
                 </Label>
-                <Select
+                <FormSelect
                   value={form.deal_size}
-                  onValueChange={(v) => set('deal_size', v ?? '')}
-                >
-                  <SelectTrigger className="bg-[#0a0a0f] border-white/10 text-white h-10 focus:border-[#339af0]/50">
-                    <SelectValue placeholder="Select…" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#141419] border-white/10">
-                    <SelectItem value="<50k">&lt;$50K</SelectItem>
-                    <SelectItem value="50k-250k">$50K–$250K</SelectItem>
-                    <SelectItem value="250k-1m">$250K–$1M</SelectItem>
-                    <SelectItem value="1m+">$1M+</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => set('deal_size', v)}
+                  placeholder="Select…"
+                  options={[
+                    { value: '<50k', label: '<$50K' },
+                    { value: '50k-250k', label: '$50K–$250K' },
+                    { value: '250k-1m', label: '$250K–$1M' },
+                    { value: '1m+', label: '$1M+' },
+                  ]}
+                />
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-white mb-1.5 block">
                   Sales Cycle
                 </Label>
-                <Select
+                <FormSelect
                   value={form.sales_cycle}
-                  onValueChange={(v) => set('sales_cycle', v ?? '')}
-                >
-                  <SelectTrigger className="bg-[#0a0a0f] border-white/10 text-white h-10 focus:border-[#339af0]/50">
-                    <SelectValue placeholder="Select…" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#141419] border-white/10">
-                    <SelectItem value="<30d">&lt;30 days</SelectItem>
-                    <SelectItem value="30-90d">30–90 days</SelectItem>
-                    <SelectItem value="90-180d">90–180 days</SelectItem>
-                    <SelectItem value="180d+">180+ days</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => set('sales_cycle', v)}
+                  placeholder="Select…"
+                  options={[
+                    { value: '<30d', label: '<30 days' },
+                    { value: '30-90d', label: '30–90 days' },
+                    { value: '90-180d', label: '90–180 days' },
+                    { value: '180d+', label: '180+ days' },
+                  ]}
+                />
               </div>
             </div>
           </Card>

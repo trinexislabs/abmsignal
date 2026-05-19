@@ -1,23 +1,50 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, Zap, CheckCircle2, Layers, Layers2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Zap, CheckCircle2, Layers, Layers2, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { formState } from '@/lib/form-state'
+
+function FormSelect({
+  value,
+  onChange,
+  placeholder,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(
+          'w-full h-10 rounded-xl bg-[#0a0a0f] border border-white/10 px-3 pr-8 text-sm appearance-none cursor-pointer',
+          'focus:outline-none focus:border-[#339af0]/50',
+          value ? 'text-white' : 'text-[#a1a1aa]/60'
+        )}
+      >
+        <option value="" disabled>{placeholder}</option>
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value} className="bg-[#141419] text-white">
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa]" />
+    </div>
+  )
+}
 
 // ──────────────────────────────────────────────────────────
 // Step Indicator (reused from product page)
@@ -167,6 +194,22 @@ export default function TargetAccountPage() {
   const [form, setForm] = useState<AccountFormState>(INITIAL_FORM)
   const [submitting, setSubmitting] = useState(false)
 
+  // Restore from localStorage on mount
+  useEffect(() => {
+    const saved = formState.readAccount()
+    if (!saved) return
+    try {
+      const parsed = JSON.parse(saved) as Partial<AccountFormState>
+      setForm((prev) => ({ ...prev, ...parsed }))
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Auto-save to localStorage on every change
+  useEffect(() => {
+    formState.saveAccount(form)
+  }, [form])
+
   const set = <K extends keyof AccountFormState>(key: K, value: AccountFormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }))
 
@@ -251,36 +294,24 @@ export default function TargetAccountPage() {
               <Label className="text-sm font-medium text-white mb-1.5 block">
                 Industry / Vertical <span className="text-[#339af0]">*</span>
               </Label>
-              <Select value={form.industry || undefined} onValueChange={(v) => set('industry', v ?? '')}>
-                <SelectTrigger className="bg-[#0a0a0f] border-white/10 text-white h-10 focus:border-[#339af0]/50">
-                  <SelectValue placeholder="Select industry…" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#141419] border-white/10">
-                  {INDUSTRIES.map((ind) => (
-                    <SelectItem key={ind} value={ind}>
-                      {ind}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormSelect
+                value={form.industry}
+                onChange={(v) => set('industry', v)}
+                placeholder="Select industry…"
+                options={INDUSTRIES.map((ind) => ({ value: ind, label: ind }))}
+              />
             </div>
 
             <div>
               <Label className="text-sm font-medium text-white mb-1.5 block">
                 Geography <span className="text-[#339af0]">*</span>
               </Label>
-              <Select value={form.geography || undefined} onValueChange={(v) => set('geography', v ?? '')}>
-                <SelectTrigger className="bg-[#0a0a0f] border-white/10 text-white h-10 focus:border-[#339af0]/50">
-                  <SelectValue placeholder="Select geography…" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#141419] border-white/10">
-                  {GEOGRAPHIES.map((geo) => (
-                    <SelectItem key={geo} value={geo}>
-                      {geo}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormSelect
+                value={form.geography}
+                onChange={(v) => set('geography', v)}
+                placeholder="Select geography…"
+                options={GEOGRAPHIES.map((geo) => ({ value: geo, label: geo }))}
+              />
             </div>
           </div>
 
