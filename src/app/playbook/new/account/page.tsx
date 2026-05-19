@@ -189,21 +189,18 @@ const GEOGRAPHIES = [
 // Page
 // ──────────────────────────────────────────────────────────
 
+function readSavedAccount() {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem('abmsignal_account')
+    return raw ? (JSON.parse(raw) as Partial<AccountFormState>) : null
+  } catch { return null }
+}
+
 export default function TargetAccountPage() {
   const router = useRouter()
-  const [form, setForm] = useState<AccountFormState>(INITIAL_FORM)
+  const [form, setForm] = useState<AccountFormState>(() => ({ ...INITIAL_FORM, ...readSavedAccount() }))
   const [submitting, setSubmitting] = useState(false)
-
-  // Restore from localStorage on mount
-  useEffect(() => {
-    const saved = formState.readAccount()
-    if (!saved) return
-    try {
-      const parsed = JSON.parse(saved) as Partial<AccountFormState>
-      setForm((prev) => ({ ...prev, ...parsed }))
-    } catch {}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // Auto-save to localStorage on every change
   useEffect(() => {

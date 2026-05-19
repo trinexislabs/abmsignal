@@ -206,26 +206,23 @@ const INITIAL_FORM: ProductFormState = {
 
 type Mode = 'form' | 'url'
 
+// Read saved brief synchronously — runs once during initial render,
+// so the form is never blank even for a single frame after a page reload.
+function readSaved() {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem('abmsignal_product_brief')
+    return raw ? (JSON.parse(raw) as Partial<ProductFormState & { mode: Mode; url: string }>) : null
+  } catch { return null }
+}
+
 export default function ProductBriefPage() {
   const router = useRouter()
-  const [mode, setMode] = useState<Mode>('form')
-  const [form, setForm] = useState<ProductFormState>(INITIAL_FORM)
-  const [urlInput, setUrlInput] = useState('')
+  const [mode, setMode] = useState<Mode>(() => readSaved()?.mode ?? 'form')
+  const [urlInput, setUrlInput] = useState<string>(() => readSaved()?.url ?? '')
+  const [form, setForm] = useState<ProductFormState>(() => ({ ...INITIAL_FORM, ...readSaved() }))
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzed, setAnalyzed] = useState(false)
-
-  // Restore from localStorage on mount
-  useEffect(() => {
-    const saved = formState.readBrief()
-    if (!saved) return
-    try {
-      const parsed = JSON.parse(saved) as Partial<ProductFormState & { mode: Mode; url: string }>
-      if (parsed.mode) setMode(parsed.mode)
-      if (parsed.url) setUrlInput(parsed.url)
-      setForm((prev) => ({ ...prev, ...parsed }))
-    } catch {}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // Auto-save to localStorage on every change
   useEffect(() => {
@@ -291,6 +288,7 @@ export default function ProductBriefPage() {
           {(['form', 'url'] as Mode[]).map((m) => (
             <button
               key={m}
+              type="button"
               onClick={() => setMode(m)}
               className={cn(
                 'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
