@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Playbook {
+  id                String    @id
+  userId            String?
+  productName       String
+  productUrl        String?
+  productBrief      String    // JSON
+  targetCompany     String
+  targetUrl         String?
+  industry          String
+  geography         String
+  priorityTier      String    @default("tier1")
+  status            String    @default("draft")
+  progressPct       Int       @default(0)
+  agentStatus       String    @default("[]") // JSON array of AgentStatus
+  failedReason      String?
+  completedAt       DateTime?
+  openclawSessionId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  runs     PlaybookRun[]
+  contacts PlaybookContact[]
+  sections PlaybookSection[]
+  sources  PlaybookSource[]
+  events   PlaybookEvent[]
+}
+
+model PlaybookRun {
+  id                String    @id @default(cuid())
+  playbookId        String
+  phase             String    // "research" | "writing" | "review"
+  status            String    @default("queued") // "queued" | "running" | "succeeded" | "failed" | "cancelled"
+  attempt           Int       @default(1)
+  startedAt         DateTime?
+  completedAt       DateTime?
+  failedAt          DateTime?
+  errorMessage      String?
+  openclawSessionId String?
+  processId         Int?
+  stdoutPath        String?
+  stderrPath        String?
+  rawOutput         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  playbook Playbook       @relation(fields: [playbookId], references: [id])
+  events   PlaybookEvent[]
+}
+
+model PlaybookContact {
+  id                 String   @id @default(cuid())
+  playbookId         String
+  name               String
+  title              String
+  company            String   @default("")
+  linkedinUrl        String?
+  email              String?
+  rationale          String?
+  sourceUrls         String   @default("[]") // JSON
+  confidence         String   @default("medium") // "high" | "medium" | "low"
+  source             String   @default("AI Research")
+  verificationStatus String   @default("pending") // "pending" | "confirmed" | "needs_review" | "removed"
+  notes              String?
+  personalizationSignals String @default("[]") // JSON
+  directQuotes       String   @default("[]") // JSON
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  playbook Playbook @relation(fields: [playbookId], references: [id])
+}
+
+model PlaybookSection {
+  id              String   @id @default(cuid())
+  playbookId      String
+  sectionKey      String   // "executive_summary" | "account_intelligence" | etc.
+  title           String
+  contentMarkdown String   @default("")
+  status          String   @default("pending") // "pending" | "generating" | "complete" | "reviewed"
+  orderIndex      Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  playbook Playbook        @relation(fields: [playbookId], references: [id])
+  sources  PlaybookSource[]
+}
+
+model PlaybookSource {
+  id                 String    @id @default(cuid())
+  playbookId         String
+  sectionId          String?
+  url                String
+  title              String?
+  publisher          String?
+  retrievedAt        DateTime?
+  confidence         String?   // "high" | "medium" | "low"
+  note               String?
+  claim              String?
+  verificationStatus String    @default("unverified") // "verified" | "needs_review" | "unverified"
+  createdAt          DateTime  @default(now())
+
+  playbook Playbook         @relation(fields: [playbookId], references: [id])
+  section  PlaybookSection? @relation(fields: [sectionId], references: [id])
+}
+
+model PlaybookEvent {
+  id         String   @id @default(cuid())
+  playbookId String
+  runId      String?
+  type       String
+  message    String
+  metadata   String   @default("{}") // JSON
+  createdAt  DateTime @default(now())
+
+  playbook Playbook     @relation(fields: [playbookId], references: [id])
+  run      PlaybookRun? @relation(fields: [runId], references: [id])
+}

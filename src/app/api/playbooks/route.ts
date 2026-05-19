@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createPlaybook, listPlaybooks } from '@/lib/store/playbooks'
+import { playbookService } from '@/server/playbooks/playbook-service'
 import type { PlaybookCreateRequest } from '@/types'
 
 export async function GET() {
-  const stored = listPlaybooks()
-  const storedIds = new Set(stored.map((p) => p.id))
-
-  // Don't include mock playbooks in the list — only show real ones from the store
-  // Mock data (pb-001, etc.) is only for development/demo purposes
-  return NextResponse.json({ data: stored })
+  const playbooks = await playbookService.listAll()
+  return NextResponse.json({ data: playbooks })
 }
 
 export async function POST(request: Request) {
@@ -22,75 +18,40 @@ export async function POST(request: Request) {
   const { product_brief, target_account } = body
 
   if (!product_brief?.product_name || !target_account?.target_company) {
-    const missing = []
+    const missing: string[] = []
     if (!product_brief?.product_name) missing.push('product_name')
     if (!target_account?.target_company) missing.push('target_company')
     return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 })
   }
 
-  const valuePropsArr = product_brief.value_propositions
-    ? product_brief.value_propositions
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : []
-  const personasArr = product_brief.target_personas
-    ? product_brief.target_personas
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : []
-  const differentiatorsArr = product_brief.differentiators
-    ? product_brief.differentiators
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : []
-  const competitorsArr = product_brief.competitors
-    ? product_brief.competitors
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : []
+  // Parse comma/newline-delimited fields into arrays
+  const toArr = (s: string | undefined, sep: RegExp | string) =>
+    s ? s.split(sep).map(v => v.trim()).filter(Boolean) : []
 
   const validDeployment = (['saas', 'on-prem', 'hybrid'] as const).includes(
     product_brief.deployment_model as 'saas' | 'on-prem' | 'hybrid',
   )
-  const deploymentModel = validDeployment
-    ? (product_brief.deployment_model as 'saas' | 'on-prem' | 'hybrid')
-    : 'saas'
 
-  const playbook = createPlaybook({
-    user_id: 'usr_demo',
-    product_name: product_brief.product_name,
-    product_url: product_brief.product_url || undefined,
-    product_brief: {
+  const playbook = await playbookService.create({
+    userId: 'usr_demo',
+    productName: product_brief.product_name,
+    productUrl: product_brief.product_url || undefined,
+    productBrief: {
       product_name: product_brief.product_name,
-      description: product_brief.description || '',
-      value_propositions: valuePropsArr,
-      target_personas: personasArr,
-      differentiators: differentiatorsArr,
-      competitors: competitorsArr,
-      deployment_model: deploymentModel,
-      deal_size: product_brief.deal_size || '',
-      sales_cycle: product_brief.sales_cycle || '',
+      description: product_brief.description ?? '',
+      value_propositions: toArr(product_brief.value_propositions, '\n'),
+      target_personas: toArr(product_brief.target_personas, ','),
+      differentiators: toArr(product_brief.differentiators, '\n'),
+      competitors: toArr(product_brief.competitors, ','),
+      deployment_model: validDeployment ? product_brief.deployment_model : 'saas',
+      deal_size: product_brief.deal_size ?? '',
+      sales_cycle: product_brief.sales_cycle ?? '',
     },
-    target_company: target_account.target_company,
-    target_url: target_account.target_url || undefined,
+    targetCompany: target_account.target_company,
+    targetUrl: target_account.target_url || undefined,
     industry: target_account.industry,
     geography: target_account.geography,
-    priority_tier: target_account.priority_tier,
-    status: 'researching',
-    progress_pct: 0,
-    agent_status: [
-      { agent: 'orchestrator', task: 'Initializing research pipeline', status: 'pending' },
-      { agent: 'researcher', task: 'Preparing account research', status: 'pending' },
-      { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
-      { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
-    ],
-    sections: [],
-    contacts: [],
-    quality_checks: [],
+    priorityTier: target_account.priority_tier,
   })
 
   return NextResponse.json(

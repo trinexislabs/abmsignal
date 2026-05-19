@@ -64,6 +64,7 @@ const AGENT_ORDER: AgentStatus['agent'][] = ['orchestrator', 'researcher', 'writ
 
 const STATUS_LABELS: Record<PlaybookStatus, string> = {
   draft: 'Draft',
+  queued: 'Queued',
   researching: 'Researching Account',
   contact_review: 'Contact Review Ready',
   writing: 'Writing Playbook',
@@ -71,10 +72,13 @@ const STATUS_LABELS: Record<PlaybookStatus, string> = {
   complete: 'Complete',
   error: 'Error',
   rejected: 'Rejected',
+  failed: 'Failed',
+  cancelled: 'Cancelled',
 }
 
 const STATUS_BADGE: Record<PlaybookStatus, string> = {
   draft: 'bg-white/10 text-white border-white/20',
+  queued: 'bg-white/10 text-white border-white/20',
   researching: 'bg-[#339af0]/15 text-[#339af0] border-[#339af0]/30',
   contact_review: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
   writing: 'bg-[#339af0]/15 text-[#339af0] border-[#339af0]/30',
@@ -82,6 +86,8 @@ const STATUS_BADGE: Record<PlaybookStatus, string> = {
   complete: 'bg-green-500/15 text-green-400 border-green-500/30',
   error: 'bg-red-500/15 text-red-400 border-red-500/30',
   rejected: 'bg-red-500/15 text-red-400 border-red-500/30',
+  failed: 'bg-red-500/15 text-red-400 border-red-500/30',
+  cancelled: 'bg-red-500/15 text-red-400 border-red-500/30',
 }
 
 // ─────────────────────────────────────────────────────────
@@ -257,7 +263,12 @@ export default function ProcessingPage() {
           redirectedRef.current = true
           clearInterval(intervalId)
           router.push(`/playbook/${id}`)
-        } else if (json.data.status === 'error' || json.data.status === 'rejected') {
+        } else if (
+          json.data.status === 'error' ||
+          json.data.status === 'rejected' ||
+          json.data.status === 'failed' ||
+          json.data.status === 'cancelled'
+        ) {
           clearInterval(intervalId)
         }
       } catch (err) {
@@ -311,7 +322,7 @@ export default function ProcessingPage() {
     (agent) => agentMap.get(agent) ?? { agent, task: 'Awaiting previous stage…', status: 'pending' as const },
   )
 
-  const isActive = currentStatus !== 'complete' && currentStatus !== 'error' && currentStatus !== 'rejected'
+  const isActive = !['complete', 'error', 'rejected', 'failed', 'cancelled'].includes(currentStatus)
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -405,7 +416,7 @@ export default function ProcessingPage() {
         </Card>
 
         {/* Error / Rejected state - retry button */}
-        {(currentStatus === 'error' || currentStatus === 'rejected') && (
+        {(['error', 'rejected', 'failed', 'cancelled'] as PlaybookStatus[]).includes(currentStatus) && (
           <div className="mt-8 text-center">
             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 mb-4">
               <p className="text-sm text-red-400 mb-1 font-medium">

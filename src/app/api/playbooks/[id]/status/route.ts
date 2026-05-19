@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPlaybook } from '@/lib/store/playbooks'
+import { playbookService } from '@/server/playbooks/playbook-service'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -7,19 +7,11 @@ interface RouteContext {
 
 export async function GET(_req: Request, { params }: RouteContext) {
   const { id } = await params
-  const playbook = getPlaybook(id)
+  const status = await playbookService.getStatus(id)
 
-  if (!playbook) {
+  if (!status) {
     return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
   }
 
-  // Return real status only — progress is updated by the orchestrator agent via PATCH API
-  return NextResponse.json({
-    data: {
-      playbook_id: id,
-      status: playbook.status,
-      progress_pct: playbook.progress_pct,
-      agent_status: playbook.agent_status,
-    },
-  })
+  return NextResponse.json({ data: status })
 }

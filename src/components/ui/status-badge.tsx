@@ -45,6 +45,21 @@ const STATUS_CONFIG: Record<PlaybookStatus, { label: string; className: string; 
     className: 'bg-red-500/20 text-red-400 border-red-500/30',
     dot: 'bg-red-400',
   },
+  queued: {
+    label: 'Queued',
+    className: 'bg-white/10 text-white/60 border-white/20',
+    dot: 'bg-white/40 animate-pulse',
+  },
+  failed: {
+    label: 'Failed',
+    className: 'bg-red-500/20 text-red-400 border-red-500/30',
+    dot: 'bg-red-400',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    className: 'bg-red-500/20 text-red-400 border-red-500/30',
+    dot: 'bg-red-400',
+  },
 }
 
 interface StatusBadgeProps {

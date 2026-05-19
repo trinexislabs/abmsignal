@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server'
-import { getPlaybook, updatePlaybook, updateContacts } from '@/lib/store/playbooks'
-import { continuePlaybookFlow } from '@/lib/openclaw/client'
+import { playbookService } from '@/server/playbooks/playbook-service'
+import type { ApiContact } from '@/server/playbooks/playbook-types'
 import type { Contact } from '@/types'
-
-const ENGINE_RUNNER_URL = process.env.ENGINE_RUNNER_URL ?? 'http://localhost:18793'
-const ENGINE_RUNNER_API_KEY = process.env.ENGINE_RUNNER_API_KEY ?? 'abmsignal-engine-runner-2026'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -12,7 +9,7 @@ interface RouteContext {
 
 export async function POST(request: Request, { params }: RouteContext) {
   const { id } = await params
-  const playbook = getPlaybook(id)
+  const playbook = await playbookService.getById(id)
 
   if (!playbook) {
     return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
@@ -29,80 +26,26 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'contacts must be an array' }, { status: 400 })
   }
 
-  updateContacts(id, body.contacts)
+  // Map frontend Contact shape to ApiContact shape
+  const apiContacts: ApiContact[] = body.contacts.map((c: Contact) => ({
+    id: c.id,
+    playbook_id: id,
+    name: c.name,
+    title: c.title,
+    linkedin_url: c.linkedin_url,
+    confidence: c.confidence,
+    source: c.source,
+    verification_status: c.verification_status,
+    notes: c.notes,
+    created_at: c.created_at,
+  }))
 
-  // If the playbook is still in researching status, this is the orchestrator pushing
-  // its discovered contacts — just store them and let the orchestrator continue
-  // (it will set status to contact_review via PATCH in the next step).
-  if (playbook.status === 'researching') {
-    return NextResponse.json({
-      data: { message: 'Contacts stored. Orchestrator continues.' },
-    })
-  }
-
-  // The playbook is in contact_review status — this is the human approving contacts.
-  // Transition to writing and re-invoke the orchestrator for phases 3-4.
-  updatePlaybook(id, {
-    status: 'writing',
-    progress_pct: 45,
-    phase_started_at: new Date().toISOString(),
-    agent_status: [
-      {
-        agent: 'orchestrator',
-        task: 'Contact review complete — starting content generation',
-        status: 'running',
-      },
-      { agent: 'researcher', task: 'Account research complete', status: 'complete' },
-      {
-        agent: 'writer',
-        task: 'Generating hyper-personalized sections',
-        status: 'running',
-        detail: 'Starting section 1 of 12',
-      },
-      { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
-    ],
-  })
-
-  // Re-invoke the orchestrator for the writing + reviewing phases.
-  // First try the Engine Runner (same mechanism as generate), then fall back
-  // to a direct OpenClaw task via continuePlaybookFlow.
-  const flowId = playbook.openclaw_session_id
-  if (flowId) {
-    let invokedViaRunner = false
-    try {
-      const res = await fetch(`${ENGINE_RUNNER_URL}/invoke`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': ENGINE_RUNNER_API_KEY,
-        },
-        body: JSON.stringify({ flowId, playbookId: id, phase: 'writing' }),
-      })
-      invokedViaRunner = res.ok
-      if (!invokedViaRunner) {
-        const errText = await res.text().catch(() => '')
-        console.error('[contacts/review] Engine Runner returned', res.status, errText)
-      }
-    } catch (err) {
-      console.error('[contacts/review] Engine Runner unreachable:', err instanceof Error ? err.message : err)
-    }
-
-    if (!invokedViaRunner) {
-      // Fallback: create a new task directly in the existing OpenClaw flow
-      const result = await continuePlaybookFlow({ flowId, playbookId: id })
-      if (!result.ok) {
-        console.error('[contacts/review] continuePlaybookFlow failed:', result.error)
-      } else {
-        console.log(`[contacts/review] Orchestrator resumed via OpenClaw task ${result.taskId ?? '(no taskId)'}`)
-      }
-    } else {
-      console.log(`[contacts/review] Orchestrator resumed via Engine Runner for flow ${flowId}`)
-    }
-  } else {
-    console.warn('[contacts/review] No flowId stored — orchestrator cannot be re-invoked automatically')
-  }
+  const { runId } = await playbookService.submitContactReview(id, apiContacts)
 
   return NextResponse.json({
-    data: { message: 'Contact review submitted. Writing phase started.' },
+    data: {
+      message: 'Contact review submitted. Writing phase queued.',
+      run_id: runId,
+    },
   })
 }

@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getPlaybook, updatePlaybook } from '@/lib/store/playbooks'
+import { playbookService } from '@/server/playbooks/playbook-service'
+import { playbookRepository } from '@/server/playbooks/playbook-repository'
 import {
   MOCK_PLAYBOOKS,
   MOCK_CONTACTS,
   MOCK_SECTIONS,
   MOCK_QUALITY_CHECKS,
 } from '@/lib/mock-data'
-import type { PlaybookStatus } from '@/types'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -15,13 +15,12 @@ interface RouteContext {
 export async function GET(_req: Request, { params }: RouteContext) {
   const { id } = await params
 
-  const stored = getPlaybook(id)
-  if (stored) {
-    return NextResponse.json({ data: stored })
+  const playbook = await playbookService.getById(id)
+  if (playbook) {
+    return NextResponse.json({ data: playbook })
   }
 
-  // Only return mock data for mock IDs (pb-001, pb-002, pb-003)
-  // Never return mock data for real playbook IDs (pb_xxxxx) — those should 404
+  // Fall back to mock data for demo IDs (pb-001, pb-002, pb-003)
   if (id.startsWith('pb_')) {
     return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
   }
@@ -41,9 +40,11 @@ export async function GET(_req: Request, { params }: RouteContext) {
   return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
 }
 
+// PATCH is kept for any legacy UI usage (e.g. inline section editing)
+// but it NO LONGER accepts agent callbacks — only UI-initiated updates.
 export async function PATCH(request: Request, { params }: RouteContext) {
   const { id } = await params
-  const playbook = getPlaybook(id)
+  const playbook = await playbookService.getById(id)
   if (!playbook) {
     return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
   }
@@ -55,23 +56,13 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  // Allowed fields for update
-  const allowedFields = ['status', 'progress_pct', 'agent_status', 'sections', 'phase_started_at', 'contacts']
-  const updates: Record<string, unknown> = {}
-  for (const key of allowedFields) {
-    if (key in body) {
-      updates[key] = body[key]
-    }
+  // Only allow verification status updates via PATCH (section edits stay local in the UI)
+  // Full status updates now go through the service layer via workers.
+  // This endpoint exists solely for source verification updates from the UI.
+  if ('sections' in body && Array.isArray(body.sections)) {
+    // Section content edits from the UI (local-only state, not persisted to DB for now)
+    return NextResponse.json({ data: playbook })
   }
 
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
-  }
-
-  const updated = updatePlaybook(id, updates)
-  if (!updated) {
-    return NextResponse.json({ error: 'Update failed' }, { status: 500 })
-  }
-
-  return NextResponse.json({ data: updated })
+  return NextResponse.json({ data: playbook })
 }
