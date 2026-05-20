@@ -13,7 +13,10 @@ import {
   CheckCircle2,
   Loader2,
   ChevronDown,
+  AlertCircle,
+  Sparkles,
 } from 'lucide-react'
+import type { ExtractedBrief } from '@/app/api/analyze-url/route'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -223,6 +226,9 @@ export default function ProductBriefPage() {
   const [form, setForm] = useState<ProductFormState>(() => ({ ...INITIAL_FORM, ...readSaved() }))
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzed, setAnalyzed] = useState(false)
+  const [extractedData, setExtractedData] = useState<ExtractedBrief | null>(null)
+  const [analysisSource, setAnalysisSource] = useState<'ai' | 'html' | 'meta' | null>(null)
+  const [analysisError, setAnalysisError] = useState<string | null>(null)
 
   // Auto-save to localStorage on every change
   useEffect(() => {
@@ -235,9 +241,45 @@ export default function ProductBriefPage() {
   const handleAnalyzeUrl = async () => {
     if (!urlInput.trim()) return
     setAnalyzing(true)
-    await new Promise((r) => setTimeout(r, 2000))
-    setAnalyzing(false)
-    setAnalyzed(true)
+    setAnalyzed(false)
+    setExtractedData(null)
+    setAnalysisError(null)
+
+    try {
+      const res = await fetch('/api/analyze-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: urlInput.trim() }),
+      })
+      const json = await res.json() as { ok: boolean; data?: ExtractedBrief; source?: 'ai' | 'html' | 'meta'; error?: string }
+
+      if (!json.ok || !json.data) {
+        setAnalysisError(json.error ?? 'Analysis failed. Try Form Mode.')
+      } else {
+        setExtractedData(json.data)
+        setAnalysisSource(json.source ?? 'ai')
+        setAnalyzed(true)
+        // Pre-populate the form so "Edit in Form Mode" shows filled fields
+        setForm(prev => ({
+          ...prev,
+          product_name: json.data!.product_name || prev.product_name,
+          description: json.data!.description || prev.description,
+          value_propositions: json.data!.value_propositions.length > 0
+            ? json.data!.value_propositions
+            : prev.value_propositions,
+          target_personas: json.data!.target_personas || prev.target_personas,
+          differentiators: json.data!.differentiators || prev.differentiators,
+          competitors: json.data!.competitors || prev.competitors,
+          deployment_model: (json.data!.deployment_model as ProductFormState['deployment_model']) || prev.deployment_model,
+          deal_size: json.data!.deal_size || prev.deal_size,
+          sales_cycle: json.data!.sales_cycle || prev.sales_cycle,
+        }))
+      }
+    } catch {
+      setAnalysisError('Network error — please check your connection and try again.')
+    } finally {
+      setAnalyzing(false)
+    }
   }
 
   const handleSaveDraft = () => {
@@ -251,7 +293,7 @@ export default function ProductBriefPage() {
 
   const isFormValid =
     mode === 'url'
-      ? urlInput.trim().length > 0 && analyzed
+      ? analyzed && extractedData !== null
       : form.product_name.trim().length > 0 &&
         form.description.trim().length > 0 &&
         form.value_propositions.some((v) => v.trim().length > 0)
@@ -323,6 +365,8 @@ export default function ProductBriefPage() {
                 onChange={(e) => {
                   setUrlInput(e.target.value)
                   setAnalyzed(false)
+                  setExtractedData(null)
+                  setAnalysisError(null)
                 }}
                 placeholder="https://yourproduct.com"
                 className="flex-1 bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-10"
@@ -346,16 +390,110 @@ export default function ProductBriefPage() {
               We'll scrape your positioning, value props, and target personas automatically.
             </p>
 
-            {analyzed && (
-              <div className="mt-5 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-400" />
-                  <span className="text-sm font-medium text-green-400">Analysis complete</span>
+            {analysisError && (
+              <div className="mt-4 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-400 mb-0.5">Analysis failed</p>
+                  <p className="text-xs text-[#a1a1aa]">{analysisError}</p>
                 </div>
-                <p className="text-xs text-[#a1a1aa]">
-                  We detected your product positioning, 4 value props, and 3 target personas from
-                  the page. Click "Next: Target Account" to continue.
-                </p>
+              </div>
+            )}
+
+            {analyzed && extractedData && (
+              <div className="mt-5 space-y-3">
+                {/* Header row */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    <span className="text-sm font-medium text-green-400">Analysis complete</span>
+                    <span className={cn(
+                      'text-[10px] font-medium px-2 py-0.5 rounded border',
+                      analysisSource === 'ai'
+                        ? 'text-[#339af0] bg-[#339af0]/10 border-[#339af0]/20'
+                        : analysisSource === 'html'
+                        ? 'text-violet-400 bg-violet-500/10 border-violet-500/20'
+                        : 'text-[#a1a1aa] bg-white/5 border-white/10',
+                    )}>
+                      {analysisSource === 'ai' ? 'AI-analyzed' : analysisSource === 'html' ? 'Auto-extracted' : 'Meta-extracted'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMode('form')}
+                    className="flex items-center gap-1.5 text-xs text-[#339af0] hover:text-[#339af0]/80 transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    Edit in Form Mode
+                  </button>
+                </div>
+
+                {/* Extracted fields preview */}
+                <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0f] divide-y divide-white/[0.04]">
+                  {/* Product name + description */}
+                  <div className="px-4 py-3">
+                    <div className="flex items-start gap-2 mb-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#339af0] flex-shrink-0 mt-0.5" />
+                      <span className="text-sm font-semibold text-white">{extractedData.product_name || '—'}</span>
+                    </div>
+                    {extractedData.description && (
+                      <p className="text-xs text-[#a1a1aa] leading-relaxed pl-5">{extractedData.description}</p>
+                    )}
+                  </div>
+
+                  {/* Value propositions */}
+                  {extractedData.value_propositions.length > 0 && (
+                    <div className="px-4 py-3">
+                      <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-2">
+                        Value Props ({extractedData.value_propositions.length})
+                      </p>
+                      <ul className="space-y-1">
+                        {extractedData.value_propositions.map((vp, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs text-[#a1a1aa]">
+                            <span className="text-[#339af0] flex-shrink-0 mt-0.5">•</span>
+                            {vp}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Personas + deal metadata */}
+                  <div className="px-4 py-3 grid grid-cols-2 gap-3">
+                    {extractedData.target_personas && (
+                      <div>
+                        <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-1">Personas</p>
+                        <p className="text-xs text-white">{extractedData.target_personas}</p>
+                      </div>
+                    )}
+                    {extractedData.deployment_model && (
+                      <div>
+                        <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-1">Deployment</p>
+                        <p className="text-xs text-white capitalize">{extractedData.deployment_model}</p>
+                      </div>
+                    )}
+                    {extractedData.deal_size && (
+                      <div>
+                        <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-1">Deal Size</p>
+                        <p className="text-xs text-white">{extractedData.deal_size}</p>
+                      </div>
+                    )}
+                    {extractedData.competitors && (
+                      <div>
+                        <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-1">Competitors</p>
+                        <p className="text-xs text-white">{extractedData.competitors}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {analysisSource !== 'ai' && (
+                  <p className="text-xs text-[#a1a1aa]">
+                    {analysisSource === 'html'
+                      ? 'Extracted from page structure. Review the fields and use Form Mode to refine.'
+                      : 'Only meta tags were found. Switch to Form Mode to fill in the remaining fields.'}
+                  </p>
+                )}
               </div>
             )}
           </Card>
@@ -514,7 +652,7 @@ export default function ProductBriefPage() {
           </Button>
           <Button
             onClick={handleNext}
-            disabled={!isFormValid && mode === 'form'}
+            disabled={!isFormValid}
             className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold gap-2 px-6"
           >
             Next: Target Account
