@@ -17,8 +17,6 @@ import {
   Radio,
   Mail,
   Shield,
-  BookOpen,
-  BarChart3,
   Paperclip,
   CheckCircle2,
   Clock,
@@ -36,21 +34,36 @@ import {
   ShieldCheck,
   ChevronDown,
   ChevronUp,
+  TrendingUp,
+  AlertCircle,
+  Sparkles,
+  Search,
+  Monitor,
+  FlaskConical,
+  DollarSign,
+  ClipboardList,
+  Navigation,
 } from 'lucide-react'
 
 const SECTION_ICONS: Record<SectionType, React.ElementType> = {
-  executive_summary: FileText,
-  account_intelligence: Building2,
-  buying_committee: Users,
-  why_now: Zap,
+  executive_summary:    FileText,
+  account_snapshot:     Building2,
+  account_fit_score:    TrendingUp,
+  buying_committee:     Users,
+  pain_hypotheses:      AlertCircle,
+  why_now:              Zap,
+  value_proposition:    Sparkles,
   competitive_landscape: Target,
-  cultural_context: Globe,
-  outreach_strategy: Radio,
+  cultural_context:     Globe,
+  deal_motion:          Navigation,
   personalized_sequences: Mail,
-  battle_cards: Shield,
-  content_strategy: BookOpen,
-  measurement_framework: BarChart3,
-  appendix: Paperclip,
+  discovery_guide:      Search,
+  demo_strategy:        Monitor,
+  battle_cards:         Shield,
+  pilot_design:         FlaskConical,
+  roi_model:            DollarSign,
+  deal_execution_plan:  ClipboardList,
+  appendix:             Paperclip,
 }
 
 const orderedSectionTypes = Object.entries(SECTION_META)
@@ -59,23 +72,35 @@ const orderedSectionTypes = Object.entries(SECTION_META)
 
 function mapSectionType(type: string): SectionType {
   const map: Record<string, SectionType> = {
-    executive_summary: 'executive_summary',
-    account_intelligence: 'account_intelligence',
-    buying_committee: 'buying_committee',
-    why_now: 'why_now',
+    // Current 18 section types
+    executive_summary:    'executive_summary',
+    account_snapshot:     'account_snapshot',
+    account_fit_score:    'account_fit_score',
+    buying_committee:     'buying_committee',
+    pain_hypotheses:      'pain_hypotheses',
+    why_now:              'why_now',
+    value_proposition:    'value_proposition',
     competitive_landscape: 'competitive_landscape',
-    cultural_context: 'cultural_context',
-    outreach_strategy: 'outreach_strategy',
+    cultural_context:     'cultural_context',
+    deal_motion:          'deal_motion',
     personalized_sequences: 'personalized_sequences',
-    battle_cards: 'battle_cards',
-    content_strategy: 'content_strategy',
-    measurement_framework: 'measurement_framework',
-    appendix: 'appendix',
-    sequences: 'personalized_sequences',
+    discovery_guide:      'discovery_guide',
+    demo_strategy:        'demo_strategy',
+    battle_cards:         'battle_cards',
+    pilot_design:         'pilot_design',
+    roi_model:            'roi_model',
+    deal_execution_plan:  'deal_execution_plan',
+    appendix:             'appendix',
+    // Legacy aliases (old section keys → nearest new equivalent)
+    account_intelligence:   'account_snapshot',
+    outreach_strategy:      'deal_motion',
+    content_strategy:       'value_proposition',
+    measurement_framework:  'roi_model',
+    sequences:              'personalized_sequences',
     hyper_personalized_sequences: 'personalized_sequences',
-    objection_handling: 'battle_cards',
-    content_assets: 'content_strategy',
-    measurement: 'measurement_framework',
+    objection_handling:     'battle_cards',
+    content_assets:         'value_proposition',
+    measurement:            'roi_model',
   }
   return map[type] ?? 'executive_summary'
 }
@@ -775,7 +800,7 @@ ${sectionsHtml}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="text-[10px] font-medium text-[#a1a1aa] uppercase tracking-widest">
-                        Section {SECTION_META[activeSectionType].order} of 12
+                        Section {SECTION_META[activeSectionType].order} of 18
                       </span>
                       <Badge
                         variant="outline"

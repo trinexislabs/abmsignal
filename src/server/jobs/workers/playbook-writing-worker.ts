@@ -1,7 +1,7 @@
 import { playbookRepository } from '../../playbooks/playbook-repository'
 import { runRepository } from '../../runs/run-repository'
 import { openclawAdapter } from '../../agent/openclaw-adapter'
-import { buildWritingPrompt } from '../../agent/agent-prompts'
+import { buildWritingPromptBatch, WRITING_BATCH_1_KEYS, WRITING_BATCH_2_KEYS } from '../../agent/agent-prompts'
 import type { AgentStatus } from '@/types'
 
 export async function runWritingWorker(runId: string): Promise<void> {
@@ -45,7 +45,7 @@ export async function runWritingWorker(runId: string): Promise<void> {
     approvedContacts.push(...fallback)
   }
 
-  const prompt = buildWritingPrompt({
+  const writingCtx = {
     playbookId,
     productName: playbook.product_name,
     productDescription: String(brief.description ?? ''),
@@ -67,27 +67,79 @@ export async function runWritingWorker(runId: string): Promise<void> {
       confidence: c.confidence,
       rationale: undefined,
     })),
-  })
+  }
 
+  // ── Batch 1: sections 1–9 (research + positioning) ────────────────────────
   await playbookRepository.setStatus(playbookId, 'writing', 70, [
-    { agent: 'orchestrator', task: 'Generating playbook sections', status: 'running' },
+    { agent: 'orchestrator', task: 'Generating playbook sections (batch 1/2)', status: 'running' },
     { agent: 'researcher', task: 'Account research complete', status: 'complete' },
-    { agent: 'writer', task: 'Writing 12 sections...', status: 'running', detail: 'Generation in progress' },
+    { agent: 'writer', task: 'Writing sections 1–9...', status: 'running', detail: 'Research + positioning sections' },
     { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
   ])
 
-  const result = await openclawAdapter.runWriting(prompt, runId)
-  await runRepository.saveRawOutput(runId, result.rawOutput)
+  const prompt1 = buildWritingPromptBatch(writingCtx, WRITING_BATCH_1_KEYS, 1)
+  const result1 = await openclawAdapter.runWriting(prompt1, runId)
+  await runRepository.saveRawOutput(runId, result1.rawOutput)
 
-  if (!result.ok) {
-    await runRepository.markFailed(runId, result.error, result.rawOutput)
-    await playbookRepository.setFailed(playbookId, result.error)
+  if (!result1.ok) {
+    await runRepository.markFailed(runId, result1.error, result1.rawOutput)
+    await playbookRepository.setFailed(playbookId, result1.error)
     await playbookRepository.logEvent(
-      playbookId, 'run.failed', `Writing run failed: ${result.error}`,
-      { logPath: result.logPath }, runId,
+      playbookId, 'run.failed', `Writing run (batch 1) failed: ${result1.error}`,
+      { logPath: result1.logPath }, runId,
     )
     return
   }
+
+  await playbookRepository.logEvent(
+    playbookId, 'sections.batch1.generated',
+    `${result1.data.sections.length} sections generated (batch 1)`,
+    { count: result1.data.sections.length }, runId,
+  )
+
+  // ── Batch 2: sections 10–18 (outreach + execution) ────────────────────────
+  await playbookRepository.setStatus(playbookId, 'writing', 82, [
+    { agent: 'orchestrator', task: 'Generating playbook sections (batch 2/2)', status: 'running' },
+    { agent: 'researcher', task: 'Account research complete', status: 'complete' },
+    { agent: 'writer', task: 'Writing sections 10–18...', status: 'running', detail: 'Outreach + execution sections' },
+    { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
+  ])
+
+  const prompt2 = buildWritingPromptBatch(writingCtx, WRITING_BATCH_2_KEYS, 2)
+  const result2 = await openclawAdapter.runWriting(prompt2, runId)
+  await runRepository.saveRawOutput(runId, result2.rawOutput)
+
+  if (!result2.ok) {
+    // Batch 2 failed — save batch 1 sections and mark partial completion rather than losing everything
+    await playbookRepository.logEvent(
+      playbookId, 'run.partial', `Writing run (batch 2) failed: ${result2.error} — saving batch 1 sections`,
+      { logPath: result2.logPath }, runId,
+    )
+    await playbookRepository.replaceSections(
+      playbookId,
+      result1.data.sections.map(s => ({
+        sectionKey: s.section_key,
+        title: s.title,
+        contentMarkdown: s.content_markdown,
+        orderIndex: s.order_index,
+        sources: s.sources.map(src => ({
+          url: src.url, title: src.title, publisher: src.publisher,
+          confidence: src.confidence, note: src.note, claim: src.claim,
+        })),
+      })),
+    )
+    await runRepository.markFailed(runId, result2.error, result2.rawOutput)
+    await playbookRepository.setFailed(playbookId, `Batch 2 failed: ${result2.error}`)
+    return
+  }
+
+  await playbookRepository.logEvent(
+    playbookId, 'sections.batch2.generated',
+    `${result2.data.sections.length} sections generated (batch 2)`,
+    { count: result2.data.sections.length }, runId,
+  )
+
+  // ── Merge both batches ─────────────────────────────────────────────────────
 
   // Reviewing phase — update status
   await playbookRepository.setStatus(playbookId, 'reviewing', 90, [
@@ -97,15 +149,17 @@ export async function runWritingWorker(runId: string): Promise<void> {
     { agent: 'reviewer', task: 'Quality review in progress', status: 'running' },
   ])
 
+  const allSections = [...result1.data.sections, ...result2.data.sections]
+
   await playbookRepository.logEvent(
     playbookId, 'sections.generated',
-    `${result.data.sections.length} sections generated`, { count: result.data.sections.length }, runId,
+    `${allSections.length} sections generated (batches 1+2)`, { count: allSections.length }, runId,
   )
 
   // Persist sections and their sources
   await playbookRepository.replaceSections(
     playbookId,
-    result.data.sections.map(s => ({
+    allSections.map(s => ({
       sectionKey: s.section_key,
       title: s.title,
       contentMarkdown: s.content_markdown,
@@ -132,7 +186,7 @@ export async function runWritingWorker(runId: string): Promise<void> {
   await playbookRepository.setStatus(playbookId, 'complete', 100, [
     { agent: 'orchestrator', task: 'Playbook complete', status: 'complete' },
     { agent: 'researcher', task: 'Account research complete', status: 'complete' },
-    { agent: 'writer', task: 'All 12 sections generated', status: 'complete' },
+    { agent: 'writer', task: 'All 18 sections generated', status: 'complete' },
     { agent: 'reviewer', task: 'Quality review complete', status: 'complete' },
   ])
 }

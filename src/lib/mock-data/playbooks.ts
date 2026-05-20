@@ -115,8 +115,8 @@ export const mockPlaybook: MockPlaybook = {
     {
       id: 'sec_002',
       playbook_id: MOCK_PLAYBOOK_ID,
-      section_type: 'account_intelligence',
-      title: 'Account Intelligence Dossier',
+      section_type: 'account_snapshot',
+      title: 'Account Snapshot',
       content: `## Belfius Bank — Company Profile\n\n**Headquarters:** Brussels, Belgium\n**Revenue:** €3.1B (FY2024)\n**Employees:** 7,400\n**Assets Under Management:** €285B\n**Ownership:** Belgian state (100%)\n\n### Recent Strategic Signals\n\n| Signal | Date | Relevance Score |\n|--------|------|-----------------|\n| "Belfius 2030" digital transformation announced | Jan 2024 | 🔴 Critical |\n| €500M technology investment committed | Jan 2024 | 🔴 Critical |\n| Hired 3 new treasury technologists from ING Belgium | Feb 2025 | 🔴 Critical |\n| Q1 2025 covered bond issuance (€2.3B) | Mar 2025 | 🟠 High |\n| CFO Gyselinck speech at Belgian Finance Forum | Feb 2025 | 🟠 High |\n| Published sustainability bond framework update | Dec 2024 | 🟡 Medium |\n\n### Technology Stack (Research-Verified)\n- **Core Banking:** Temenos T24 (migrating to Temenos Transact)\n- **Treasury:** Legacy Murex + Excel (TARGET FOR DISPLACEMENT)\n- **ERP:** SAP S/4HANA (partial rollout)\n- **Data Platform:** Azure Data Lake (Microsoft partnership)\n- **Identity:** Microsoft Entra ID\n\n### Pain Points Confirmed Via LinkedIn + Job Postings\n1. "Senior Treasury Analyst" posting (Feb 2025) mentions "manual FX reconciliation" — 3 open roles\n2. Head of Finance Ops posted about "SWIFT integration challenges" in industry forum\n3. 2024 annual report notes €12M in FX hedging costs — above peer benchmark`,
       status: 'reviewed' as SectionStatus,
       sources: [
@@ -199,7 +199,7 @@ export const mockPlaybook: MockPlaybook = {
     {
       id: 'sec_008',
       playbook_id: MOCK_PLAYBOOK_ID,
-      section_type: 'measurement_framework',
+      section_type: 'roi_model',
       title: 'Measurement Framework',
       content: `## Success Metrics & KPIs\n\n### Phase 1: Proof of Concept (Days 1–90)\n| Metric | Baseline | Target | How Measured |\n|--------|----------|--------|---------------|\n| FX reconciliation time | 4.5 hours/day | <1 hour/day | System logs |\n| Forecast accuracy (7-day) | 68% | >85% | Back-testing |\n| Manual report generation | 12 hours/month | 0 hours | Time tracking |\n| NBB report prep time | 3 days | 4 hours | Finance team survey |\n\n### Phase 2: Full Deployment (Months 4–12)\n| Metric | Target | \n|--------|--------|\n| FX hedging cost reduction | 25–40% |\n| Cash visibility completeness | 95%+ |\n| Multi-currency accounts covered | 100% |\n| Regulatory reports automated | MiFID II, NBB, Basel III |\n\n### Business Case Summary\n- **Current FX hedging cost:** ~€12M/year (per annual report)\n- **Projected savings at 35% reduction:** €4.2M/year\n- **FinFlow AI annual cost:** €350K–€500K\n- **ROI:** 8–12x in Year 1\n- **Payback period:** 3–4 months`,
       status: 'reviewed' as SectionStatus,
@@ -208,7 +208,7 @@ export const mockPlaybook: MockPlaybook = {
     {
       id: 'sec_009',
       playbook_id: MOCK_PLAYBOOK_ID,
-      section_type: 'content_strategy',
+      section_type: 'value_proposition',
       title: 'Content Asset Strategy',
       content: `## Content Assets to Create / Deploy\n\n### For Sophie Vandermeersch (Champion)\n1. **KBC Case Study (PDF):** "How KBC Treasury Cut FX Reconciliation Time by 80% in 90 Days" — Focus on technical integration, timeline, and team impact\n2. **Technical Architecture Brief:** FinFlow + Temenos T24 integration guide (1-pager)\n3. **ROI Calculator:** Interactive spreadsheet personalised to Belfius's FX book size\n\n### For Dirk Gyselinck (CFO)\n1. **Executive Brief (2 pages):** "Treasury as Strategic Alpha: The Belgian Bank Opportunity"\n2. **Benchmark Report:** Belfius treasury costs vs. Belgian peer benchmarks (sourced from public annual reports)\n\n### For Karel Bogaert (CIO)\n1. **Azure Architecture Diagram:** FinFlow deployment within Azure infrastructure\n2. **Security & Compliance Brief:** SOC 2 Type II + NBB certification documentation\n\n### For the RFP Stage\n1. **Full Vendor Response Template:** Pre-built RFP response for Belgian bank requirements\n2. **Pilot Proposal:** 90-day proof of concept scoped specifically to Belfius's FX book`,
       status: 'reviewed' as SectionStatus,

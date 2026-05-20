@@ -61,6 +61,54 @@ export const WritingOutputSchema = z.object({
 
 export type WritingOutput = z.infer<typeof WritingOutputSchema>
 
+// ─── Partial section recovery (truncated JSON fallback) ──────────────────────
+
+/**
+ * When the agent output JSON is truncated mid-stream, try to extract every
+ * complete section object that was fully written before the cut-off point.
+ * Returns an empty array if nothing can be salvaged.
+ */
+function recoverPartialSections(raw: string): z.infer<typeof SectionSchema>[] {
+  const recovered: z.infer<typeof SectionSchema>[] = []
+
+  // Find every position where a section object starts
+  const sectionStart = /\{\s*"section_key"\s*:/g
+  let match: RegExpExecArray | null
+
+  while ((match = sectionStart.exec(raw)) !== null) {
+    const start = match.index
+    let depth = 0
+    let inString = false
+    let escaped = false
+    let end = -1
+
+    for (let i = start; i < raw.length; i++) {
+      const ch = raw[i]
+      if (escaped) { escaped = false; continue }
+      if (ch === '\\') { escaped = true; continue }
+      if (ch === '"') { inString = !inString; continue }
+      if (inString) continue
+      if (ch === '{') depth++
+      else if (ch === '}') {
+        depth--
+        if (depth === 0) { end = i; break }
+      }
+    }
+
+    if (end === -1) continue // Object was cut off — skip
+
+    try {
+      const obj = JSON.parse(raw.slice(start, end + 1)) as unknown
+      const result = SectionSchema.safeParse(obj)
+      if (result.success) recovered.push(result.data)
+    } catch {
+      // Unparseable even though braces balanced — skip
+    }
+  }
+
+  return recovered
+}
+
 // ─── Generic parser ───────────────────────────────────────────────────────────
 
 export function parseAgentOutput(
@@ -83,6 +131,21 @@ export function parseAgentOutput(raw: string, phase: 'research' | 'writing') {
   try {
     parsed = JSON.parse(jsonStr)
   } catch {
+    // JSON is truncated. For writing phase, attempt to salvage completed sections
+    // rather than failing the entire run.
+    if (phase === 'writing') {
+      const recovered = recoverPartialSections(raw)
+      if (recovered.length > 0) {
+        const synthetic: WritingOutput = {
+          phase: 'writing',
+          status: 'complete',
+          progress_pct: 100,
+          agent_status: `Partial recovery: ${recovered.length} sections salvaged`,
+          sections: recovered,
+        }
+        return { ok: true, data: synthetic }
+      }
+    }
     return { ok: false, error: `Failed to parse JSON from agent output: ${jsonStr.slice(0, 200)}` }
   }
 

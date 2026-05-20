@@ -156,7 +156,7 @@ export async function continuePlaybookFlow(params: {
     `Human contact review is complete and contacts are approved.`,
     `The playbook status is now "writing". Execute phases 2-4:`,
     ``,
-    `2. Write all 12 playbook sections (Writer agent)`,
+    `2. Write all 18 playbook sections (Writer agent)`,
     `   - Fetch the approved contacts from GET /api/playbooks/${params.playbookId}/contacts`,
     `   - Generate hyper-personalized content for each section`,
     `   - Update progress via PATCH /api/playbooks/${params.playbookId}`,

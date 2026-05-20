@@ -89,31 +89,43 @@ export interface PlaybookSection {
 
 export type SectionType =
   | 'executive_summary'
-  | 'account_intelligence'
+  | 'account_snapshot'
+  | 'account_fit_score'
   | 'buying_committee'
+  | 'pain_hypotheses'
   | 'why_now'
+  | 'value_proposition'
   | 'competitive_landscape'
   | 'cultural_context'
-  | 'outreach_strategy'
+  | 'deal_motion'
   | 'personalized_sequences'
+  | 'discovery_guide'
+  | 'demo_strategy'
   | 'battle_cards'
-  | 'content_strategy'
-  | 'measurement_framework'
+  | 'pilot_design'
+  | 'roi_model'
+  | 'deal_execution_plan'
   | 'appendix'
 
 export const SECTION_META: Record<SectionType, { title: string; icon: string; order: number }> = {
-  executive_summary: { title: 'Executive Summary', icon: '📋', order: 1 },
-  account_intelligence: { title: 'Account Intelligence Dossier', icon: '🏦', order: 2 },
-  buying_committee: { title: 'Buying Committee & Org Map', icon: '👥', order: 3 },
-  why_now: { title: '"Why Now" Signal Analysis', icon: '⚡', order: 4 },
-  competitive_landscape: { title: 'Competitive Landscape', icon: '🎯', order: 5 },
-  cultural_context: { title: 'Cultural & Regulatory Context', icon: '🌍', order: 6 },
-  outreach_strategy: { title: 'Outreach Strategy', icon: '📡', order: 7 },
-  personalized_sequences: { title: 'Hyper-Personalized Sequences', icon: '✉️', order: 8 },
-  battle_cards: { title: 'Battle Cards & Objection Handling', icon: '🛡️', order: 9 },
-  content_strategy: { title: 'Content Asset Strategy', icon: '📄', order: 10 },
-  measurement_framework: { title: 'Measurement Framework', icon: '📊', order: 11 },
-  appendix: { title: 'Appendix', icon: '📎', order: 12 },
+  executive_summary:   { title: 'Executive Summary',              icon: '📋', order: 1  },
+  account_snapshot:    { title: 'Account Snapshot',               icon: '🏦', order: 2  },
+  account_fit_score:   { title: 'Account Fit Score',              icon: '📈', order: 3  },
+  buying_committee:    { title: 'Buying Committee & Org Map',      icon: '👥', order: 4  },
+  pain_hypotheses:     { title: 'Pain Hypotheses',                 icon: '💡', order: 5  },
+  why_now:             { title: '"Why Now" Signal Analysis',       icon: '⚡', order: 6  },
+  value_proposition:   { title: 'Value Proposition Map',           icon: '✨', order: 7  },
+  competitive_landscape: { title: 'Competitive Landscape',         icon: '🎯', order: 8  },
+  cultural_context:    { title: 'Cultural & Regulatory Context',   icon: '🌍', order: 9  },
+  deal_motion:         { title: 'Deal Motion & Channel Strategy',  icon: '📡', order: 10 },
+  personalized_sequences: { title: 'Hyper-Personalized Sequences', icon: '✉️', order: 11 },
+  discovery_guide:     { title: 'Discovery Call Guide',            icon: '🔍', order: 12 },
+  demo_strategy:       { title: 'Demo Strategy',                   icon: '🖥️', order: 13 },
+  battle_cards:        { title: 'Battle Cards & Objection Handling', icon: '🛡️', order: 14 },
+  pilot_design:        { title: 'Pilot Design',                    icon: '🧪', order: 15 },
+  roi_model:           { title: 'ROI Model',                       icon: '💰', order: 16 },
+  deal_execution_plan: { title: 'Deal Execution Plan',             icon: '📅', order: 17 },
+  appendix:            { title: 'Appendix',                        icon: '📎', order: 18 },
 }
 
 export interface Contact {

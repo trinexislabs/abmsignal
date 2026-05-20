@@ -284,8 +284,8 @@ export const MOCK_SECTIONS: PlaybookSection[] = [
   {
     id: 's-002',
     playbook_id: 'pb-001',
-    section_type: 'account_intelligence',
-    title: 'Account Intelligence Dossier',
+    section_type: 'account_snapshot',
+    title: 'Account Snapshot',
     content: `# Account Intelligence Dossier — Belfius Bank
 
 ## Company Overview
@@ -491,8 +491,8 @@ Marc Raisière (CEO)
   {
     id: 's-007',
     playbook_id: 'pb-001',
-    section_type: 'outreach_strategy',
-    title: 'Outreach Strategy',
+    section_type: 'deal_motion',
+    title: 'Deal Motion & Channel Strategy',
     content: `# Outreach Strategy
 
 ## Multi-Touch Sequence Design
@@ -658,8 +658,8 @@ We've helped two Belgian financial institutions use a 'regulatory urgency' pathw
   {
     id: 's-010',
     playbook_id: 'pb-001',
-    section_type: 'content_strategy',
-    title: 'Content Asset Strategy',
+    section_type: 'value_proposition',
+    title: 'Value Proposition Map',
     content: `# Content Asset Strategy
 
 ## Recommended Content Assets (Priority Order)
@@ -704,8 +704,8 @@ We've helped two Belgian financial institutions use a 'regulatory urgency' pathw
   {
     id: 's-011',
     playbook_id: 'pb-001',
-    section_type: 'measurement_framework',
-    title: 'Measurement Framework',
+    section_type: 'roi_model',
+    title: 'ROI Model',
     content: `# Measurement Framework
 
 ## Campaign KPIs by Stage
