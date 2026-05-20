@@ -120,37 +120,41 @@
         "id": "sec-8",
         "playbook_id": "pb_9ef84927c1674fac",
         "title": "Hyper-Personalized Sequences",
-        "type": "sequences",
+        "type": "personalized_sequences",
         "content": "## Email Sequences\n\n**CDO — Randil Boteju:**\n\n*Email 1:* Subject: Google Pay first — now make investigations keep up\n\nDear Mr. Boteju,\n\nCommercial Bank's Google Pay launch put you ahead of every other bank in Sri Lanka. But with digital payment volumes growing, payment exceptions and investigations are the bottleneck most banks overlook.\n\nTracEI is a low cost, complete exceptions & investigations solution that deploys in under 30 days. SWIFT, ISO 20022, and LANKAQR — everything your growing payment channels need.\n\nI'd value 15 minutes to show how APAC banks cut investigation time by 80%.\n\nBest regards, [Sender]\n\n**CEO — Sanath Manatunge:**\n\n*Email 1:* Subject: From someone who ran IT — a faster way to handle E&I\n\nDear Mr. Manatunge,\n\nYou've run IT, Cards, and Digital Banking at CBC — so you know payment investigations are the hidden bottleneck. TracEI deploys in <30 days for <$50K. No platform license, no 12-month implementation.\n\nBest regards, [Sender]",
         "order": 8,
-        "created_at": "2026-05-16T04:12:00Z"
+        "created_at": "2026-05-16T04:12:00Z",
+        "section_type": "personalized_sequences"
       },
       {
         "id": "sec-9",
         "playbook_id": "pb_9ef84927c1674fac",
         "title": "Battle Cards & Objection Handling",
-        "type": "objection_handling",
+        "type": "battle_cards",
         "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Doesn't scale. Google Pay + ISO 20022 = volume multiplying. TracEI automates 80% for <$50K.\n2. **\"Pega is the industry standard.\"** → Pega: $200K+, 6-12 months. CBC needs low cost, complete, <30 day deployment.\n3. **\"$50K is significant.\"** → Each manual investigation costs $15-25 in staff time. 80% automation = payback <6 months.\n4. **\"Need SWIFT + ISO 20022.\"** → TracEI supports MT/FIN, ISO 20022, CBPR+, gpi, LANKAQR.\n5. **\"Bangladesh operations?\"** → Multi-country, multi-currency investigations including Bangladesh Bank regulations.\n6. **\"Need to see it work.\"** → 14-day free pilot. Real data, no commitment.",
         "order": 9,
-        "created_at": "2026-05-16T04:12:00Z"
+        "created_at": "2026-05-16T04:12:00Z",
+        "section_type": "battle_cards"
       },
       {
         "id": "sec-10",
         "playbook_id": "pb_9ef84927c1674fac",
         "title": "Content Asset Strategy",
-        "type": "content_assets",
+        "type": "content_strategy",
         "content": "## Content Assets\n\n**Awareness (Week 1):** 1) Payment Investigations: Hidden Bottleneck — LinkedIn article 2) Google Pay + ISO 20022 Investigation Volume Problem — 2-page brief\n\n**Consideration (Week 1-2):** 3) APAC Bank 80% Faster Investigations — Case study 4) TracEI vs. Pega for Mid-Size Banks — 1-page comparison 5) CBC-Specific ROI Calculator\n\n**Decision (Week 2-3):** 6) 14-Day Free Pilot Proposal — SOW 7) Security & Compliance Pack — SOC 2, ISO 27001, SWIFT CSP",
         "order": 10,
-        "created_at": "2026-05-16T04:12:00Z"
+        "created_at": "2026-05-16T04:12:00Z",
+        "section_type": "content_strategy"
       },
       {
         "id": "sec-11",
         "playbook_id": "pb_9ef84927c1674fac",
         "title": "Measurement Framework",
-        "type": "measurement",
+        "type": "measurement_framework",
         "content": "## KPIs\n\n**Awareness:** Open >40% | LinkedIn response >20% | Meeting booked >15%\n**Engagement:** CDO/CEO meeting within 7 days | Pilot request within 14 days\n**Pipeline:** Close within 30 days | <$50K ARR | Expansion $100-150K\n\n**Week 1:** CDO engaged, pain confirmed\n**Week 2:** CIO evaluation, pilot scope\n**Week 3:** Pilot launched or contract signed\n**Week 4:** Close\n\n**Expansion:** Bangladesh ops +$25-50K | Google Pay workflows +$10-20K | Compliance module +$15-30K",
         "order": 11,
-        "created_at": "2026-05-16T04:12:00Z"
+        "created_at": "2026-05-16T04:12:00Z",
+        "section_type": "measurement_framework"
       },
       {
         "id": "sec-12",
@@ -251,7 +255,7 @@
     "quality_checks": [],
     "id": "pb_9ef84927c1674fac",
     "created_at": "2026-05-16T08:42:56.138Z",
-    "updated_at": "2026-05-16T08:44:12.218Z",
+    "updated_at": "2026-05-18T12:51:34.720Z",
     "phase_started_at": "2026-05-16T08:43:39.287Z",
     "openclaw_session_id": "619fbefe-fb8b-4a6b-84bc-4b5de49c4e01"
   },
@@ -371,37 +375,41 @@
         "id": "sec-8",
         "playbook_id": "pb_972518ce2263406a",
         "title": "Hyper-Personalized Sequences",
-        "type": "sequences",
+        "type": "personalized_sequences",
         "content": "## Email Sequences\n\n### CDO — Champion\n\n**Email 1 (Day 1):**\nSubject: Data governance is your mandate. DataVault is your platform.\n\nDear [CDO Name],\n\nWhen Hatton National Bank created the Chief Data Officer role, it made a statement: data governance is no longer optional — it's strategic.\n\nDataVault is an AI-powered data governance platform purpose-built for banks. Automated compliance monitoring for CBSL requirements. Real-time risk detection across 255 branches. All SaaS, all in one platform.\n\nI'd value 30 minutes to show you how APAC banks are reducing compliance workload by 60% with AI-powered governance.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 7):** CBSL compliance is getting harder. Here's how AI helps.\n**Email 3 (Day 14):** Innovation Studio sandbox proposal — 90-day evaluation\n**Email 4 (Day 21):** APAC bank case study — 60% compliance workload reduction\n\n### Chandima Cooray (CINVO)\n\n**Email 1 (Day 3):**\nSubject: HNB Innovation Studio + DataVault = 90-day data governance proof-of-concept\n\nDear Mr. Cooray,\n\nHNB's Innovation Studio was built for exactly this: rapid evaluation of technologies that matter. DataVault's AI-powered data governance platform can be running in your sandbox within 2 weeks — testing real compliance scenarios against real HNB data patterns.\n\nLike HNB Accept went from concept to FinTech Summit launch in 3 months, DataVault can prove value in 90 days.\n\nBest regards,\n[Sender]\n\n### Damith Pallewatte (CEO)\n\n**Email 1 (Day 30 — after CDO engagement):**\nSubject: Record profits deserve record data governance\n\nDear Mr. Pallewatte,\n\nCongratulations on Bank CEO of the Year and the record results. You created the CDO role to make data governance strategic. DataVault is the platform to deliver on that vision — automated compliance monitoring and real-time risk detection for CBSL, Basel III, and beyond.\n\nYour CDO and Innovation Studio are evaluating DataVault. I'd welcome 20 minutes to share the business case directly.\n\nBest regards,\n[Sender]",
         "order": 8,
-        "created_at": "2026-05-16T09:20:00Z"
+        "created_at": "2026-05-16T09:20:00Z",
+        "section_type": "personalized_sequences"
       },
       {
         "id": "sec-9",
         "playbook_id": "pb_972518ce2263406a",
         "title": "Battle Cards & Objection Handling",
-        "type": "objection_handling",
+        "type": "battle_cards",
         "content": "## Objection Handling\n\n1. **\"We have manual data governance processes.\"** → Manual doesn't scale across 255 branches. CBSL enhanced AML/CFT circulars are multiplying. Automated compliance monitoring reduces workload 60% and eliminates regulatory gaps.\n\n2. **\"Collibra is the market leader.\"** → Collibra is a catalog-first tool at $300K+ TCO with 12-18 month implementation. DataVault is compliance-first, $120K, 6-month deployment, AI-powered monitoring — built for banks like HNB.\n\n3. **\"Informatica covers our data management needs.\"** → Informatica's governance is an add-on module, not purpose-built for banking compliance. DataVault automates CBSL-specific compliance monitoring out of the box.\n\n4. **\"$120K is significant.\"** → Your CDO exists because data governance failures cost more. The CBSL data leakage incident affected 4,630 customers. One regulatory fine exceeds DataVault's annual cost.\n\n5. **\"6 months is too long.\"** → We can demonstrate value in your Innovation Studio sandbox within 90 days. Full deployment in 6 months aligns with your dual-speed innovation model.\n\n6. **\"We need to see it work with our data.\"** → Innovation Studio sandbox evaluation with real HNB data patterns. 90-day pilot, no commitment.\n\n7. **\"Security concerns with SaaS.\"** → SOC 2 Type II, ISO 27001, SWIFT CSP compliant. CISO Emmanuel can review our security architecture in detail.\n\n8. **\"We're already investing in AI for loan assessments.\"** → Exactly. AI without data governance is risky. DataVault ensures your AI models are trained on governed, compliant data.",
         "order": 9,
-        "created_at": "2026-05-16T09:20:00Z"
+        "created_at": "2026-05-16T09:20:00Z",
+        "section_type": "battle_cards"
       },
       {
         "id": "sec-10",
         "playbook_id": "pb_972518ce2263406a",
         "title": "Content Asset Strategy",
-        "type": "content_assets",
+        "type": "content_strategy",
         "content": "## Content Assets\n\n**Awareness (Month 1-2):**\n1. AI-Powered Data Governance for Sri Lankan Banks — LinkedIn article\n2. CBSL Compliance Monitoring: From Manual to Automated — 4-page whitepaper\n3. Data Governance Is Not Optional — Why HNB Created a CDO — Blog post\n\n**Consideration (Month 2-4):**\n4. APAC Bank Reduces Compliance Workload 60% with DataVault — Case study (5 pages)\n5. DataVault vs. Collibra vs. Informatica for Mid-Size Banks — 2-page comparison\n6. HNB-Specific ROI Model — Interactive calculator (compliance cost savings, risk reduction)\n7. Innovation Studio 90-Day Sandbox Proposal — SOW document\n\n**Decision (Month 4-6):**\n8. Board-Ready Business Case — Executive presentation (ROI, risk reduction, CDO enablement)\n9. Security & Compliance Documentation — SOC 2, ISO 27001, SWIFT CSP, CBSL alignment\n10. Implementation Roadmap — 6-month deployment plan with milestones\n11. Reference Call with APAC Banking CDO — Customer reference program\n\n**Post-Close Expansion:**\n12. Data Quality & Lineage Module Brief — Upsell path\n13. AI Governance for Model Risk Management — Expansion use case",
         "order": 10,
-        "created_at": "2026-05-16T09:20:00Z"
+        "created_at": "2026-05-16T09:20:00Z",
+        "section_type": "content_strategy"
       },
       {
         "id": "sec-11",
         "playbook_id": "pb_972518ce2263406a",
         "title": "Measurement Framework",
-        "type": "measurement",
+        "type": "measurement_framework",
         "content": "## KPIs & Success Criteria\n\n### Outreach Metrics\n- CDO meeting booked: within 30 days\n- CINVO Innovation Studio eval proposed: within 45 days\n- CEO engagement: within 60 days\n- CISO security review: within 90 days\n- Sandbox deployed: within 120 days\n- Commercial proposal: within 150 days\n- Contract signed: within 180 days (6 months)\n\n### Pipeline Milestones\n| Month | Milestone | Probability |\n|-------|-----------|------------|\n| 1 | CDO + CINVO engaged | 20% |\n| 2 | Innovation Studio sandbox approved | 35% |\n| 3 | Sandbox live, initial results | 50% |\n| 4 | CISO security review complete | 65% |\n| 5 | Commercial proposal submitted | 80% |\n| 6 | Contract signed | 100% |\n\n### Expansion Revenue\n- Data Quality Module: +$30-40K\n- Data Lineage Module: +$20-30K\n- AI Governance for Model Risk: +$25-35K\n- Total expansion potential: $75-105K → $195-225K total account value\n\n### Success Indicators\n- CDO explicitly requests evaluation\n- Innovation Studio sandbox approved\n- CEO references DataVault in board meeting\n- CISO clears security review in <30 days\n- No competitive eval (Collibra/Informatica) launched",
         "order": 11,
-        "created_at": "2026-05-16T09:20:00Z"
+        "created_at": "2026-05-16T09:20:00Z",
+        "section_type": "measurement_framework"
       },
       {
         "id": "sec-12",
@@ -514,7 +522,7 @@
     "quality_checks": [],
     "id": "pb_972518ce2263406a",
     "created_at": "2026-05-16T09:12:47.577Z",
-    "updated_at": "2026-05-16T09:16:04.069Z",
+    "updated_at": "2026-05-18T12:51:34.716Z",
     "phase_started_at": "2026-05-16T09:12:47.585Z",
     "openclaw_session_id": "9c087c85-286c-412a-a0a3-201fe09f29a5"
   },
@@ -639,37 +647,41 @@
         "id": "sec-8",
         "playbook_id": "pb_8d628b2f260e4199",
         "title": "Hyper-Personalized Sequences",
-        "type": "sequences",
+        "type": "personalized_sequences",
         "content": "## Email Sequences\n\n### Barry Rodrigues (EVP Payments)\n\n**Email 1:**\nSubject: Complete your Payments suite — TracEI fills the E&I gap\n\nDear Barry,\n\nFusion Total Messaging connects 8,000+ banks to SWIFT. Your Payment Hubs process their payments. But when investigations hit, banks are on their own.\n\nTracEI is a low-cost SaaS E&I platform that integrates with Fusion via API in under 30 days. Like NetGuardians extends your fraud capabilities, TracEI extends your investigation capabilities.\n\nI'd value 20 minutes to show you the partnership model.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** NetGuardians for fraud. TracEI for investigations. Completing the suite.\n**Email 3 (Day 10):** Technical integration demo — TracEI + Fusion API\n**Email 4 (Day 15):** Joint go-to-market proposal for your mid-market banks\n\n### Chris Walters (CEO)\n\n**Email 1 (Day 7, after Barry engagement):**\nSubject: Extend Finastra's ecosystem with AI-powered payment investigations\n\nDear Chris,\n\n8,000+ banks on Finastra need E&I capabilities. Today they handle investigations manually or pay $200K+ for Pega.\n\nTracEI can extend your Payments ecosystem via API in <30 days — low-cost SaaS that your banks can adopt immediately.\n\nBarry Rodrigues' team is evaluating the integration. I'd welcome a strategic discussion about the partnership opportunity.\n\nBest regards,\n[Sender]\n\n### Mike Stawchansky (CTO)\n\n**Email 1 (Day 3):** Technical integration brief — TracEI SaaS architecture, Fusion API, <30 day integration",
         "order": 8,
-        "created_at": "2026-05-16T10:55:00Z"
+        "created_at": "2026-05-16T10:55:00Z",
+        "section_type": "personalized_sequences"
       },
       {
         "id": "sec-9",
         "playbook_id": "pb_8d628b2f260e4199",
         "title": "Battle Cards & Objection Handling",
-        "type": "objection_handling",
+        "type": "battle_cards",
         "content": "## Objection Handling\n\n1. **\"We can build E&I ourselves.\"** → 12-18 months and $5M+ in development. TracEI integrates via API in <30 days with zero build cost. Focus on your core — let us handle E&I.\n\n2. **\"Pega Smart Investigate is the market leader.\"** → Pega costs $200K+ per bank and takes 6-12 months. Your mid-market customers can't afford Pega. TracEI at <$50K per bank is the right fit for 8,000+ Finastra customers.\n\n3. **\"We already have fraud detection (NetGuardians).\"** → Fraud prevention and investigation are different. NetGuardians catches fraudulent transactions. TracEI handles the exceptions and investigations that are legitimate but need resolution. Complementary, not competing.\n\n4. **\"Partnership integration is complex.\"** → TracEI is SaaS with open APIs. <30 days to integrate with Fusion. We follow the same partnership model as your existing fintech integrations.\n\n5. **\"Our banks handle investigations in-house.\"** → Manually. At $15-25 per investigation in staff time. With ISO 20022 migration creating dual-format complexity. TracEI automates 80% for <$50K.\n\n6. **\"What about ISO 20022 and CBPR+?\"** → TracEI handles both MT/FIN legacy and ISO 20022 new formats natively. Your banks' migration challenge is our sweet spot.\n\n7. **\"How does revenue sharing work?\"** → Flexible models: resell, referral, or revenue share. We'll propose terms that align with Finastra's partnership economics.\n\n8. **\"Why not just refer banks to Pega?\"** → Pega doesn't serve your mid-market well. TracEI gives your banks a right-sized solution that integrates with their existing Finastra infrastructure.",
         "order": 9,
-        "created_at": "2026-05-16T10:55:00Z"
+        "created_at": "2026-05-16T10:55:00Z",
+        "section_type": "battle_cards"
       },
       {
         "id": "sec-10",
         "playbook_id": "pb_8d628b2f260e4199",
         "title": "Content Asset Strategy",
-        "type": "content_assets",
+        "type": "content_strategy",
         "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. The E&I Gap in Banking Platforms — LinkedIn article (why payment platforms need investigation capabilities)\n2. Fusion + TracEI: Completing the Payments Ecosystem — Partnership brief\n\n**Consideration (Week 1-2):**\n3. How NetGuardians Extended Finastra's Fraud Capabilities — Case study parallel\n4. TracEI × Fusion: Technical Integration Guide — API architecture, <30 day integration\n5. Mid-Market Bank E&I Pain Points — Customer demand data\n\n**Decision (Week 2-3):**\n6. Joint Go-to-Market Proposal — Distribution to 8,000+ banks, revenue model\n7. Partnership Agreement Framework — Resell, referral, or revenue share options\n8. 30-Day Integration Proof-of-Concept — Technical demo plan\n\n**Expansion (Post-Signing):**\n9. Bank Customer Playbook Template — 'TracEI through Finastra' marketing collateral\n10. Revenue Dashboard — Partnership performance tracking",
         "order": 10,
-        "created_at": "2026-05-16T10:55:00Z"
+        "created_at": "2026-05-16T10:55:00Z",
+        "section_type": "content_strategy"
       },
       {
         "id": "sec-11",
         "playbook_id": "pb_8d628b2f260e4199",
         "title": "Measurement Framework",
-        "type": "measurement",
+        "type": "measurement_framework",
         "content": "## KPIs & Success Criteria\n\n**Partnership Metrics:**\n- EVP Payments meeting: within 7 days\n- CTO technical review: within 14 days\n- Partnership pilot agreement: within 30 days\n- First bank customer referral: within 60 days\n- Revenue share activation: within 90 days\n\n**Pipeline Milestones:**\n| Week | Milestone | Probability |\n|------|-----------|------------|\n| 1 | Barry Rodrigues engaged | 20% |\n| 2 | CTO integration review complete | 40% |\n| 3 | Partnership terms agreed | 60% |\n| 4 | Pilot agreement signed | 80% |\n| 6 | First bank customer live | 100% |\n\n**Revenue Model (Partnership):**\n- Pilot: <$50K integration/proof-of-concept\n- Per-bank licensing: $30-50K per bank per year\n- Finastra distribution: 8,000+ bank customer base\n- Year 1 target: 10-20 banks = $300K-1M partnership revenue\n- Year 3 target: 50-100 banks = $1.5-5M partnership revenue\n\n**Success Indicators:**\n- EVP Payments explicitly requests partnership evaluation\n- CTO clears technical integration\n- CEO mentions ecosystem expansion in strategy session\n- No competing E&I partnership launched (Pega or others)\n- First bank customer signs within 60 days of partnership",
         "order": 11,
-        "created_at": "2026-05-16T10:55:00Z"
+        "created_at": "2026-05-16T10:55:00Z",
+        "section_type": "measurement_framework"
       },
       {
         "id": "sec-12",
@@ -770,7 +782,7 @@
     "quality_checks": [],
     "id": "pb_8d628b2f260e4199",
     "created_at": "2026-05-16T10:45:32.770Z",
-    "updated_at": "2026-05-16T10:48:01.954Z",
+    "updated_at": "2026-05-18T12:51:34.712Z",
     "phase_started_at": "2026-05-16T10:45:32.795Z",
     "openclaw_session_id": "8cd977c2-a6dd-4de3-a0a1-5f8eaa70a552"
   },
@@ -894,37 +906,41 @@
         "id": "sec-8",
         "playbook_id": "pb_208f447e75624e77",
         "title": "Hyper-Personalized Sequences",
-        "type": "sequences",
+        "type": "personalized_sequences",
         "content": "## Email Sequences\n\n### AGM-IT — Champion\n\n**Email 1:**\nSubject: Manual investigations across 4 countries? TracEI automates 80% for <$50K\n\nDear Mr./Ms. [AGM-IT Name],\n\nBank of Ceylon handles SWIFT payment investigations across Sri Lanka, UK, India, Maldives, and Seychelles. With 650+ branches and CBSL's enhanced AML/CFT requirements, manual E&I processes are slowing your team down.\n\nTracEI is a low-cost SaaS exception and investigation platform that automates 80% of investigations in under 30 days. It handles SWIFT MT/FIN and ISO 20022 — everything your cross-border operations need.\n\nI'd value 20 minutes to show you how Sri Lankan banks are modernizing E&I.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** CBSL compliance is getting harder. Here's how automated E&I helps.\n**Email 3 (Day 10):** Technical brief — SaaS architecture, multi-country support, ISO 20022\n**Email 4 (Day 15):** Quick pilot proposal — <30 day deployment\n\n### Chairman — Kavinda de Zoysa\n\n**Email 1 (Day 7, after AGM-IT engagement):**\nSubject: From international banking to national banking — you know E&I pain firsthand\n\nDear Mr. de Zoysa,\n\nYour career at Citibank taught you that cross-border payment investigations are the hidden bottleneck in every bank. At BOC, with operations across 4 countries and Rs. 106.9Bn in record profits, that bottleneck is real.\n\nTracEI automates 80% of SWIFT investigations for <$50K, deployed in <30 days. A quick win for your digital transformation agenda.\n\nBest regards,\n[Sender]",
         "order": 8,
-        "created_at": "2026-05-16T11:30:00Z"
+        "created_at": "2026-05-16T11:30:00Z",
+        "section_type": "personalized_sequences"
       },
       {
         "id": "sec-9",
         "playbook_id": "pb_208f447e75624e77",
         "title": "Battle Cards & Objection Handling",
-        "type": "objection_handling",
+        "type": "battle_cards",
         "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Manual doesn't scale across 650+ branches and 4 international locations. CBSL AML/CFT circulars are multiplying. TracEI automates 80% for <$50K.\n\n2. **\"Pega Smart Investigate is the industry standard.\"** → Pega costs $200K+ and takes 6-12 months. BOC needs a quick digital win. TracEI: <$50K, <30 days, complete E&I.\n\n3. **\"$50K is significant for a state bank.\"** → Rs. 106.9Bn in record profits. <$50K is less than 0.05% of PBT. And it's within AGM-level authority — no full procurement needed.\n\n4. **\"State bank procurement is slow.\"** → <$50K SaaS subscription avoids capital expenditure procurement. AGM-level approval, not ExCo tender.\n\n5. **\"We need multi-country support.\"** → UK, India, Maldives, Seychelles — TracEI handles all four plus domestic operations.\n\n6. **\"What about security?\"** → Enhanced security is core to TracEI. SaaS with banking-grade encryption, aligned with CBSL requirements and SWIFT CSP standards.\n\n7. **\"We have BOC IT Solutions for technology.\"** → BOC IT Solutions manages infrastructure. TracEI is SaaS — no on-prem needed. Complements your IT subsidiary.\n\n8. **\"The Acting CEO may not approve new spending.\"** → Acting CEOs want quick wins. <$50K digital tool with 80% investigation automation is exactly that.",
         "order": 9,
-        "created_at": "2026-05-16T11:30:00Z"
+        "created_at": "2026-05-16T11:30:00Z",
+        "section_type": "battle_cards"
       },
       {
         "id": "sec-10",
         "playbook_id": "pb_208f447e75624e77",
         "title": "Content Asset Strategy",
-        "type": "content_assets",
+        "type": "content_strategy",
         "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. Cross-Border E&I: The Hidden Bottleneck for Sri Lankan Banks — LinkedIn article\n2. CBSL AML/CFT Compliance: From Manual to Automated — 4-page brief\n\n**Consideration (Week 1-2):**\n3. State Bank E&I Automation: 80% Reduction in Investigation Time — Case study\n4. TracEI vs. Manual Investigations vs. Pega — Comparison brief\n5. BOC-Specific ROI Calculator — Manual cost vs. TracEI <$50K\n\n**Decision (Week 2-3):**\n6. <30 Day Deployment Proposal — SaaS pilot plan\n7. Security & Compliance Pack — CBSL alignment, SWIFT CSP, enhanced security\n8. Multi-Country Investigation Support — UK, India, Maldives, Seychelles coverage",
         "order": 10,
-        "created_at": "2026-05-16T11:30:00Z"
+        "created_at": "2026-05-16T11:30:00Z",
+        "section_type": "content_strategy"
       },
       {
         "id": "sec-11",
         "playbook_id": "pb_208f447e75624e77",
         "title": "Measurement Framework",
-        "type": "measurement",
+        "type": "measurement_framework",
         "content": "## KPIs & Success Criteria\n\n**Awareness:** AGM-IT meeting booked within 14 days | Chairman engagement within 21 days\n**Engagement:** Technical evaluation within 7 days of first meeting | Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry | Expansion potential $100-150K\n\n**Week 1:** AGM-IT engaged, pain confirmed\n**Week 2:** Technical brief delivered, pilot scope discussed\n**Week 3:** Pilot proposal submitted, procurement path identified\n**Week 4:** Contract signed or pilot launched\n\n**Expansion Revenue:**\n- Additional investigation volume (per-branch): +$10-20K\n- ISO 20022 migration module: +$15-25K\n- Compliance/AML module: +$10-15K\n- Total expansion potential: $35-60K → $85-110K total account value\n\n**Success Indicators:**\n- AGM-IT explicitly requests evaluation\n- Chairman references digital transformation priority\n- No Pega evaluation launched\n- Quick procurement path confirmed (<$50K = AGM authority)",
         "order": 11,
-        "created_at": "2026-05-16T11:30:00Z"
+        "created_at": "2026-05-16T11:30:00Z",
+        "section_type": "measurement_framework"
       },
       {
         "id": "sec-12",
@@ -1011,7 +1027,7 @@
     "quality_checks": [],
     "id": "pb_208f447e75624e77",
     "created_at": "2026-05-16T11:21:56.881Z",
-    "updated_at": "2026-05-16T11:26:12.805Z",
+    "updated_at": "2026-05-18T12:51:34.707Z",
     "phase_started_at": "2026-05-16T11:25:41.427Z",
     "openclaw_session_id": "f4b9d161-c915-4768-89a6-142a1b03bd82"
   },
@@ -1136,37 +1152,41 @@
         "id": "sec-8",
         "playbook_id": "pb_74c5ea2eddaf4574",
         "title": "Hyper-Personalized Sequences",
-        "type": "sequences",
+        "type": "personalized_sequences",
         "content": "## Email Sequences\n\n### CMO / VP Brand — Champion\n\n**Email 1:**\nSubject: Your marketing team is 10. Your social force multiplier is 100,000.\n\nDear [CMO Name],\n\nMAS Holdings has 100,000 employees across 17 countries. Each one has a social network. Each one has a story — especially the women of Women Go Beyond.\n\nPeopleSocial is an employee advocacy platform that turns your workforce into a social distribution engine. Your employees share approved brand content through their own social networks. Your reach multiplies. Your stories scale. Your employer brand becomes authentic.\n\n5% adoption = 5,000 brand ambassadors. That's more reach than any paid campaign.\n\nI'd value 20 minutes to show you how it works.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** Women Go Beyond 20th anniversary — let your women tell their own stories\n**Email 3 (Day 10):** ROI: Employee advocacy vs. paid media — the numbers\n**Email 4 (Day 15):** Demo: See PeopleSocial in action for a 100K workforce\n\n### Suren Fernando (CEO)\n\n**Email 1 (Day 7, after CMO engagement):**\nSubject: People first means people's voices first\n\nDear Mr. Fernando,\n\nYou led MAS 2025 transformation. You put people at the center. Now let their voices be your brand.\n\nPeopleSocial turns 100,000 MAS employees into a social media force multiplier — sharing your sustainability stories, your Women Go Beyond journey, your transformation narrative. Authentically. From within.\n\nYour CMO is evaluating the platform. I'd welcome 15 minutes to share the business case directly.\n\nBest regards,\n[Sender]",
         "order": 8,
-        "created_at": "2026-05-16T19:50:00Z"
+        "created_at": "2026-05-16T19:50:00Z",
+        "section_type": "personalized_sequences"
       },
       {
         "id": "sec-9",
         "playbook_id": "pb_74c5ea2eddaf4574",
         "title": "Battle Cards & Objection Handling",
-        "type": "objection_handling",
+        "type": "battle_cards",
         "content": "## Objection Handling\n\n1. **\"Our employees won't participate.\"** → Women Go Beyond has 20 years of engagement. Your people-first culture means employees WANT to share. Start with your most engaged — WGB ambassadors, sustainability champions.\n\n2. **\"Factory workers aren't on social media.\"** → PeopleSocial is mobile-first. WhatsApp integration works for factory teams. It's not just LinkedIn — Facebook, Instagram, WhatsApp all supported. 17 countries = diverse platforms.\n\n3. **\"We use LinkedIn company pages already.\"** → Company pages = corporate voice. Employee advocacy = authentic voice. People trust people 3x more than brands. Your 100K employees have 10M+ combined connections.\n\n4. **\"$50K is significant for a manufacturing company.\"** → One paid LinkedIn campaign costs more. And employee advocacy reaches 10-50x more people — organically, authentically, sustainably.\n\n5. **\"What about brand risk? Uncontrolled employee posts?\"** → PeopleSocial uses approved content libraries. Employees share YOUR content through THEIR networks. No rogue posting. Full compliance and approval workflows built in.\n\n6. **\"DSMN8 already does this.\"** → PeopleSocial is built for large manufacturing workforces across APAC. We understand factory workers, 17-country operations, and multilingual content distribution.\n\n7. **\"We don't have time to manage this.\"** → PeopleSocial is SaaS with built-in content curation. Your marketing team uploads content once. Employees share in one click. Minimal management overhead.\n\n8. **\"Our brand clients (Nike, VS, etc.) control our narrative.\"** → Employee advocacy is about MAS's employer brand, not client brands. Your people tell YOUR story — your culture, your values, your Women Go Beyond.",
         "order": 9,
-        "created_at": "2026-05-16T19:50:00Z"
+        "created_at": "2026-05-16T19:50:00Z",
+        "section_type": "battle_cards"
       },
       {
         "id": "sec-10",
         "playbook_id": "pb_74c5ea2eddaf4574",
         "title": "Content Asset Strategy",
-        "type": "content_assets",
+        "type": "content_strategy",
         "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. 100,000 Employees. 0 Brand Ambassadors. — LinkedIn article\n2. Women Go Beyond Needs to Go Beyond Annual Reports — Blog post\n\n**Consideration (Week 1-2):**\n3. Manufacturing Workforce Employee Advocacy: 5% Adoption = 5,000 Voices — Case study\n4. PeopleSocial vs. DSMN8 for Manufacturing Workforces — Comparison brief\n5. ROI Calculator: Employee Advocacy vs. Paid Media for 100K Workforce — Interactive model\n\n**Decision (Week 2-3):**\n6. Women Go Beyond Amplification Playbook — How advocacy turns WGB into social movement\n7. 17-Country Content Distribution Guide — Multi-language, multi-platform strategy\n8. <30 Day Deployment Plan — SaaS onboarding for 100K workforce\n9. Security & Compliance Pack — Employee data protection, 17-country compliance",
         "order": 10,
-        "created_at": "2026-05-16T19:50:00Z"
+        "created_at": "2026-05-16T19:50:00Z",
+        "section_type": "content_strategy"
       },
       {
         "id": "sec-11",
         "playbook_id": "pb_74c5ea2eddaf4574",
         "title": "Measurement Framework",
-        "type": "measurement",
+        "type": "measurement_framework",
         "content": "## KPIs & Success Criteria\n\n**Awareness:** CMO meeting booked within 14 days | CEO engagement within 21 days\n**Engagement:** Platform demo within 7 days of first meeting | Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry | Expansion potential $150-250K\n\n**Adoption Milestones:**\n| Month | Advocates | Social Reach |\n|-------|-----------|-------------|\n| 1 | 500 (0.5%) | 500K impressions/mo |\n| 3 | 2,000 (2%) | 2M impressions/mo |\n| 6 | 5,000 (5%) | 5M impressions/mo |\n| 12 | 10,000 (10%) | 10M impressions/mo |\n\n**Key Metrics:**\n- Employee adoption rate (target: 5% in 6 months)\n- Content shares per advocate (target: 2/week)\n- Social reach multiplier (target: 50-100x corporate page)\n- Employer brand lift (LinkedIn talent inquiries +30%)\n- Women Go Beyond story amplification (target: 10x current reach)\n\n**Expansion Revenue:**\n- Multi-language content module: +$20-30K\n- Advanced analytics: +$15-25K\n- WhatsApp/mobile integration for factory workers: +$20-30K\n- 17-country compliance pack: +$15-20K\n- Total expansion: $70-105K → $120-155K total account value",
         "order": 11,
-        "created_at": "2026-05-16T19:50:00Z"
+        "created_at": "2026-05-16T19:50:00Z",
+        "section_type": "measurement_framework"
       },
       {
         "id": "sec-12",
@@ -1253,7 +1273,7 @@
     "quality_checks": [],
     "id": "pb_74c5ea2eddaf4574",
     "created_at": "2026-05-16T19:39:47.661Z",
-    "updated_at": "2026-05-16T19:43:04.227Z",
+    "updated_at": "2026-05-18T12:51:34.702Z",
     "phase_started_at": "2026-05-16T19:42:47.713Z",
     "openclaw_session_id": "de844572-7d20-47bc-8c17-3c306be5ef54"
   },
@@ -1378,37 +1398,41 @@
         "id": "sec-8",
         "playbook_id": "pb_3d47e694d2ee4f30",
         "title": "Hyper-Personalized Sequences",
-        "type": "sequences",
+        "type": "personalized_sequences",
         "content": "## Email Sequences\n\n### CMO — Champion\n\n**Email 1:**\nSubject: AI writes the caption. Your people just click share.\n\nDear [CMO Name],\n\nMAS Holdings has 100,000 employees. Most aren't content creators — and that's exactly why employee advocacy fails at companies like yours. People don't know what to write.\n\nPeopleSocial solves this with AI. When an employee shares a post, AI generates a personalized caption. One click. Zero writing. Zero friction.\n\nAnd here's the compounding effect: 5,000 advocates × 200 connected connections = 1 million organic reach. Every new advocate increases value for all.\n\nI'd value 20 minutes to show you how AI captions and network effects work for a 100K workforce.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** Women Go Beyond + AI captions = every woman tells her story without writing a word\n**Email 3 (Day 10):** Network effects: Your people's networks are connected. That's compound interest for your brand.\n**Email 4 (Day 15):** Demo: See AI captions in action for MAS's 17-country workforce\n\n### CEO — Suren Fernando\n\n**Email 1 (Day 7):**\nSubject: People first means people's voices first. AI makes it effortless.\n\nDear Mr. Fernando,\n\nYou led MAS 2025 transformation. You put people at the center. Now let their voices be your brand — without asking them to become content creators.\n\nPeopleSocial's AI writes the captions. Your employees just click share. And when their connected networks compound, 5,000 advocates generate 1M+ organic reach.\n\nYour CMO is evaluating the platform. I'd welcome 15 minutes to share the business case.\n\nBest regards,\n[Sender]",
         "order": 8,
-        "created_at": "2026-05-16T20:05:00Z"
+        "created_at": "2026-05-16T20:05:00Z",
+        "section_type": "personalized_sequences"
       },
       {
         "id": "sec-9",
         "playbook_id": "pb_3d47e694d2ee4f30",
         "title": "Battle Cards & Objection Handling",
-        "type": "objection_handling",
+        "type": "battle_cards",
         "content": "## Objection Handling\n\n1. **\"Our employees won't participate — they don't know what to write.\"** → That's exactly why we built AI captions. Employees click share, AI writes the caption. Zero writing. Zero friction. This is the #1 reason advocacy fails — and we solved it.\n\n2. **\"Factory workers aren't on LinkedIn.\"** → PeopleSocial works on Facebook, WhatsApp, Instagram too. AI captions work in any language. 17 countries = we meet your people where they are.\n\n3. **\"What about network effects — how does that actually work?\"** → Simple: when 5,000 employees share, their networks overlap and connect. Each share reaches 200 people. But connected networks mean shares cascade — 5,000 × 200 = 1M reach, and it compounds from there.\n\n4. **\"$50K is significant.\"** → One LinkedIn paid campaign costs more and reaches fewer people. Network effects mean your reach compounds month after month — unlike paid media that stops when you stop paying.\n\n5. **\"What about brand risk with AI captions?\"** → AI captions are generated from YOUR approved content library. Employees can edit before sharing. Full approval workflows built in. AI empowers, it doesn't replace control.\n\n6. **\"DSMN8 already does employee advocacy.\"** → DSMN8 doesn't have AI-generated captions or network effects modeling. Without AI captions, you'll get 1% adoption. With AI captions, you'll get 10%. That's 10x more advocates, 10x more reach.\n\n7. **\"AI replacing employee voice feels wrong.\"** → AI doesn't replace their voice — it removes the friction so they CAN share it. Without AI captions, most employees stay silent because they don't know what to write. AI gives them a starting point they can personalize.\n\n8. **\"We don't have time to manage this.\"** → That's the point of AI captions. Marketing uploads content once. AI generates captions for every employee. They click share. Minimal management overhead.",
         "order": 9,
-        "created_at": "2026-05-16T20:05:00Z"
+        "created_at": "2026-05-16T20:05:00Z",
+        "section_type": "battle_cards"
       },
       {
         "id": "sec-10",
         "playbook_id": "pb_3d47e694d2ee4f30",
         "title": "Content Asset Strategy",
-        "type": "content_assets",
+        "type": "content_strategy",
         "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. AI Writes the Caption. Your People Just Click Share. — LinkedIn article\n2. Network Effects for Employer Brand: Compound Interest for Your Reach — Blog post\n\n**Consideration (Week 1-2):**\n3. AI Captions vs. Manual: 10x Adoption in Manufacturing Workforces — Case study\n4. PeopleSocial vs. DSMN8: AI Captions & Network Effects — Comparison brief\n5. Network Effects Calculator: 5,000 MAS Advocates = ? Reach — Interactive model\n6. Women Go Beyond + AI = Stories at Scale — Amplification playbook\n\n**Decision (Week 2-3):**\n7. <30 Day Deployment Plan — AI onboarding for 100K workforce\n8. Security & AI Compliance Pack — AI ethics, data protection, 17-country compliance\n9. Multilingual AI Caption Demo — Sinhala, Tamil, English, Hindi, Bahasa",
         "order": 10,
-        "created_at": "2026-05-16T20:05:00Z"
+        "created_at": "2026-05-16T20:05:00Z",
+        "section_type": "content_strategy"
       },
       {
         "id": "sec-11",
         "playbook_id": "pb_3d47e694d2ee4f30",
         "title": "Measurement Framework",
-        "type": "measurement",
+        "type": "measurement_framework",
         "content": "## KPIs & Success Criteria\n\n**Adoption with AI Captions (vs. without):**\n| Metric | Without AI | With AI |\n|--------|-----------|--------|\n| Adoption rate | 1% (1,000) | 10% (10,000) |\n| Shares per advocate | 1/month | 4/month |\n| Avg. caption quality | Low | AI-optimized |\n| Time per share | 15 min | 30 sec |\n\n**Network Effects Model:**\n| Month | Advocates | Network Reach |\n|-------|-----------|-------------|\n| 1 | 1,000 | 200K impressions |\n| 3 | 5,000 | 1M impressions |\n| 6 | 10,000 | 2-5M impressions |\n| 12 | 15,000 | 5-10M impressions |\n\n**Key Metrics:**\n- AI caption acceptance rate (target: 80%)\n- One-click share rate (target: 90% — AI reduces friction)\n- Network effect multiplier (target: 50-100x corporate page)\n- Women Go Beyond amplification (target: 20x current reach)\n- Employer brand lift (LinkedIn talent inquiries +30%)\n\n**Expansion:**\n- Advanced AI personalization: +$20K\n- Multilingual AI (17-country): +$25K\n- WhatsApp integration for factory: +$20K\n- Analytics & network effects dashboard: +$15K\n- Total: $80K → $130K account value",
         "order": 11,
-        "created_at": "2026-05-16T20:05:00Z"
+        "created_at": "2026-05-16T20:05:00Z",
+        "section_type": "measurement_framework"
       },
       {
         "id": "sec-12",
@@ -1495,7 +1519,7 @@
     "quality_checks": [],
     "id": "pb_3d47e694d2ee4f30",
     "created_at": "2026-05-17T12:39:38.081Z",
-    "updated_at": "2026-05-17T12:46:35.838Z",
+    "updated_at": "2026-05-18T12:51:34.698Z",
     "phase_started_at": "2026-05-17T12:46:10.913Z",
     "openclaw_session_id": "c30c5b26-17d9-496c-81b0-9315563bd175"
   },
@@ -1621,37 +1645,41 @@
         "id": "sec-8",
         "playbook_id": "pb_150d2e8f28234304",
         "title": "Hyper-Personalized Sequences",
-        "type": "sequences",
+        "type": "personalized_sequences",
         "content": "## Email Sequences\n\n### Chandima Cooray (CINVO)\n\n**Email 1:**\nSubject: Innovation Studio is the perfect place to evaluate TracEI in 14 days\n\nDear Mr. Cooray,\n\nHNB's Innovation Studio was built for exactly this: rapidly testing technologies that matter.\n\nTracEI is a low-cost, complete exceptions & investigations platform that deploys in 14 days. It handles SWIFT MT/FIN, ISO 20022, and LANKAQR — everything your growing payment channels need.\n\nGoogle Pay proved you can move fast. TracEI proves your investigation capability can too.\n\nI'd value 15 minutes to show you how APAC banks are cutting investigation time by 80%.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** APAC bank 80% faster investigations case study\n**Email 3 (Day 10):** Innovation Studio sandbox proposal — 14-day evaluation\n**Email 4 (Day 14):** ROI calculator: cost per investigation before vs. after TracEI\n\n### Damith Pallewatte (CEO)\n\n**Email 1:**\nSubject: From someone who ran IT and Cards — a faster way to handle payment investigations\n\nDear Mr. Pallewatte,\n\nYou've run IT, Cards, and Digital Banking at HNB — so you know payment investigations are the hidden bottleneck in every digital transformation.\n\nTracEI is a low-cost, complete E&I solution that deploys in under 30 days for less than $50K. No platform license, no 12-month implementation, no enterprise pricing.\n\nYour Innovation Studio team is evaluating TracEI. I'd welcome 15 minutes to share the business case directly.\n\nBest regards,\n[Sender]",
         "order": 8,
-        "created_at": "2026-05-17T00:05:00Z"
+        "created_at": "2026-05-17T00:05:00Z",
+        "section_type": "personalized_sequences"
       },
       {
         "id": "sec-9",
         "playbook_id": "pb_150d2e8f28234304",
         "title": "Battle Cards & Objection Handling",
-        "type": "objection_handling",
+        "type": "battle_cards",
         "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Manual doesn't scale. Google Pay + ISO 20022 = volume multiplying. TracEI automates 80% for <$50K.\n\n2. **\"Pega Smart Investigate is the industry standard.\"** → Pega is for banks with $200K+ budgets and 12 months. HNB needs low cost, complete, <30 day deployment.\n\n3. **\"$50K is significant.\"** → Each manual investigation costs $15-25 in staff time. 80% automation = ROI payback under 6 months.\n\n4. **\"We need SWIFT and ISO 20022 support.\"** → TracEI supports MT/FIN, ISO 20022, CBPR+, gpi, LANKAQR out of the box.\n\n5. **\"Can your Innovation Studio evaluate it?\"** → Absolutely. 14-day sandbox evaluation with real HNB data patterns. No commitment.\n\n6. **\"We need to see it handle real investigations.\"** → 14-day free pilot. Real investigations, real results.\n\n7. **\"Security concerns with SaaS.\"** → SOC 2 Type II, ISO 27001, SWIFT CSP compliant. CISO Emmanuel can review our security architecture in detail.\n\n8. **\"Our CEO understands the pain — but is the timing right?\"** → Google Pay launched, ISO 20022 migration is happening, record profits give you budget. The timing is perfect.",
         "order": 9,
-        "created_at": "2026-05-17T00:05:00Z"
+        "created_at": "2026-05-17T00:05:00Z",
+        "section_type": "battle_cards"
       },
       {
         "id": "sec-10",
         "playbook_id": "pb_150d2e8f28234304",
         "title": "Content Asset Strategy",
-        "type": "content_assets",
+        "type": "content_strategy",
         "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. Payment Investigations: The Hidden Bottleneck in Digital Banking — LinkedIn article\n2. Google Pay, ISO 20022, and the Investigation Volume Problem — 2-page brief\n\n**Consideration (Week 1-2):**\n3. APAC Bank Reduces Investigation Time by 80% — Case study (3 pages)\n4. TracEI vs. Pega Smart Investigate for Mid-Size Banks — 1-page comparison\n5. HNB-Specific Investigation ROI Calculator — Interactive spreadsheet\n\n**Decision (Week 2-3):**\n6. Innovation Studio 14-Day Sandbox Proposal — SOW document\n7. Security & Compliance Pack — SOC 2, ISO 27001, SWIFT CSP, ISO 20022\n8. Technical Architecture Brief — SaaS, API, SWIFT integration",
         "order": 10,
-        "created_at": "2026-05-17T00:05:00Z"
+        "created_at": "2026-05-17T00:05:00Z",
+        "section_type": "content_strategy"
       },
       {
         "id": "sec-11",
         "playbook_id": "pb_150d2e8f28234304",
         "title": "Measurement Framework",
-        "type": "measurement",
+        "type": "measurement_framework",
         "content": "## KPIs & Success Criteria\n\n**Awareness:** CINVO meeting booked within 7 days | CEO engagement within 14 days\n**Engagement:** Innovation Studio sandbox approved within 14 days | Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry | Expansion $100-150K\n\n**Week 1:** CINVO engaged, Innovation Studio evaluation proposed\n**Week 2:** CTDO technical evaluation, sandbox scope agreed\n**Week 3:** 14-day pilot launched\n**Week 4:** Close — $50K ARR contract signed\n\n**Expansion Revenue:**\n- Google Pay investigation workflows: +$10-20K\n- ISO 20022 module: +$15-25K\n- Compliance/sanction screening: +$15-25K\n- Total expansion: $40-70K → $90-120K account value\n\n**Success Indicators:**\n- CINVO explicitly requests Innovation Studio evaluation\n- CEO references TracEI in strategy conversation\n- CISO clears security review in <14 days\n- No Pega evaluation launched (greenfield)",
         "order": 11,
-        "created_at": "2026-05-17T00:05:00Z"
+        "created_at": "2026-05-17T00:05:00Z",
+        "section_type": "measurement_framework"
       },
       {
         "id": "sec-12",
@@ -1748,7 +1776,7 @@
     "quality_checks": [],
     "id": "pb_150d2e8f28234304",
     "created_at": "2026-05-17T17:46:50.506Z",
-    "updated_at": "2026-05-17T17:48:37.509Z",
+    "updated_at": "2026-05-18T12:51:34.694Z",
     "phase_started_at": "2026-05-17T17:48:30.655Z",
     "openclaw_session_id": "cf861d37-1d1d-46a1-9306-d104142ea1dc"
   },
@@ -1875,37 +1903,41 @@
         "id": "sec-8",
         "playbook_id": "pb_d601c2dc63d8435e",
         "title": "Hyper-Personalized Sequences",
-        "type": "sequences",
+        "type": "personalized_sequences",
         "content": "## Email Sequences\n\n### CEO — Naleen Edirisinghe\n\n**Email 1:**\nSubject: From your COO perspective — a faster way to handle payment investigations\n\nDear Mr. Edirisinghe,\n\nAs someone who ran operations before becoming CEO, you know that payment investigations are the hidden bottleneck in every bank's digital transformation.\n\nPABC's record results — 123% profit growth — show you're investing in the right things. But as digital volumes grow, so do exceptions and investigations.\n\nTracEI is a low-cost, complete E&I solution that deploys in under 30 days for less than $50K. Enhanced security built in. SaaS-native. Right-size for an 85-branch bank.\n\nI'd value 15 minutes to share the business case.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** Record profits deserve record investigation capability\n**Email 3 (Day 10):** APAC mid-size bank case study — 80% faster investigations\n**Email 4 (Day 15):** 14-day pilot proposal\n\n### DGM Treasury — Nayantha Fernando\n\n**Email 1:**\nSubject: SWIFT investigations don't have to be manual anymore\n\nDear Mr. Fernando,\n\nAs DGM Treasury & Global Markets, you see every SWIFT exception that crosses PABC's desks. Fee income is up 24% — but so is the investigation workload.\n\nTracEI automates 80% of exceptions and investigations for less than $50K. SWIFT, ISO 20022, enhanced security — everything your 85-branch network needs.\n\nI'd value 20 minutes to show you how it works.\n\nBest regards,\n[Sender]",
         "order": 8,
-        "created_at": "2026-05-17T01:05:00Z"
+        "created_at": "2026-05-17T01:05:00Z",
+        "section_type": "personalized_sequences"
       },
       {
         "id": "sec-9",
         "playbook_id": "pb_d601c2dc63d8435e",
         "title": "Battle Cards & Objection Handling",
-        "type": "objection_handling",
+        "type": "battle_cards",
         "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Manual doesn't scale. Fee income +24% = more transactions = more exceptions. TracEI automates 80% for <$50K.\n\n2. **\"Pega is the industry standard.\"** → Pega costs $200K+ and takes 6-12 months. That's for the big 5 banks. PABC needs a right-size solution — <$50K, <30 days, complete E&I.\n\n3. **\"$50K is significant for a mid-size bank.\"** → Each manual investigation costs $15-25 in staff time. 80% automation = ROI under 6 months. And your record profits say you can afford it.\n\n4. **\"We need SWIFT and ISO 20022 support.\"** → TracEI supports MT/FIN, ISO 20022, CBPR+, gpi out of the box. Future-proof for migration.\n\n5. **\"We're too small for this.\"** → TracEI is designed for banks exactly like PABC — 85 branches, growing digital volumes, mid-size operations. Not over-engineered.\n\n6. **\"Our CEO understands operations — he'll want to see it work.\"** → Exactly right. 14-day free pilot with real PABC investigation data. No commitment.\n\n7. **\"Enhanced security — what does that mean?\"** → SOC 2, ISO 27001, SWIFT CSP aligned. SaaS with banking-grade encryption. Your CRO and CISO will approve.\n\n8. **\"Why TracEI and not build in-house?\"** → Building E&I takes 12+ months and $500K+. TracEI deploys in <30 days for <$50K. Focus your team on digital zones, not investigation tooling.",
         "order": 9,
-        "created_at": "2026-05-17T01:05:00Z"
+        "created_at": "2026-05-17T01:05:00Z",
+        "section_type": "battle_cards"
       },
       {
         "id": "sec-10",
         "playbook_id": "pb_d601c2dc63d8435e",
         "title": "Content Asset Strategy",
-        "type": "content_assets",
+        "type": "content_strategy",
         "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. Payment Investigations: The Hidden Bottleneck for Mid-Size Banks — LinkedIn article\n2. Record Profits, Record Investigation Volumes — 2-page brief\n\n**Consideration (Week 1-2):**\n3. APAC Mid-Size Bank Reduces Investigation Time 80% — Case study\n4. TracEI vs. Pega for Mid-Size Banks — 1-page comparison\n5. PABC-Specific Investigation ROI Calculator — Interactive spreadsheet\n\n**Decision (Week 2-3):**\n6. 14-Day Free Pilot Proposal — SOW document\n7. Enhanced Security & Compliance Pack — SOC 2, ISO 27001, SWIFT CSP, CBSL alignment\n8. Right-Size Banking: Why Mid-Size Banks Choose TracEI — Positioning brief",
         "order": 10,
-        "created_at": "2026-05-17T01:05:00Z"
+        "created_at": "2026-05-17T01:05:00Z",
+        "section_type": "content_strategy"
       },
       {
         "id": "sec-11",
         "playbook_id": "pb_d601c2dc63d8435e",
         "title": "Measurement Framework",
-        "type": "measurement",
+        "type": "measurement_framework",
         "content": "## KPIs & Success Criteria\n\n**Awareness:** CEO or DGM Treasury meeting booked within 10 days\n**Engagement:** Technical evaluation within 14 days | Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry\n\n**Week 1:** DGM Treasury engaged, pain confirmed\n**Week 2:** DGM IT evaluation, pilot scope\n**Week 3:** Pilot launched\n**Week 4:** Close — $50K ARR contract\n\n**Expansion Revenue:**\n- ISO 20022 module: +$15-25K\n- Compliance/sanction screening: +$10-20K\n- Additional investigation volume: +$10-15K\n- Total expansion: $35-60K → $85-110K account value\n\n**Success Indicators:**\n- CEO references 'from COO perspective' in conversation\n- DGM Treasury explicitly confirms manual investigation pain\n- No Pega evaluation launched\n- Quick procurement path confirmed (<$50K = CEO authority)",
         "order": 11,
-        "created_at": "2026-05-17T01:05:00Z"
+        "created_at": "2026-05-17T01:05:00Z",
+        "section_type": "measurement_framework"
       },
       {
         "id": "sec-12",
@@ -1992,8 +2024,264 @@
     "quality_checks": [],
     "id": "pb_d601c2dc63d8435e",
     "created_at": "2026-05-18T06:40:40.181Z",
-    "updated_at": "2026-05-18T06:43:16.193Z",
+    "updated_at": "2026-05-18T12:51:10.466Z",
     "phase_started_at": "2026-05-18T06:42:17.770Z",
     "openclaw_session_id": "b2b27b17-9617-4880-8532-2505034b0c11"
+  },
+  "pb_96c253f09cb74fe8": {
+    "user_id": "usr_demo",
+    "product_name": "TracEI",
+    "product_brief": {
+      "product_name": "TracEI",
+      "description": "a SWIFT payment exceptions and investigation platfrom for banks and fintecs who does cross border trnasfers",
+      "value_propositions": [
+        "low cost exception investigation",
+        "Saas offering",
+        "Security"
+      ],
+      "target_personas": [
+        "CTO",
+        "CPO",
+        "CEO"
+      ],
+      "differentiators": [
+        "Saas based E&I application."
+      ],
+      "competitors": [],
+      "deployment_model": "saas",
+      "deal_size": "<50k",
+      "sales_cycle": "<30d"
+    },
+    "target_company": "Sampath Bank Sri Lanka",
+    "target_url": "https://www.sampath.lk/",
+    "industry": "Banking & Finance",
+    "geography": "Other APAC",
+    "priority_tier": "tier1",
+    "status": "complete",
+    "progress_pct": 100,
+    "agent_status": [
+      {
+        "agent": "orchestrator",
+        "task": "Playbook complete",
+        "status": "complete"
+      },
+      {
+        "agent": "researcher",
+        "task": "Research complete",
+        "status": "complete"
+      },
+      {
+        "agent": "writer",
+        "task": "Writing complete",
+        "status": "complete"
+      },
+      {
+        "agent": "reviewer",
+        "task": "Quality check complete",
+        "status": "complete"
+      }
+    ],
+    "sections": [
+      {
+        "id": "sec-1",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Executive Summary",
+        "type": "executive_summary",
+        "content": "## Strategic Opportunity: TracEI → Sampath Bank\n\nSampath Bank is one of Sri Lanka's leading private banks (PBT Rs. 46.7Bn, +57% YoY, PAT Rs. 28.7Bn, +60.1%) — a SWIFT pioneer that was one of the first local banks to join the SWIFT network. Under new CEO Sanjaya Gunawardana (since Sep 2025) and new COO R.K. Deepal de Silva (since Jul 2025), the bank is in a leadership transition with fresh momentum.\n\nThree converging signals make this a compelling <$50K velocity play:\n\n1. **SWIFT pioneer** — Sampath was one of the first Sri Lankan banks to join SWIFT. They understand cross-border payments deeply — and they know the investigation pain.\n\n2. **Record profitability (+57% PBT)** — Budget available for technology investment. Best-ever financial performance.\n\n3. **New leadership (CEO Sep 2025, COO Jul 2025)** — Fresh leadership means fresh priorities. New COO from operations background (SDGM Operations & Branch Banking) understands E&I pain firsthand.\n\n**Recommended approach:** Velocity play — <$50K, <30 days. Lead with SWIFT pioneer credibility, low-cost E&I vs. manual processes, enhanced security. Target COO as champion (operations owner), CEO as economic buyer.\n\n**Expected outcome:** Close within 30 days. <$50K ARR entry with expansion as cross-border volumes grow.",
+        "order": 1,
+        "created_at": "2026-05-18T11:15:00Z"
+      },
+      {
+        "id": "sec-2",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Account Intelligence Dossier",
+        "type": "account_intelligence",
+        "content": "## Sampath Bank — Account Intelligence\n\n### Company Overview\n- **Name:** Sampath Bank PLC\n- **Type:** Leading private sector bank in Sri Lanka\n- **HQ:** Colombo, Sri Lanka | **Founded:** 1986\n- **CEO:** Sanjaya Gunawardana (9th MD/CEO, since Sep 2025)\n- **Predecessor CEO:** Ayodhya Iddawela Perera (completed term Sep 2025)\n- **COO:** R.K. Deepal de Silva (since Jul 2025, formerly SDGM Operations & Branch Banking)\n- **SDGM Corporate Banking:** Amal Kirihena\n- **DGM/CLO:** Theja Silva (Chief Legal Officer)\n- **Employees:** ~4,479\n- **PBT (2024):** Rs. 46.7 Bn (+57%)\n- **PAT (Group, 2024):** Rs. 28.7 Bn (+60.1%)\n- **SWIFT Code:** BSAMLKLX\n- **Branches:** ~230\n\n### SWIFT & Digital Heritage\n- One of the **first Sri Lankan banks to join SWIFT network**\n- Pioneered Sri Lanka's first standalone ATM at Liberty Plaza\n- Strong digital banking capabilities (Sampath Vishwa, online banking)\n- SWIFT code BSAMLKLX — active cross-border operations\n\n### E&I Pain Points\n- SWIFT pioneer status = deep cross-border payment volumes = more investigations\n- Trade finance and corporate banking (SDGM Corporate) generate exceptions\n- No automated E&I platform — likely manual investigation workflows\n- Growing volumes (+57% PBT) mean growing investigation workload\n- ISO 20022 migration creating dual-format complexity\n- CBSL enhanced AML/CFT circulars adding compliance burden",
+        "order": 2,
+        "created_at": "2026-05-18T11:15:00Z"
+      },
+      {
+        "id": "sec-3",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Buying Committee & Org Map",
+        "type": "buying_committee",
+        "content": "## Buying Committee\n\n**Champion: R.K. Deepal de Silva (COO)**\n- Formerly SDGM Operations & Branch Banking — personally understands E&I pain\n- New COO (Jul 2025) — wants quick operational wins\n- Operations owner — investigations impact all business lines\n\n**Economic Buyer: Sanjaya Gunawardana (CEO)**\n- 9th MD/CEO (since Sep 2025) — new leadership, fresh priorities\n- <$50K within CEO authority\n\n**Corporate Banking: Amal Kirihena (SDGM Corporate Banking)**\n- Trade finance and international banking generate investigation volume\n- Key stakeholder for cross-border E&I\n\n**Legal Gate: Theja Silva (DGM/CLO)**\n- Chief Legal Officer — compliance and regulatory perspective\n- Must validate CBSL alignment\n\n**Technical Buyer: SDGM IT [Name TBD]**\n- Evaluates SaaS, security, SWIFT integration\n- Sampath has strong digital banking infrastructure\n\n**End User: DGM International Banking [Name TBD]**\n- Day-to-day SWIFT operations, LC processing, investigations\n- Primary user of TracEI\n\n**Risk Gate: CRO [Name TBD]**\n- Risk and compliance validation\n\n**Decision Speed:** <$50K + new leadership = fast decision. COO champion + CEO approval.",
+        "order": 3,
+        "created_at": "2026-05-18T11:15:00Z"
+      },
+      {
+        "id": "sec-4",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Why Now — Timing Analysis",
+        "type": "why_now",
+        "content": "## Why Now — Signal Analysis\n\n### S1: SWIFT Pioneer (🔴 CRITICAL)\n- Sampath was one of the first Sri Lankan banks to join SWIFT\n- Deep cross-border expertise = deep investigation pain\n- **Action:** 'You were a SWIFT pioneer. Now lead in SWIFT investigations too.'\n\n### S2: New Leadership (🔴 HIGH)\n- New CEO (Sep 2025) and new COO (Jul 2025) = fresh priorities\n- COO from operations background — wants quick wins\n- **Action:** 'New leadership, new priorities. E&I automation is a quick operational win.'\n\n### S3: Record Profitability (🔴 HIGH)\n- PBT +57%, PAT +60.1% — budget available\n- **Action:** 'Record profits deserve record investigation capability.'\n\n### S4: Growing Volumes (🟡 MEDIUM-HIGH)\n- Trade finance and corporate banking growth = more SWIFT exceptions\n- **Action:** 'Your volumes are growing 57%. Can your investigation capability keep up?'\n\n### S5: ISO 20022 Migration (🟡 MEDIUM)\n- Industry-wide migration creating dual-format complexity\n- SWIFT pioneer must handle both legacy and new formats\n- **Action:** 'As a SWIFT pioneer, you need to lead on ISO 20022 investigations too.'",
+        "order": 4,
+        "created_at": "2026-05-18T11:15:00Z"
+      },
+      {
+        "id": "sec-5",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Competitive Landscape",
+        "type": "competitive_landscape",
+        "content": "## Competitive Landscape\n\n### Pega Smart Investigate\n- **Strengths:** 30+ years SWIFT expertise, AI decisioning, ISO 20022 support\n- **Weaknesses:** $200K+ TCO, 6-12 month implementation, over-engineered for Sampath's scale\n- **TracEI Advantage:** <$50K vs. $200K+ | <30 days vs. 6-12 months | Complete E&I | SaaS-native | Enhanced security\n\n### Manual / In-House\n- **Current state:** Likely manual/spreadsheet investigations\n- **Weaknesses:** Slow, error-prone, doesn't scale with +57% growth\n- **TracEI Advantage:** 80% automation, consistent across 230 branches, enhanced security built in\n\n### Key Differentiators for Sampath Bank\n1. **SWIFT pioneer alignment:** 'You were first on SWIFT. Be first on E&I automation too.'\n2. **Price:** <$50K — right-size for Sampath\n3. **Speed:** <30 days — match new leadership's fast priorities\n4. **Completeness:** Exceptions AND investigations + enhanced security\n5. **SaaS-native:** No on-prem infrastructure\n6. **Enhanced security:** Banking-grade security for SWIFT data",
+        "order": 5,
+        "created_at": "2026-05-18T11:15:00Z"
+      },
+      {
+        "id": "sec-6",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Cultural Context & Communication Guide",
+        "type": "cultural_context",
+        "content": "## Sri Lankan Banking Culture — Sampath Bank Specific\n\n- **Decision-making:** Hierarchical but fast at <$50K. New leadership may accelerate.\n- **Culture:** 'Shaping the way Sri Lankans bank' — innovation-minded. SWIFT pioneer.\n- **Formality:** 'Mr.' + last name. English for business.\n- **Relationships:** Important. Multiple meetings expected.\n\n### Sampath-Specific\n- SWIFT pioneer heritage — pride in being first\n- New CEO and COO — opportunity for fresh conversations\n- COO from operations — speaks operations language\n- Strong digital banking (Sampath Vishwa) — tech-forward\n- ~230 branches — mid-to-large scale\n\n### Do's\n- ✅ Reference SWIFT pioneer heritage — 'You were first on SWIFT'\n- ✅ Lead with enhanced security (cross-border data protection)\n- ✅ Appeal to new leadership's desire for quick wins\n- ✅ Highlight operations background of COO\n- ✅ Reference record profitability\n- ✅ Position as 'next step in SWIFT leadership'\n\n### Don'ts\n- ❌ Over-engineer the pitch — Sampath is nimble\n- ❌ Ignore the SWIFT pioneer narrative\n- ❌ Treat as a small bank — 230 branches is significant\n- ❌ Assume Pega-level budgets\n- ❌ Miss the new leadership opportunity",
+        "order": 6,
+        "created_at": "2026-05-18T11:15:00Z"
+      },
+      {
+        "id": "sec-7",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Outreach Strategy & Messaging",
+        "type": "outreach_strategy",
+        "content": "## Outreach Strategy\n\n**Channels:** Direct email to COO + CEO | Introduction via banking networks\n**Duration:** 3-4 weeks | **Touches:** 4 per persona\n\n### COO — R.K. Deepal de Silva (Champion)\n1. Email: 'From operations to COO — you know the investigation pain firsthand'\n2. SWIFT pioneer angle: 'You were first on SWIFT. Now lead on E&I automation.'\n3. Quick win: <$50K, <30 days, complete E&I\n4. ROI calculator: cost per investigation before vs. after\n\n### CEO — Sanjaya Gunawardana\n1. Email: 'New leadership, new priorities — E&I automation as a quick win'\n2. Business case: Record profits + SWIFT pioneer = invest in investigation capability\n3. Reference to SWIFT heritage\n4. Executive call\n\n### SDGM Corporate Banking — Amal Kirihena\n1. Trade finance investigation pain point\n2. SWIFT/ISO 20022 coverage\n3. Quick demo\n\n### SDGM IT\n1. Technical brief: Architecture, enhanced security, SWIFT integration\n2. 14-day pilot proposal",
+        "order": 7,
+        "created_at": "2026-05-18T11:15:00Z"
+      },
+      {
+        "id": "sec-8",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Hyper-Personalized Sequences",
+        "type": "personalized_sequences",
+        "content": "## Email Sequences\n\n### COO — R.K. Deepal de Silva\n\n**Email 1:**\nSubject: From operations to COO — you know the investigation pain firsthand\n\nDear Mr. de Silva,\n\nYou ran Operations and Branch Banking at Sampath. You know that SWIFT payment investigations are the hidden bottleneck — manual, slow, and growing 57% with your volumes.\n\nTracEI is a low-cost, complete E&I platform that automates 80% of investigations in under 30 days. Enhanced security built in for SWIFT data.\n\nSampath was one of the first Sri Lankan banks on SWIFT. Now lead on E&I automation too.\n\nI'd value 20 minutes to show you how it works.\n\nBest regards,\n[Sender]\n\n**Email 2 (Day 5):** SWIFT pioneer → E&I pioneer. The next step in Sampath's leadership.\n**Email 3 (Day 10):** ROI calculator: cost per investigation before vs. after TracEI\n**Email 4 (Day 15):** 14-day pilot proposal — operational quick win for new COO\n\n### CEO — Sanjaya Gunawardana\n\n**Email 1 (Day 7):**\nSubject: New leadership, new priorities — E&I automation as a quick win\n\nDear Mr. Gunawardana,\n\nCongratulations on your appointment as Sampath's 9th MD/CEO. New leadership brings new priorities — and quick operational wins.\n\nTracEI automates 80% of SWIFT payment investigations for <$50K in <30 days. Your COO, Mr. de Silva, knows the pain firsthand from running operations.\n\nSampath was a SWIFT pioneer. Now it's time to lead on E&I automation.\n\nBest regards,\n[Sender]",
+        "order": 8,
+        "created_at": "2026-05-18T11:15:00Z",
+        "section_type": "personalized_sequences"
+      },
+      {
+        "id": "sec-9",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Battle Cards & Objection Handling",
+        "type": "battle_cards",
+        "content": "## Objection Handling\n\n1. **\"We handle investigations manually.\"** → Manual doesn't scale at +57% growth. TracEI automates 80% for <$50K. Your volumes are outgrowing manual processes.\n\n2. **\"Pega Smart Investigate is the industry standard.\"** → Pega costs $200K+ and takes 6-12 months. For a SWIFT pioneer like Sampath, the right-size solution is <$50K and <30 days.\n\n3. **\"$50K is significant.\"** → Record profits of Rs. 46.7Bn PBT. <$50K is less than 0.1% of PBT. And each manual investigation costs $15-25 in staff time.\n\n4. **\"We need SWIFT and ISO 20022 support.\"** → TracEI supports MT/FIN, ISO 20022, CBPR+, gpi. As a SWIFT pioneer, you need both — and TracEI handles both.\n\n5. **\"Enhanced security — what does that mean?\"** → Banking-grade encryption, SOC 2, ISO 27001, SWIFT CSP aligned. Your CLO and CRO will approve.\n\n6. **\"New leadership, new priorities — is this the right time?\"** → Exactly the right time. New COO from operations wants quick wins. E&I automation is a visible operational improvement that saves money immediately.\n\n7. **\"Can we pilot it?\"** → 14-day free pilot with real Sampath investigation data. No commitment.\n\n8. **\"We're a SWIFT pioneer — we handle this ourselves.\"** → Being a pioneer means leading. Manual investigations aren't leading — they're legacy. Automate and lead again.",
+        "order": 9,
+        "created_at": "2026-05-18T11:15:00Z",
+        "section_type": "battle_cards"
+      },
+      {
+        "id": "sec-10",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Content Asset Strategy",
+        "type": "content_strategy",
+        "content": "## Content Assets\n\n**Awareness (Week 1):**\n1. SWIFT Pioneer → E&I Pioneer: The Next Step for Sri Lankan Banks — LinkedIn article\n2. Growing 57%? Your Investigation Capability Must Keep Up — Brief\n\n**Consideration (Week 1-2):**\n3. APAC Bank Reduces Investigation Time by 80% — Case study\n4. TracEI vs. Pega vs. Manual — Comparison brief\n5. Sampath-Specific ROI Calculator — Manual cost vs. TracEI\n\n**Decision (Week 2-3):**\n6. 14-Day Free Pilot Proposal — SOW document\n7. Enhanced Security & Compliance Pack — SOC 2, ISO 27001, SWIFT CSP\n8. New Leadership Quick Wins: E&I Automation as First 90 Days Achievement — Positioning brief",
+        "order": 10,
+        "created_at": "2026-05-18T11:15:00Z",
+        "section_type": "content_strategy"
+      },
+      {
+        "id": "sec-11",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Measurement Framework",
+        "type": "measurement_framework",
+        "content": "## KPIs & Success Criteria\n\n**Awareness:** COO meeting within 10 days | CEO engagement within 14 days\n**Engagement:** Pilot request within 21 days\n**Pipeline:** Close within 30 days | <$50K ARR entry\n\n**Week 1:** COO engaged, investigation pain confirmed\n**Week 2:** Technical evaluation, pilot scope\n**Week 3:** Pilot launched or contract signed\n**Week 4:** Close — $50K ARR\n\n**Expansion Revenue:**\n- ISO 20022 module: +$15-25K\n- Trade finance investigation workflows: +$10-20K\n- Compliance/AML module: +$10-15K\n- Total: $35-60K → $85-110K account value\n\n**Success Indicators:**\n- COO references operations background in conversation\n- CEO mentions SWIFT pioneer heritage\n- CLO clears compliance review quickly\n- No Pega evaluation launched\n- Quick procurement confirmed (<$50K = CEO authority)",
+        "order": 11,
+        "created_at": "2026-05-18T11:15:00Z",
+        "section_type": "measurement_framework"
+      },
+      {
+        "id": "sec-12",
+        "playbook_id": "pb_96c253f09cb74fe8",
+        "title": "Appendix",
+        "type": "appendix",
+        "content": "## Appendix\n\n### Sources\n| Source | Confidence | Date |\n|--------|-----------|------|\n| Daily FT — CEO appointment | HIGH | Sep 2025 |\n| Daily Mirror — COO appointment | HIGH | May 2025 |\n| Island — Financial results | HIGH | Feb 2025 |\n| Sunday Times — Financial performance | HIGH | Feb 2025 |\n| Sampath Bank Annual Report 2024 | HIGH | Feb 2025 |\n| Sampath Bank website — leadership | HIGH | 2024 |\n| RocketReach — management profiles | MEDIUM | 2025 |\n| Wikipedia — Sampath Bank | HIGH | 2025 |\n\n### Unverified Items [⚠️]\n- Chairman name (annual report reference but name not confirmed)\n- SDGM IT name — unknown\n- DGM International Banking name — unknown\n- CRO name — unknown\n- LinkedIn URLs for all contacts\n- Current E&I tooling — very likely manual\n- Pega deployment — very unlikely at Sampath's scale\n- Exact SWIFT transaction volumes\n\n### Key Distinctions\n- **Sampath Bank ≠ Sampath Bank (other entities)** — PABC is the specific banking corporation\n- **SWIFT pioneer** — one of first Sri Lankan banks on SWIFT network (pride point)\n- **New leadership** — CEO since Sep 2025, COO since Jul 2025 = opportunity for fresh conversations\n- **COO from operations** — personally understands E&I pain\n- **SWIFT code BSAMLKLX** — active cross-border operations\n\n### Research Methodology\nWeb research using Daily FT, Daily Mirror, Sunday Times, Island, Sampath Bank official website, CSE filings, and industry sources.",
+        "order": 12,
+        "created_at": "2026-05-18T11:15:00Z"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "c-1",
+        "name": "Sanjaya Gunawardana",
+        "title": "Managing Director / CEO",
+        "confidence": "high",
+        "source": "Web research — Daily FT, Daily Mirror Sep 2025",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_96c253f09cb74fe8"
+      },
+      {
+        "id": "c-2",
+        "name": "R.K. Deepal de Silva",
+        "title": "Chief Operating Officer (appointed Jul 2025)",
+        "confidence": "high",
+        "source": "Web research — Daily Mirror May 2025",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_96c253f09cb74fe8"
+      },
+      {
+        "id": "c-3",
+        "name": "[UNVERIFIED] Chairman",
+        "title": "Chairman of the Board",
+        "confidence": "medium",
+        "source": "Web research — Annual Report 2024 mentions Chairman",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_96c253f09cb74fe8"
+      },
+      {
+        "id": "c-4",
+        "name": "Amal Kirihena",
+        "title": "Senior Deputy General Manager - Corporate Banking",
+        "confidence": "high",
+        "source": "Web research — LinkedIn",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_96c253f09cb74fe8"
+      },
+      {
+        "id": "c-5",
+        "name": "Theja Silva",
+        "title": "Deputy General Manager - Chief Legal Officer",
+        "confidence": "high",
+        "source": "Web research — RocketReach",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_96c253f09cb74fe8"
+      },
+      {
+        "id": "c-6",
+        "name": "[UNVERIFIED] SDGM Information Technology",
+        "title": "Senior Deputy General Manager - IT / CIO",
+        "confidence": "medium",
+        "source": "Web inference — bank of this size has SDGM-IT",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_96c253f09cb74fe8"
+      },
+      {
+        "id": "c-7",
+        "name": "[UNVERIFIED] DGM International Banking / Trade Finance",
+        "title": "Deputy General Manager - International Banking",
+        "confidence": "medium",
+        "source": "Web inference — SWIFT and cross-border operations",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_96c253f09cb74fe8"
+      },
+      {
+        "id": "c-8",
+        "name": "[UNVERIFIED] Chief Risk Officer / DGM Risk",
+        "title": "Chief Risk Officer / DGM Risk Management",
+        "confidence": "medium",
+        "source": "Web inference — CBSL regulatory requirement",
+        "linkedin_url": "[UNVERIFIED]",
+        "verification_status": "confirmed",
+        "playbook_id": "pb_96c253f09cb74fe8"
+      }
+    ],
+    "quality_checks": [],
+    "id": "pb_96c253f09cb74fe8",
+    "created_at": "2026-05-18T11:07:32.055Z",
+    "updated_at": "2026-05-18T12:50:35.359Z",
+    "phase_started_at": "2026-05-18T11:10:19.478Z",
+    "openclaw_session_id": "2dc0e36f-5114-491a-8bae-fb43c95fa90a"
   }
 }
