@@ -8,9 +8,9 @@ const OPENCLAW_BIN = process.env.OPENCLAW_BIN ?? '/home/trinexis-dgx-spark/.open
 const OPENCLAW_STATE_DIR = process.env.OPENCLAW_STATE_DIR ?? '/home/trinexis-dgx-spark/.openclaw-abmsignal'
 const OPENCLAW_CONFIG_PATH = process.env.OPENCLAW_CONFIG_PATH ?? `${OPENCLAW_STATE_DIR}/openclaw.json`
 const OPENCLAW_GATEWAY_PORT = process.env.OPENCLAW_GATEWAY_PORT ?? '18790'
-// Use the general-purpose `main` agent — NOT `orchestrator`, which is wired to
+// Use the dedicated product-analyst agent — NOT `orchestrator`, which is wired to
 // the ABM pipeline soul and will attempt to run a playbook pipeline for any input.
-const URL_ANALYSIS_AGENT_ID = process.env.URL_ANALYSIS_AGENT_ID ?? 'main'
+const URL_ANALYSIS_AGENT_ID = process.env.URL_ANALYSIS_AGENT_ID ?? 'product-analyst'
 
 export interface ExtractedBrief {
   product_name: string
