@@ -510,7 +510,7 @@ export default function ProductBriefPage() {
               <Input
                 value={form.product_name}
                 onChange={(e) => set('product_name', e.target.value)}
-                placeholder="e.g. FinFlow AI"
+                placeholder="e.g. Nexara AI"
                 className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-10"
               />
             </div>

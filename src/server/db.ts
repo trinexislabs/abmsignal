@@ -1,5 +1,5 @@
 import { PrismaLibSql } from '@prisma/adapter-libsql'
-import { PrismaClient } from '../generated/prisma/client'
+import { PrismaClient } from '../generated/prisma'
 
 declare const globalThis: { prisma?: InstanceType<typeof PrismaClient> } & typeof global
 

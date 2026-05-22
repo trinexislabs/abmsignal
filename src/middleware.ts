@@ -1,10 +1,32 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import NextAuth from 'next-auth'
+import { authConfig } from '@/auth.config'
+import { NextResponse } from 'next/server'
 
-// Prototype mode: no auth middleware
-// TODO: Re-enable Supabase auth when backend is connected
-export async function middleware(request: NextRequest) {
+const { auth } = NextAuth(authConfig)
+
+const PROTECTED = ['/dashboard', '/playbook/new', '/playbook/', '/settings']
+const AUTH_PAGES = ['/auth/signin', '/auth/signup']
+
+export default auth((req) => {
+  const { nextUrl, auth: session } = req
+  const isLoggedIn = !!session?.user
+
+  const isProtected = PROTECTED.some((p) => nextUrl.pathname.startsWith(p))
+  const isAuthPage = AUTH_PAGES.some((p) => nextUrl.pathname.startsWith(p))
+
+  if (isProtected && !isLoggedIn) {
+    const callbackUrl = nextUrl.pathname + nextUrl.search
+    return NextResponse.redirect(
+      new URL(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl)
+    )
+  }
+
+  if (isAuthPage && isLoggedIn) {
+    return NextResponse.redirect(new URL('/dashboard', nextUrl))
+  }
+
   return NextResponse.next()
-}
+})
 
 export const config = {
   matcher: [

@@ -1,16 +1,26 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Zap, Menu, X } from 'lucide-react'
+import { Zap, Menu, X, LayoutDashboard } from 'lucide-react'
 import { useState } from 'react'
+import { useSession, signOut } from 'next-auth/react'
 
 export function Navbar() {
   const pathname = usePathname()
+  const router = useRouter()
   const isLanding = pathname === '/'
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { data: session, status } = useSession()
+  const isLoading = status === 'loading'
+  const isLoggedIn = !!session?.user
+
+  async function handleSignOut() {
+    await signOut({ redirect: false })
+    router.push('/')
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-background/80 backdrop-blur-xl">
@@ -35,25 +45,44 @@ export function Navbar() {
           )}
 
           <div className="flex items-center gap-3">
-            {isLanding ? (
-              <>
-                <Link href="/auth/signin">
-                  <Button variant="ghost" size="sm" className="hidden sm:flex text-muted-foreground hover:text-white">
-                    Sign in
+            {!isLoading && (
+              isLoggedIn ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button size="sm" variant="ghost" className="hidden sm:flex text-muted-foreground hover:text-white gap-1.5">
+                      <LayoutDashboard className="w-3.5 h-3.5" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button
+                    size="sm"
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-white border border-white/10 hover:border-white/20"
+                  >
+                    Sign out
                   </Button>
-                </Link>
-                <Link href="/auth/signup">
+                </>
+              ) : isLanding ? (
+                <>
+                  <Link href="/auth/signin">
+                    <Button variant="ghost" size="sm" className="hidden sm:flex text-muted-foreground hover:text-white">
+                      Sign in
+                    </Button>
+                  </Link>
+                  <Link href="/auth/signup">
+                    <Button size="sm" className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-medium">
+                      Start free trial
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <Link href="/dashboard">
                   <Button size="sm" className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-medium">
-                    Start free trial
+                    Dashboard
                   </Button>
                 </Link>
-              </>
-            ) : (
-              <Link href="/dashboard">
-                <Button size="sm" className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-medium">
-                  Dashboard
-                </Button>
-              </Link>
+              )
             )}
             <button
               className="md:hidden p-1.5 text-muted-foreground hover:text-white"
@@ -65,14 +94,29 @@ export function Navbar() {
         </div>
       </div>
 
-      {mobileOpen && isLanding && (
+      {mobileOpen && (
         <div className="md:hidden border-t border-white/[0.06] bg-background/95 px-4 py-4 flex flex-col gap-4">
-          <a href="#features" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Features</a>
-          <a href="#how-it-works" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>How It Works</a>
-          <a href="#pricing" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Pricing</a>
-          <Link href="/auth/signin" onClick={() => setMobileOpen(false)}>
-            <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">Sign in</Button>
-          </Link>
+          {isLanding && (
+            <>
+              <a href="#features" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Features</a>
+              <a href="#how-it-works" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>How It Works</a>
+              <a href="#pricing" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Pricing</a>
+            </>
+          )}
+          {isLoggedIn ? (
+            <>
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">Dashboard</Button>
+              </Link>
+              <Button variant="ghost" size="sm" className="w-full justify-start text-red-400" onClick={handleSignOut}>
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Link href="/auth/signin" onClick={() => setMobileOpen(false)}>
+              <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">Sign in</Button>
+            </Link>
+          )}
         </div>
       )}
     </header>

@@ -84,58 +84,72 @@ const steps = [
 
 const pricingPlans = [
   {
-    name: 'Starter',
-    price: '$299',
-    period: '/mo',
-    playbooks: '2 playbooks/month',
-    features: ['Full playbook generation', 'PDF export', '1 user seat', 'Email support'],
+    name: 'One Off',
+    price: '$49',
+    period: 'one-time',
+    playbooks: '1 playbook',
+    badge: null,
+    features: [
+      'Full playbook generation',
+      'PDF export',
+      'Email support',
+    ],
     highlight: false,
-    cta: 'Start free trial',
+    oneTime: true,
+    cta: 'Buy now',
+    ctaHref: '/auth/signup?plan=one_off',
   },
   {
     name: 'Growth',
-    price: '$799',
+    price: '$299',
     period: '/mo',
-    playbooks: '5 playbooks/month',
+    playbooks: '10 playbooks/month',
+    badge: 'Most Popular',
     features: [
-      'Everything in Starter',
+      'Everything in One Off',
+      '10 playbooks / month',
+      '1 user seat',
       'Contact verification gate',
-      'CRM sync',
-      '3 user seats',
-      'Priority support',
     ],
     highlight: true,
-    cta: 'Start free trial',
+    oneTime: false,
+    cta: 'Get started',
+    ctaHref: '/auth/signup?plan=growth',
   },
   {
     name: 'Professional',
-    price: '$1,999',
+    price: '$799',
     period: '/mo',
-    playbooks: '15 playbooks/month',
+    playbooks: '30 playbooks/month',
+    badge: null,
     features: [
       'Everything in Growth',
-      'Human SME review',
-      'Email sequence export',
-      '10 user seats',
-      'Dedicated CSM',
+      '30 playbooks / month',
+      '3 user seats',
     ],
     highlight: false,
-    cta: 'Start free trial',
+    oneTime: false,
+    cta: 'Get started',
+    ctaHref: '/auth/signup?plan=professional',
   },
   {
     name: 'Agency',
-    price: '$4,999',
+    price: '$1,999',
     period: '/mo',
     playbooks: 'Unlimited playbooks',
+    badge: null,
     features: [
       'Everything in Professional',
-      'White-label branding',
+      'Human SME review on demand',
+      '10 user seats',
       'API access',
-      'Custom cultural rules',
-      'Unlimited users',
+      'White-label branding',
+      'Human-reinforced research loops',
     ],
     highlight: false,
+    oneTime: false,
     cta: 'Contact sales',
+    ctaHref: '/auth/signup?plan=agency',
   },
 ]
 
@@ -239,7 +253,7 @@ export default function LandingPage() {
                     <div>
                       <div className="text-xs text-[#a1a1aa] mb-1">Target Account</div>
                       <div className="font-heading font-semibold text-white text-lg">
-                        Belfius Bank — Brussels, BE
+                        Meridian Financial Group — Zurich, CH
                       </div>
                       <div className="text-xs text-[#a1a1aa] mt-0.5">
                         Financial Services · 3,800 employees · €1.2B revenue
@@ -424,7 +438,7 @@ export default function LandingPage() {
                   EXAMPLE PLAYBOOK GENERATED IN 1H 43MIN
                 </div>
                 <h4 className="font-heading font-semibold text-white text-lg">
-                  Belfius Bank — Digital Transformation Initiative
+                  Meridian Financial Group — Digital Transformation Initiative
                 </h4>
                 <p className="text-sm text-[#a1a1aa] mt-1">
                   14 verified contacts · 6 persona outreach sequences · Dutch + French cultural
@@ -456,35 +470,52 @@ export default function LandingPage() {
               Simple, transparent pricing
             </h2>
             <p className="text-[#a1a1aa] text-lg max-w-2xl mx-auto">
-              No per-seat surprises. Pay for playbooks, not headcount. Every plan includes the
-              full agent swarm and quality gate.
+              Start with a single playbook, no commitment. Scale up when you&apos;re ready. Every
+              tier runs the full agent swarm and 16-point quality gate.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
             {pricingPlans.map((plan) => (
               <div
                 key={plan.name}
                 className={`relative p-6 rounded-2xl border flex flex-col ${
                   plan.highlight
                     ? 'bg-[#1e3a5f]/20 border-[#339af0]/40 glow-blue'
-                    : 'bg-[#141419] border-white/[0.06]'
+                    : plan.oneTime
+                      ? 'bg-[#141419] border-white/[0.08]'
+                      : 'bg-[#141419] border-white/[0.06]'
                 }`}
               >
-                {plan.highlight && (
+                {plan.badge && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-[#339af0] text-white border-0 px-3 text-xs font-semibold">
-                      Most Popular
+                    <Badge className="bg-[#339af0] text-white border-0 px-3 text-xs font-semibold whitespace-nowrap">
+                      {plan.badge}
                     </Badge>
                   </div>
                 )}
 
                 <div className="mb-6">
-                  <div className="font-heading font-bold text-white text-lg mb-1">{plan.name}</div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="font-heading font-bold text-white text-lg">{plan.name}</div>
+                    {plan.oneTime && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#339af0]/10 text-[#339af0] border border-[#339af0]/20">
+                        No subscription
+                      </span>
+                    )}
+                  </div>
+
                   <div className="flex items-end gap-1 mb-2">
                     <span className="font-heading text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="text-[#a1a1aa] text-sm mb-1">{plan.period}</span>
+                    <span
+                      className={`text-sm mb-1 ${
+                        plan.oneTime ? 'text-[#339af0]/70 font-medium' : 'text-[#a1a1aa]'
+                      }`}
+                    >
+                      {plan.period}
+                    </span>
                   </div>
+
                   <div
                     className={`text-xs font-medium px-2 py-1 rounded-md inline-block ${
                       plan.highlight
@@ -509,12 +540,14 @@ export default function LandingPage() {
                   ))}
                 </ul>
 
-                <Link href={plan.name === 'Agency' ? '/auth/signup?plan=agency' : '/auth/signup'}>
+                <Link href={plan.ctaHref}>
                   <Button
                     className={`w-full ${
                       plan.highlight
                         ? 'bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold'
-                        : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
+                        : plan.oneTime
+                          ? 'bg-white/8 hover:bg-white/12 text-white border border-[#339af0]/20 hover:border-[#339af0]/40'
+                          : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
                     }`}
                   >
                     {plan.cta}
@@ -526,7 +559,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-center text-sm text-[#a1a1aa] mt-8">
-            All plans include a 14-day free trial. No credit card required to start.
+            Monthly plans can be cancelled anytime. One Off purchases never expire.
           </p>
         </div>
       </section>

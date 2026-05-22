@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -18,8 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}
         style={{ background: '#0a0a0f', color: '#ffffff', minHeight: '100vh' }}
+        suppressHydrationWarning
       >
-        {children}
+        <SessionProvider>
+          {children}
+        </SessionProvider>
         <Toaster theme="dark" position="top-right" />
       </body>
     </html>
