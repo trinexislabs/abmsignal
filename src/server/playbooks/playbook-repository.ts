@@ -91,7 +91,7 @@ export const playbookRepository = {
     const pb = await prisma.playbook.create({
       data: {
         id,
-        userId: input.userId ?? 'usr_demo',
+        userId: input.userId ?? null,
         productName: input.productName,
         productUrl: input.productUrl ?? null,
         productBrief: JSON.stringify(input.productBrief),
@@ -120,7 +120,7 @@ export const playbookRepository = {
     if (!pb) return null
     return {
       id: pb.id,
-      user_id: pb.userId ?? 'usr_demo',
+      user_id: pb.userId ?? '',
       product_name: pb.productName,
       product_url: pb.productUrl ?? undefined,
       product_brief: parseJson(pb.productBrief, {}),
@@ -151,7 +151,39 @@ export const playbookRepository = {
     })
     return playbooks.map(pb => ({
       id: pb.id,
-      user_id: pb.userId ?? 'usr_demo',
+      user_id: pb.userId ?? '',
+      product_name: pb.productName,
+      product_url: pb.productUrl ?? undefined,
+      product_brief: parseJson(pb.productBrief, {}),
+      target_company: pb.targetCompany,
+      target_url: pb.targetUrl ?? undefined,
+      industry: pb.industry,
+      geography: pb.geography,
+      priority_tier: pb.priorityTier,
+      status: mapStatus(pb.status),
+      progress_pct: pb.progressPct,
+      agent_status: parseJson<AgentStatus[]>(pb.agentStatus, []),
+      failed_reason: pb.failedReason ?? undefined,
+      openclaw_session_id: pb.openclawSessionId ?? undefined,
+      sections: pb.sections.map(toApiSection),
+      contacts: pb.contacts.map(toApiContact),
+      created_at: pb.createdAt.toISOString(),
+      updated_at: pb.updatedAt.toISOString(),
+    }))
+  },
+
+  async listByUser(userId: string): Promise<ApiPlaybook[]> {
+    const playbooks = await prisma.playbook.findMany({
+      where: { userId },
+      include: {
+        sections: { include: { sources: true }, orderBy: { orderIndex: 'asc' } },
+        contacts: { orderBy: { createdAt: 'asc' } },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+    return playbooks.map(pb => ({
+      id: pb.id,
+      user_id: pb.userId ?? '',
       product_name: pb.productName,
       product_url: pb.productUrl ?? undefined,
       product_brief: parseJson(pb.productBrief, {}),

@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/server/db'
 
+const VALID_PLANS = ['one_off', 'growth'] as const
+
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json()
+    const { name, email, password, plan } = await request.json()
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Name, email, and password are required' }, { status: 400 })
@@ -19,6 +21,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
     }
 
+    const chosenPlan = VALID_PLANS.includes(plan) ? plan : 'free'
     const hashed = await bcrypt.hash(password, 12)
 
     const user = await prisma.user.create({
@@ -28,6 +31,9 @@ export async function POST(request: Request) {
         password: hashed,
         credits: {
           create: { amount: 1, reason: 'trial_grant' },
+        },
+        subscription: {
+          create: { plan: chosenPlan, status: 'active' },
         },
       },
     })

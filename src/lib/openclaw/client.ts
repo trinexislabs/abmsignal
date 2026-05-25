@@ -254,6 +254,156 @@ export async function healthCheck(): Promise<boolean> {
   }
 }
 
+// ========== Task runner (used by workers) ==========
+
+const AGENT_TIMEOUT_MS = parseInt(process.env.AGENT_TIMEOUT_MS ?? '600000', 10)
+
+// Path to the openclaw binary and its state directory.
+// Override via OPENCLAW_BIN / OPENCLAW_STATE_DIR env vars if the install location differs.
+const OPENCLAW_BIN =
+  process.env.OPENCLAW_BIN ?? '/home/trinexis-dgx-spark/.openclaw/bin/openclaw'
+const OPENCLAW_STATE_DIR =
+  process.env.OPENCLAW_STATE_DIR ?? '/home/trinexis-dgx-spark/.openclaw-abmsignal'
+const OPENCLAW_CONFIG_PATH =
+  process.env.OPENCLAW_CONFIG_PATH ?? `${OPENCLAW_STATE_DIR}/openclaw.json`
+
+/**
+ * Run the orchestrator agent as an embedded local subprocess (--local flag),
+ * bypassing the gateway session-routing layer which requires an active session.
+ *
+ * Returns the agent's text reply as rawOutput, or an error.
+ * The flowId field is a synthetic ID so callers don't need branching.
+ */
+export async function runAgentTask(
+  prompt: string,
+  runId: string,
+): Promise<{ ok: true; rawOutput: string; flowId: string } | { ok: false; error: string }> {
+  const { execFile } = await import('child_process')
+  const { promisify } = await import('util')
+  const execFileAsync = promisify(execFile)
+
+  const timeoutSeconds = Math.floor(AGENT_TIMEOUT_MS / 1000)
+  const syntheticFlowId = `local-${runId}`
+
+  let stdout = ''
+  let stderr = ''
+  try {
+    const result = await execFileAsync(
+      OPENCLAW_BIN,
+      [
+        'agent',
+        '--agent', 'orchestrator',
+        '--local',
+        '--message', prompt,
+        '--json',
+        '--timeout', String(timeoutSeconds),
+      ],
+      {
+        env: {
+          ...process.env,
+          OPENCLAW_STATE_DIR,
+          OPENCLAW_CONFIG_PATH,
+        },
+        maxBuffer: 50 * 1024 * 1024, // 50 MB — playbook output can be large
+        timeout: AGENT_TIMEOUT_MS + 30_000, // process-level kill timeout with 30s buffer
+      },
+    )
+    stdout = result.stdout
+    stderr = result.stderr
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    // Preserve any partial output captured before the failure for diagnostics
+    const e = err as { stdout?: string; stderr?: string }
+    if (e.stdout) stdout = e.stdout
+    if (e.stderr) stderr = e.stderr
+    if (msg.includes('ETIMEDOUT') || msg.includes('timed out')) {
+      return { ok: false, error: `Agent task timed out after ${Math.round(AGENT_TIMEOUT_MS / 60000)}min` }
+    }
+    // Non-timeout subprocess failure with no recoverable output
+    if (!stdout && !stderr) {
+      return { ok: false, error: `Agent subprocess failed: ${msg.slice(0, 300)}` }
+    }
+    // Fall through — try to extract a payload from whatever was captured
+  }
+
+  // openclaw --local mode writes the JSON envelope to STDERR (after log lines),
+  // while gateway mode writes it to STDOUT. Support both.
+  // Envelope shapes:
+  //   gateway:  { runId, status, result: { payloads: [{ text }], meta } }
+  //   --local:  { payloads: [{ text, mediaUrl }], meta }
+  const rawOutput = extractAgentText(stdout) ?? extractAgentText(stderr)
+
+  if (!rawOutput || !rawOutput.trim()) {
+    const tail = (stderr || stdout || '').slice(-300).replace(/\s+/g, ' ').trim()
+    return {
+      ok: false,
+      error: `Agent completed but returned no text payload${tail ? ` — tail: ${tail}` : ''}`,
+    }
+  }
+
+  return { ok: true, rawOutput, flowId: syntheticFlowId }
+}
+
+/**
+ * Extract the agent's text reply from a mixed stream that may contain log
+ * lines followed by a pretty-printed JSON envelope at the end.
+ *
+ * Tries every candidate `{` position (from the latest backward) and forward-
+ * parses until one yields a balanced JSON object containing a payload.
+ */
+function extractAgentText(stream: string): string | null {
+  if (!stream) return null
+
+  // Collect candidate start indices: every '{' that appears at the start of a
+  // line (after a newline or at the very beginning). The pretty-printed top-
+  // level envelope always satisfies this.
+  const candidates: number[] = []
+  for (let i = 0; i < stream.length; i++) {
+    if (stream[i] === '{' && (i === 0 || stream[i - 1] === '\n')) {
+      candidates.push(i)
+    }
+  }
+
+  // Try the latest candidates first
+  for (let k = candidates.length - 1; k >= 0; k--) {
+    const start = candidates[k]
+    const end = findMatchingBrace(stream, start)
+    if (end === -1) continue
+    try {
+      const envelope = JSON.parse(stream.slice(start, end + 1)) as {
+        result?: { payloads?: Array<{ text?: string }> }
+        payloads?: Array<{ text?: string }>
+      }
+      const text = envelope.result?.payloads?.[0]?.text ?? envelope.payloads?.[0]?.text
+      if (typeof text === 'string') return text
+    } catch {
+      // Try next candidate
+    }
+  }
+  return null
+}
+
+/** Forward-scan from a `{` to its matching `}`, respecting string literals. */
+function findMatchingBrace(s: string, start: number): number {
+  if (s[start] !== '{') return -1
+  let depth = 0
+  let inString = false
+  let escape = false
+  for (let i = start; i < s.length; i++) {
+    const c = s[i]
+    if (escape) { escape = false; continue }
+    if (c === '\\') { escape = true; continue }
+    if (c === '"') { inString = !inString; continue }
+    if (inString) continue
+    if (c === '{') depth++
+    else if (c === '}') {
+      depth--
+      if (depth === 0) return i
+    }
+  }
+  return -1
+}
+
 // ========== Legacy hooks API (fallback) ==========
 
 /**

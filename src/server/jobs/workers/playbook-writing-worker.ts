@@ -1,6 +1,7 @@
 import { playbookRepository } from '../../playbooks/playbook-repository'
 import { runRepository } from '../../runs/run-repository'
-import { openclawAdapter } from '../../agent/openclaw-adapter'
+import { runAgentTask } from '@/lib/openclaw/client'
+import { parseAgentOutput } from '../../agent/agent-output-schema'
 import { buildWritingPromptBatch, WRITING_BATCH_1_KEYS, WRITING_BATCH_2_KEYS } from '../../agent/agent-prompts'
 import type { AgentStatus } from '@/types'
 
@@ -34,13 +35,11 @@ export async function runWritingWorker(runId: string): Promise<void> {
     ? (brief.value_propositions as string[])
     : [String(brief.value_propositions ?? '')]
 
-  // Load approved contacts (confirmed or not removed)
   const allContacts = playbook.contacts
   const approvedContacts = allContacts.filter(
     c => c.verification_status === 'confirmed' || c.verification_status === 'needs_review',
   )
   if (approvedContacts.length === 0) {
-    // Fall back to all non-removed contacts if none explicitly confirmed
     const fallback = allContacts.filter(c => c.verification_status !== 'removed')
     approvedContacts.push(...fallback)
   }
@@ -78,23 +77,36 @@ export async function runWritingWorker(runId: string): Promise<void> {
   ])
 
   const prompt1 = buildWritingPromptBatch(writingCtx, WRITING_BATCH_1_KEYS, 1)
-  const result1 = await openclawAdapter.runWriting(prompt1, runId)
-  await runRepository.saveRawOutput(runId, result1.rawOutput)
+  const result1 = await runAgentTask(prompt1, `${runId}-batch1`)
+
+  await runRepository.saveRawOutput(runId, result1.ok ? result1.rawOutput : result1.error)
+  if (result1.ok) {
+    await playbookRepository.setOpenclawSession(playbookId, result1.flowId)
+  }
 
   if (!result1.ok) {
-    await runRepository.markFailed(runId, result1.error, result1.rawOutput)
+    await runRepository.markFailed(runId, result1.error)
     await playbookRepository.setFailed(playbookId, result1.error)
     await playbookRepository.logEvent(
-      playbookId, 'run.failed', `Writing run (batch 1) failed: ${result1.error}`,
-      { logPath: result1.logPath }, runId,
+      playbookId, 'run.failed', `Writing run (batch 1) failed: ${result1.error}`, {}, runId,
+    )
+    return
+  }
+
+  const parsed1 = parseAgentOutput(result1.rawOutput, 'writing')
+  if (!parsed1.ok) {
+    await runRepository.markFailed(runId, parsed1.error, result1.rawOutput)
+    await playbookRepository.setFailed(playbookId, parsed1.error)
+    await playbookRepository.logEvent(
+      playbookId, 'run.failed', `Writing batch 1 parse failed: ${parsed1.error}`, {}, runId,
     )
     return
   }
 
   await playbookRepository.logEvent(
     playbookId, 'sections.batch1.generated',
-    `${result1.data.sections.length} sections generated (batch 1)`,
-    { count: result1.data.sections.length }, runId,
+    `${parsed1.data.sections.length} sections generated (batch 1)`,
+    { count: parsed1.data.sections.length }, runId,
   )
 
   // ── Batch 2: sections 10–18 (outreach + execution) ────────────────────────
@@ -106,42 +118,39 @@ export async function runWritingWorker(runId: string): Promise<void> {
   ])
 
   const prompt2 = buildWritingPromptBatch(writingCtx, WRITING_BATCH_2_KEYS, 2)
-  const result2 = await openclawAdapter.runWriting(prompt2, runId)
-  await runRepository.saveRawOutput(runId, result2.rawOutput)
+  const result2 = await runAgentTask(prompt2, `${runId}-batch2`)
+
+  await runRepository.saveRawOutput(runId, result2.ok ? result2.rawOutput : result2.error)
 
   if (!result2.ok) {
-    // Batch 2 failed — save batch 1 sections and mark partial completion rather than losing everything
+    // Save batch 1 sections to avoid losing work, mark partial failure
     await playbookRepository.logEvent(
-      playbookId, 'run.partial', `Writing run (batch 2) failed: ${result2.error} — saving batch 1 sections`,
-      { logPath: result2.logPath }, runId,
+      playbookId, 'run.partial', `Writing batch 2 failed: ${result2.error} — saving batch 1 sections`, {}, runId,
     )
-    await playbookRepository.replaceSections(
-      playbookId,
-      result1.data.sections.map(s => ({
-        sectionKey: s.section_key,
-        title: s.title,
-        contentMarkdown: s.content_markdown,
-        orderIndex: s.order_index,
-        sources: s.sources.map(src => ({
-          url: src.url, title: src.title, publisher: src.publisher,
-          confidence: src.confidence, note: src.note, claim: src.claim,
-        })),
-      })),
-    )
-    await runRepository.markFailed(runId, result2.error, result2.rawOutput)
+    await playbookRepository.replaceSections(playbookId, mapSections(parsed1.data.sections))
+    await runRepository.markFailed(runId, result2.error)
     await playbookRepository.setFailed(playbookId, `Batch 2 failed: ${result2.error}`)
+    return
+  }
+
+  const parsed2 = parseAgentOutput(result2.rawOutput, 'writing')
+  if (!parsed2.ok) {
+    await playbookRepository.logEvent(
+      playbookId, 'run.partial', `Writing batch 2 parse failed: ${parsed2.error} — saving batch 1 sections`, {}, runId,
+    )
+    await playbookRepository.replaceSections(playbookId, mapSections(parsed1.data.sections))
+    await runRepository.markFailed(runId, parsed2.error, result2.rawOutput)
+    await playbookRepository.setFailed(playbookId, `Batch 2 parse failed: ${parsed2.error}`)
     return
   }
 
   await playbookRepository.logEvent(
     playbookId, 'sections.batch2.generated',
-    `${result2.data.sections.length} sections generated (batch 2)`,
-    { count: result2.data.sections.length }, runId,
+    `${parsed2.data.sections.length} sections generated (batch 2)`,
+    { count: parsed2.data.sections.length }, runId,
   )
 
-  // ── Merge both batches ─────────────────────────────────────────────────────
-
-  // Reviewing phase — update status
+  // ── Reviewing + merge ──────────────────────────────────────────────────────
   await playbookRepository.setStatus(playbookId, 'reviewing', 90, [
     { agent: 'orchestrator', task: 'Reviewing generated content', status: 'running' },
     { agent: 'researcher', task: 'Account research complete', status: 'complete' },
@@ -149,44 +158,49 @@ export async function runWritingWorker(runId: string): Promise<void> {
     { agent: 'reviewer', task: 'Quality review in progress', status: 'running' },
   ])
 
-  const allSections = [...result1.data.sections, ...result2.data.sections]
+  const allSections = [...parsed1.data.sections, ...parsed2.data.sections]
 
   await playbookRepository.logEvent(
     playbookId, 'sections.generated',
     `${allSections.length} sections generated (batches 1+2)`, { count: allSections.length }, runId,
   )
 
-  // Persist sections and their sources
-  await playbookRepository.replaceSections(
-    playbookId,
-    allSections.map(s => ({
-      sectionKey: s.section_key,
-      title: s.title,
-      contentMarkdown: s.content_markdown,
-      orderIndex: s.order_index,
-      sources: s.sources.map(src => ({
-        url: src.url,
-        title: src.title,
-        publisher: src.publisher,
-        confidence: src.confidence,
-        note: src.note,
-        claim: src.claim,
-      })),
-    })),
-  )
+  await playbookRepository.replaceSections(playbookId, mapSections(allSections))
 
   await runRepository.markSucceeded(runId)
   await playbookRepository.setComplete(playbookId)
 
-  await playbookRepository.logEvent(
-    playbookId, 'playbook.complete', 'Playbook generation complete', {}, runId,
-  )
+  await playbookRepository.logEvent(playbookId, 'playbook.complete', 'Playbook generation complete', {}, runId)
 
-  // Final status update
   await playbookRepository.setStatus(playbookId, 'complete', 100, [
     { agent: 'orchestrator', task: 'Playbook complete', status: 'complete' },
     { agent: 'researcher', task: 'Account research complete', status: 'complete' },
     { agent: 'writer', task: 'All 18 sections generated', status: 'complete' },
     { agent: 'reviewer', task: 'Quality review complete', status: 'complete' },
   ])
+}
+
+type RawSection = {
+  section_key: string
+  title: string
+  content_markdown: string
+  order_index: number
+  sources: { url: string; title?: string; publisher?: string; confidence?: string; note?: string; claim?: string }[]
+}
+
+function mapSections(sections: RawSection[]) {
+  return sections.map(s => ({
+    sectionKey: s.section_key,
+    title: s.title,
+    contentMarkdown: s.content_markdown,
+    orderIndex: s.order_index,
+    sources: s.sources.map(src => ({
+      url: src.url,
+      title: src.title,
+      publisher: src.publisher,
+      confidence: src.confidence,
+      note: src.note,
+      claim: src.claim,
+    })),
+  }))
 }

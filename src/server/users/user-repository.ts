@@ -42,3 +42,15 @@ export async function getUserCreditBalance(userId: string): Promise<number> {
   })
   return result._sum.amount ?? 0
 }
+
+export async function getUserSubscription(userId: string) {
+  return prisma.userSubscription.findUnique({ where: { userId } })
+}
+
+export async function upsertUserPlan(userId: string, plan: string) {
+  return prisma.userSubscription.upsert({
+    where: { userId },
+    update: { plan, status: 'active', updatedAt: new Date() },
+    create: { userId, plan, status: 'active' },
+  })
+}

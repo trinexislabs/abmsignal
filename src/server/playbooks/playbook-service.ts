@@ -5,6 +5,44 @@ import { runWritingWorker } from '../jobs/workers/playbook-writing-worker'
 import type { ApiContact, ApiPlaybook, ApiStatus, CreatePlaybookInput } from './playbook-types'
 import type { PlaybookRun } from '../runs/run-types'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _queue: any = null
+let _queueChecked = false
+
+async function getQueue() {
+  if (_queueChecked) return _queue
+  try {
+    const { playbookQueue } = await import('../jobs/queue')
+    // Suppress unhandled error events from ioredis when Redis is unreachable
+    playbookQueue.on('error', () => {})
+    // Fail fast: if Redis doesn't respond within 5s, use in-process fallback
+    await Promise.race([
+      playbookQueue.getJobCounts(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), 5000)),
+    ])
+    _queue = playbookQueue
+  } catch {
+    _queue = null
+  }
+  _queueChecked = true
+  return _queue
+}
+
+async function enqueueOrFallback(
+  type: 'research' | 'writing',
+  runId: string,
+  playbookId: string,
+  fallback: () => void,
+) {
+  const queue = await getQueue()
+  if (queue) {
+    await queue.add(`${type}-${runId}`, { type, runId, playbookId })
+  } else {
+    console.warn(`[playbook-service] Redis unavailable — running ${type} in-process for ${playbookId}`)
+    fallback()
+  }
+}
+
 export const playbookService = {
   async create(input: CreatePlaybookInput): Promise<ApiPlaybook> {
     const pb = await playbookRepository.create(input)
@@ -23,15 +61,28 @@ export const playbookService = {
     return playbookRepository.listAll()
   },
 
+  async listByUser(userId: string): Promise<ApiPlaybook[]> {
+    return playbookRepository.listByUser(userId)
+  },
+
   async getStatus(id: string): Promise<ApiStatus | null> {
     return playbookRepository.getStatus(id)
   },
 
   async startGeneration(playbookId: string): Promise<{ runId: string; alreadyActive: boolean }> {
-    // Check if there is already an active run
+    // Check if there is already an active run — but cancel stale queued runs that were
+    // never picked up (worker wasn't running / Redis was down).
     const active = await runRepository.findActiveForPlaybook(playbookId)
     if (active) {
-      return { runId: active.id, alreadyActive: true }
+      const ageMs = Date.now() - new Date(active.createdAt).getTime()
+      const STALE_AFTER_MS = 5 * 60 * 1000 // 5 minutes
+      if (active.status === 'queued' && ageMs > STALE_AFTER_MS) {
+        // Run was never picked up — cancel it so we can start fresh
+        await runRepository.markFailed(active.id, 'Run was never picked up (worker unavailable)')
+        await playbookRepository.logEvent(playbookId, 'run.stale_cancelled', 'Stale queued run cancelled; restarting', { runId: active.id })
+      } else {
+        return { runId: active.id, alreadyActive: true }
+      }
     }
 
     // Create a new research run
@@ -45,15 +96,16 @@ export const playbookService = {
 
     await playbookRepository.logEvent(playbookId, 'generation.queued', 'Generation queued', { runId: run.id })
 
-    // Fire and forget — run in background without blocking the HTTP response
-    void runResearchWorker(run.id).catch(async (err: Error) => {
-      console.error(`[playbook-service] Research worker crashed for run ${run.id}:`, err.message)
-      try {
-        await runRepository.markFailed(run.id, err.message)
-        await playbookRepository.setFailed(playbookId, err.message)
-      } catch (inner) {
-        console.error('[playbook-service] Failed to mark crash:', inner)
-      }
+    await enqueueOrFallback('research', run.id, playbookId, () => {
+      void runResearchWorker(run.id).catch(async (err: Error) => {
+        console.error(`[playbook-service] Research worker crashed for run ${run.id}:`, err.message)
+        try {
+          await runRepository.markFailed(run.id, err.message)
+          await playbookRepository.setFailed(playbookId, err.message)
+        } catch (inner) {
+          console.error('[playbook-service] Failed to mark crash:', inner)
+        }
+      })
     })
 
     return { runId: run.id, alreadyActive: false }
@@ -84,15 +136,16 @@ export const playbookService = {
       playbookId, 'writing.queued', 'Writing phase queued', { runId: run.id },
     )
 
-    // Fire and forget
-    void runWritingWorker(run.id).catch(async (err: Error) => {
-      console.error(`[playbook-service] Writing worker crashed for run ${run.id}:`, err.message)
-      try {
-        await runRepository.markFailed(run.id, err.message)
-        await playbookRepository.setFailed(playbookId, err.message)
-      } catch (inner) {
-        console.error('[playbook-service] Failed to mark crash:', inner)
-      }
+    await enqueueOrFallback('writing', run.id, playbookId, () => {
+      void runWritingWorker(run.id).catch(async (err: Error) => {
+        console.error(`[playbook-service] Writing worker crashed for run ${run.id}:`, err.message)
+        try {
+          await runRepository.markFailed(run.id, err.message)
+          await playbookRepository.setFailed(playbookId, err.message)
+        } catch (inner) {
+          console.error('[playbook-service] Failed to mark crash:', inner)
+        }
+      })
     })
 
     return { runId: run.id }

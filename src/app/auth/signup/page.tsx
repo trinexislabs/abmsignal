@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { toast } from 'sonner'
-import { Zap, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react'
+import { Zap, Mail, Lock, User, ArrowRight, Loader2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ONE_OFF_PRICE_USD, SUBSCRIPTION_PLANS } from '@/lib/pricing'
+import { ONE_OFF_PRICE_USD } from '@/lib/pricing'
 
 function GoogleIcon() {
   return (
@@ -22,23 +22,90 @@ function GoogleIcon() {
   )
 }
 
-const ALL_PLANS = [
-  { id: 'one_off', name: 'One Off', price: `$${ONE_OFF_PRICE_USD}`, sub: 'One-time · no subscription', highlight: false },
-  ...SUBSCRIPTION_PLANS.map((p) => ({
-    id: p.id,
-    name: p.name,
-    price: `$${p.priceMonthly}/mo`,
-    sub: `${p.playbooksPerMonth} playbooks/mo`,
-    highlight: p.highlight,
-  })),
+const PLAN_OPTIONS = [
+  {
+    id: 'one_off',
+    name: 'One Off',
+    price: `$${ONE_OFF_PRICE_USD}`,
+    period: 'one-time',
+    sub: 'Per playbook · no subscription',
+    highlight: false,
+    features: ['Full playbook generation', 'PDF export', 'Email support'],
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: '$299',
+    period: '/mo',
+    sub: '10 playbooks / month',
+    highlight: true,
+    features: ['Everything in One Off', '10 playbooks / month', 'Full dashboard & history'],
+  },
 ]
 
-export default function SignUpPage() {
+function PlanCard({
+  plan,
+  selected,
+  onSelect,
+}: {
+  plan: (typeof PLAN_OPTIONS)[number]
+  selected: boolean
+  onSelect: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`relative p-4 rounded-xl border text-left transition-all w-full ${
+        selected
+          ? 'border-[#339af0]/60 bg-[#1e3a5f]/30 shadow-[0_0_12px_rgba(51,154,240,0.15)]'
+          : 'border-white/[0.08] bg-[#0d0d15] hover:border-white/20'
+      }`}
+    >
+      {plan.highlight && (
+        <span className="absolute -top-2.5 left-3 text-[9px] font-bold bg-[#339af0] text-white px-2 py-0.5 rounded-full uppercase tracking-wide">
+          Most Popular
+        </span>
+      )}
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-sm font-semibold text-white mb-0.5">{plan.name}</div>
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-base font-bold text-[#339af0]">{plan.price}</span>
+            <span className="text-[11px] text-[#a1a1aa]">{plan.period}</span>
+          </div>
+          <div className="text-[11px] text-[#a1a1aa] mt-0.5">{plan.sub}</div>
+        </div>
+        <div
+          className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+            selected ? 'border-[#339af0] bg-[#339af0]' : 'border-white/20'
+          }`}
+        >
+          {selected && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+        </div>
+      </div>
+      <ul className="mt-2.5 space-y-1">
+        {plan.features.map((f) => (
+          <li key={f} className="text-[11px] text-[#a1a1aa] flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-[#339af0]/60 flex-shrink-0" />
+            {f}
+          </li>
+        ))}
+      </ul>
+    </button>
+  )
+}
+
+function SignUpForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const preselectedPlan = searchParams.get('plan') ?? 'growth'
+  const initialPlan = ['one_off', 'growth'].includes(preselectedPlan) ? preselectedPlan : 'growth'
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [selectedPlan, setSelectedPlan] = useState('growth')
+  const [selectedPlan, setSelectedPlan] = useState(initialPlan)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
@@ -52,14 +119,13 @@ export default function SignUpPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, plan: selectedPlan }),
       })
       const data = await res.json()
       if (!res.ok) {
         toast.error(data.error ?? 'Registration failed')
         return
       }
-      // Auto sign-in after registration
       const signInRes = await signIn('credentials', { email, password, redirect: false })
       if (signInRes?.error) {
         toast.error('Account created. Please sign in.')
@@ -74,7 +140,8 @@ export default function SignUpPage() {
 
   async function handleGoogle() {
     setGoogleLoading(true)
-    await signIn('google', { callbackUrl: '/dashboard' })
+    // OAuth users land on /onboarding/plan to pick their plan
+    await signIn('google', { callbackUrl: '/onboarding/plan' })
   }
 
   return (
@@ -90,11 +157,10 @@ export default function SignUpPage() {
             <span className="font-heading font-bold text-xl text-white">ABMSignal</span>
           </Link>
           <h1 className="font-heading text-3xl font-bold text-white text-center">Create your account</h1>
-          <p className="text-[#a1a1aa] text-sm mt-2 text-center">Start with 1 free playbook. No credit card required.</p>
+          <p className="text-[#a1a1aa] text-sm mt-2 text-center">Start with 1 free playbook credit. No card needed today.</p>
         </div>
 
         <div className="bg-[#141419] border border-white/[0.08] rounded-2xl p-8 space-y-5">
-          {/* Google */}
           <Button
             onClick={handleGoogle}
             disabled={googleLoading}
@@ -167,34 +233,20 @@ export default function SignUpPage() {
               )}
             </div>
 
-            {/* Plan selector */}
             <div className="space-y-2">
-              <Label className="text-white text-sm font-medium">Your plan</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {ALL_PLANS.map((plan) => (
-                  <button
+              <Label className="text-white text-sm font-medium">Choose your plan</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {PLAN_OPTIONS.map((plan) => (
+                  <PlanCard
                     key={plan.id}
-                    type="button"
-                    onClick={() => setSelectedPlan(plan.id)}
-                    className={`relative p-3 rounded-xl border text-left transition-all ${
-                      selectedPlan === plan.id
-                        ? 'border-[#339af0]/60 bg-[#1e3a5f]/30'
-                        : 'border-white/[0.08] bg-[#0d0d15] hover:border-white/20'
-                    }`}
-                  >
-                    {plan.highlight && selectedPlan === plan.id && (
-                      <span className="absolute -top-2 left-3 text-[9px] font-bold bg-[#339af0] text-white px-1.5 py-0.5 rounded-full">
-                        POPULAR
-                      </span>
-                    )}
-                    <div className="text-xs font-semibold text-white mb-0.5">{plan.name}</div>
-                    <div className="text-[10px] text-[#339af0] font-medium">{plan.price}</div>
-                    <div className="text-[10px] text-[#a1a1aa]">{plan.sub}</div>
-                  </button>
+                    plan={plan}
+                    selected={selectedPlan === plan.id}
+                    onSelect={() => setSelectedPlan(plan.id)}
+                  />
                 ))}
               </div>
               <p className="text-[11px] text-[#a1a1aa]">
-                Billing activated when you generate your first playbook.{' '}
+                Billing activates when you generate your first playbook.
               </p>
             </div>
 
@@ -203,9 +255,11 @@ export default function SignUpPage() {
               disabled={loading || !isValid}
               className="w-full h-11 bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold rounded-xl"
             >
-              {loading
-                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating account...</>
-                : <>Create account <ArrowRight className="w-4 h-4 ml-2" /></>}
+              {loading ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating account...</>
+              ) : (
+                <>Create account <ArrowRight className="w-4 h-4 ml-2" /></>
+              )}
             </Button>
 
             <p className="text-[11px] text-[#a1a1aa] text-center leading-relaxed">
@@ -225,5 +279,13 @@ export default function SignUpPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense>
+      <SignUpForm />
+    </Suspense>
   )
 }

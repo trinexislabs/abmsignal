@@ -1,6 +1,7 @@
 import { playbookRepository } from '../../playbooks/playbook-repository'
 import { runRepository } from '../../runs/run-repository'
-import { openclawAdapter } from '../../agent/openclaw-adapter'
+import { runAgentTask } from '@/lib/openclaw/client'
+import { parseAgentOutput } from '../../agent/agent-output-schema'
 import { buildResearchPrompt } from '../../agent/agent-prompts'
 import type { AgentStatus } from '@/types'
 
@@ -12,10 +13,8 @@ export async function runResearchWorker(runId: string): Promise<void> {
 
   await playbookRepository.logEvent(playbookId, 'run.started', `Research run ${runId} started`, {}, runId)
 
-  // Mark run as running
   await runRepository.markRunning(runId)
 
-  // Set playbook status to researching
   const runningAgentStatus: AgentStatus[] = [
     { agent: 'orchestrator', task: 'Coordinating research pipeline', status: 'running' },
     { agent: 'researcher', task: 'Starting account research', status: 'running' },
@@ -24,7 +23,6 @@ export async function runResearchWorker(runId: string): Promise<void> {
   ]
   await playbookRepository.setStatus(playbookId, 'researching', 10, runningAgentStatus)
 
-  // Load playbook data for prompt
   const playbook = await playbookRepository.findById(playbookId)
   if (!playbook) {
     await runRepository.markFailed(runId, 'Playbook not found during research')
@@ -57,7 +55,6 @@ export async function runResearchWorker(runId: string): Promise<void> {
     playbookId, 'run.prompt_built', 'Research prompt constructed', { promptLength: prompt.length }, runId,
   )
 
-  // Update progress while invoking agent
   await playbookRepository.setStatus(playbookId, 'researching', 25, [
     { agent: 'orchestrator', task: 'Coordinating research pipeline', status: 'running' },
     { agent: 'researcher', task: 'Deep account research in progress...', status: 'running' },
@@ -65,25 +62,36 @@ export async function runResearchWorker(runId: string): Promise<void> {
     { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
   ])
 
-  // Invoke OpenClaw
-  const result = await openclawAdapter.runResearch(prompt, runId)
+  // Invoke OpenClaw via HTTP TaskFlow — each run gets an isolated flow
+  const agentResult = await runAgentTask(prompt, runId)
 
-  // Always save raw output for debuggability
-  await runRepository.saveRawOutput(runId, result.rawOutput)
+  // Persist raw output and flowId for debugging
+  await runRepository.saveRawOutput(runId, agentResult.ok ? agentResult.rawOutput : agentResult.error)
+  if (agentResult.ok) {
+    await playbookRepository.setOpenclawSession(playbookId, agentResult.flowId)
+  }
 
-  if (!result.ok) {
-    const errMsg = result.error
-    await runRepository.markFailed(runId, errMsg, result.rawOutput)
-    await playbookRepository.setFailed(playbookId, errMsg)
+  if (!agentResult.ok) {
+    await runRepository.markFailed(runId, agentResult.error)
+    await playbookRepository.setFailed(playbookId, agentResult.error)
     await playbookRepository.logEvent(
-      playbookId, 'run.failed', `Research run failed: ${errMsg}`,
-      { logPath: result.logPath }, runId,
+      playbookId, 'run.failed', `Research run failed: ${agentResult.error}`, {}, runId,
     )
     return
   }
 
-  // Validated output — write to DB
-  const { contacts, sources } = result.data
+  const parsed = parseAgentOutput(agentResult.rawOutput, 'research')
+  if (!parsed.ok) {
+    await runRepository.markFailed(runId, parsed.error, agentResult.rawOutput)
+    await playbookRepository.setFailed(playbookId, parsed.error)
+    await playbookRepository.logEvent(
+      playbookId, 'run.failed', `Research output parsing failed: ${parsed.error}`, {}, runId,
+    )
+    return
+  }
+
+  const { contacts, sources } = parsed.data
+  void sources // sources are referenced during writing
 
   await playbookRepository.replaceContacts(
     playbookId,
@@ -106,12 +114,8 @@ export async function runResearchWorker(runId: string): Promise<void> {
     `${contacts.length} contacts discovered`, { count: contacts.length }, runId,
   )
 
-  // Store research-level sources (not tied to sections yet)
-  // We don't store these directly — they'll be referenced during writing
-
   await runRepository.markSucceeded(runId)
 
-  // Transition to contact_review
   await playbookRepository.setStatus(playbookId, 'contact_review', 60, [
     { agent: 'orchestrator', task: 'Research complete — awaiting contact review', status: 'complete' },
     { agent: 'researcher', task: 'Account research complete', status: 'complete' },

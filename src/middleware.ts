@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 
 const { auth } = NextAuth(authConfig)
 
-const PROTECTED = ['/dashboard', '/playbook/new', '/playbook/', '/settings']
+const PROTECTED = ['/dashboard', '/playbook/new', '/playbook/', '/settings', '/onboarding']
 const AUTH_PAGES = ['/auth/signin', '/auth/signup']
 
 export default auth((req) => {

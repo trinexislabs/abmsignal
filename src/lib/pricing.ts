@@ -1,5 +1,32 @@
+// MVP plans: one_off + growth. Multi-seat tiers reserved for future.
+export type PlanId = 'free' | 'one_off' | 'growth'
+
 export const ONE_OFF_PRICE_USD = 49
 
+export const MVP_PLANS = [
+  {
+    id: 'one_off' as const,
+    name: 'One Off',
+    pricePerUse: ONE_OFF_PRICE_USD,
+    priceMonthly: null,
+    playbooksPerMonth: null, // credit-gated, each credit = 1 playbook
+    seats: 1,
+    isSubscription: false,
+    description: 'Single playbook, no commitment.',
+  },
+  {
+    id: 'growth' as const,
+    name: 'Growth',
+    pricePerUse: null,
+    priceMonthly: 299,
+    playbooksPerMonth: 10,
+    seats: 1,
+    isSubscription: true,
+    description: 'Monthly cadence — 10 playbooks per month.',
+  },
+] as const
+
+// Future plans (schema-ready, not active in MVP)
 export const SUBSCRIPTION_PLANS = [
   {
     id: 'growth',
@@ -23,22 +50,9 @@ export const SUBSCRIPTION_PLANS = [
     id: 'agency',
     name: 'Agency',
     priceMonthly: 1999,
-    playbooksPerMonth: null, // unlimited
+    playbooksPerMonth: null,
     seats: 10,
     description: 'Full-service ABM at scale with human SME review and white-label.',
     highlight: false,
   },
 ] as const
-
-export type PlanId = (typeof SUBSCRIPTION_PLANS)[number]['id'] | 'one_off' | 'free'
-
-export function getPlanByPlaybooksUsed(
-  plan: PlanId,
-  used: number
-): { label: string; max: number | null; pct: number } {
-  const found = SUBSCRIPTION_PLANS.find((p) => p.id === plan)
-  if (!found) return { label: 'Pay-per-playbook', max: null, pct: 0 }
-  if (found.playbooksPerMonth === null) return { label: found.name, max: null, pct: 0 }
-  const pct = Math.min(100, Math.round((used / found.playbooksPerMonth) * 100))
-  return { label: found.name, max: found.playbooksPerMonth, pct }
-}

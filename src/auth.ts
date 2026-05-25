@@ -50,16 +50,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   events: {
+    // Fires for OAuth/magic-link sign-ups (not credentials — those go through /api/auth/register)
     async createUser({ user }) {
-      // Grant a free trial credit on account creation
       if (user.id) {
-        await prisma.userCredit.create({
-          data: {
-            userId: user.id,
-            amount: 1,
-            reason: 'trial_grant',
-          },
-        })
+        await prisma.$transaction([
+          prisma.userCredit.create({
+            data: { userId: user.id, amount: 1, reason: 'trial_grant' },
+          }),
+          prisma.userSubscription.create({
+            data: { userId: user.id, plan: 'free', status: 'active' },
+          }),
+        ])
       }
     },
   },

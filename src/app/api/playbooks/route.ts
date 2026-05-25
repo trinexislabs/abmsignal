@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server'
+import { auth } from '@/auth'
 import { playbookService } from '@/server/playbooks/playbook-service'
 import type { PlaybookCreateRequest } from '@/types'
 
 export async function GET() {
-  const playbooks = await playbookService.listAll()
+  const session = await auth()
+  const userId = session?.user?.id
+  const playbooks = userId
+    ? await playbookService.listByUser(userId)
+    : await playbookService.listAll()
   return NextResponse.json({ data: playbooks })
 }
 
 export async function POST(request: Request) {
+  const session = await auth()
+  const userId = session?.user?.id ?? null
+
   let body: PlaybookCreateRequest
   try {
     body = (await request.json()) as PlaybookCreateRequest
@@ -33,7 +41,7 @@ export async function POST(request: Request) {
   )
 
   const playbook = await playbookService.create({
-    userId: 'usr_demo',
+    userId: userId ?? undefined,
     productName: product_brief.product_name,
     productUrl: product_brief.product_url || undefined,
     productBrief: {

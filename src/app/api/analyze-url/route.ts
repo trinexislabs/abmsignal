@@ -46,12 +46,13 @@ function extractPageContent(html: string): string {
     .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
     .replace(/<noscript\b[\s\S]*?<\/noscript>/gi, ' ')
+    // Strip nav menus but NOT <header> — hero sections with the main headline live in <header>
     .replace(/<nav\b[\s\S]*?<\/nav>/gi, ' ')
     .replace(/<footer\b[\s\S]*?<\/footer>/gi, ' ')
-    .replace(/<header\b[\s\S]*?<\/header>/gi, ' ')
     .replace(/<aside\b[\s\S]*?<\/aside>/gi, ' ')
-    .replace(/<h([1-3])[^>]*>([\s\S]*?)<\/h\1>/gi, (_, level, text) =>
-      '\n' + '#'.repeat(parseInt(level)) + ' ' + text.replace(/<[^>]+>/g, '') + '\n',
+    // Preserve headings as markdown-style markers so the model can identify structure
+    .replace(/<h([1-4])[^>]*>([\s\S]*?)<\/h\1>/gi, (_, level, text) =>
+      '\n' + '#'.repeat(parseInt(level)) + ' ' + text.replace(/<[^>]+>/g, '').trim() + '\n',
     )
     .replace(/<li[^>]*>/gi, '\n• ')
     .replace(/<p[^>]*>/gi, '\n')
@@ -63,7 +64,8 @@ function extractPageContent(html: string): string {
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 
-  return (prefix + body).slice(0, 5000)
+  // 10 000 chars gives the model full homepage content on virtually any product site
+  return (prefix + body).slice(0, 10_000)
 }
 
 // ─── Meta-tag fallback when AI fails ─────────────────────────────────────────
@@ -99,8 +101,13 @@ function extractMetaOnly(html: string): ExtractedBrief {
 
 async function analyzeWithAgent(pageContent: string): Promise<ExtractedBrief> {
   const message = [
-    `You are a product intelligence analyst. Extract structured product information from the webpage content below.`,
-    `Return ONLY a JSON code block. No other text before or after it.`,
+    `You are a product intelligence analyst. Your job is to extract structured product information STRICTLY from the webpage content below.`,
+    ``,
+    `CRITICAL RULES:`,
+    `- Extract ONLY what is explicitly stated on the page. Do NOT infer, guess, or fabricate details.`,
+    `- value_propositions must use the product's own language and claims — copy phrases directly from the page where possible.`,
+    `- If a field cannot be determined from the page content, use the default value shown below. Never invent values.`,
+    `- Return ONLY a valid JSON code block. No other text, no explanation, no preamble.`,
     ``,
     `## Webpage Content`,
     pageContent,
@@ -108,26 +115,27 @@ async function analyzeWithAgent(pageContent: string): Promise<ExtractedBrief> {
     `## Return this exact JSON structure:`,
     `\`\`\`json`,
     `{`,
-    `  "product_name": "Short clean product name (no taglines)",`,
-    `  "description": "2-3 sentences: what it does, who it's for, core value",`,
-    `  "value_propositions": ["Specific measurable outcome 1", "Outcome 2", "Outcome 3"],`,
-    `  "target_personas": "Job Title 1, Job Title 2, Job Title 3",`,
-    `  "differentiators": "What sets this apart from alternatives",`,
-    `  "competitors": "Competitor A, Competitor B",`,
+    `  "product_name": "Brand name only — no taglines or slogans",`,
+    `  "description": "2-3 sentences using the page's own words: what it does, who it serves, core outcome",`,
+    `  "value_propositions": [`,
+    `    "Specific outcome or claim directly from the page (include numbers/metrics if stated)",`,
+    `    "Second claim from the page",`,
+    `    "Third claim from the page"`,
+    `  ],`,
+    `  "target_personas": "Comma-separated job titles explicitly mentioned or strongly implied (e.g. CMO, Head of Sales, VP Marketing)",`,
+    `  "differentiators": "Features or positioning that the page explicitly contrasts with alternatives",`,
+    `  "competitors": "Competitor names only if explicitly mentioned on the page — empty string if none",`,
     `  "deployment_model": "saas",`,
-    `  "deal_size": "50k-250k",`,
-    `  "sales_cycle": "30-90d"`,
+    `  "deal_size": "",`,
+    `  "sales_cycle": ""`,
     `}`,
     `\`\`\``,
     ``,
-    `Field rules:`,
-    `- product_name: brand name only`,
-    `- value_propositions: 3-5 items, specific outcomes with numbers/metrics where visible`,
-    `- target_personas: comma-separated job titles (e.g. "CTO, Head of Engineering, VP Product")`,
-    `- deployment_model: one of exactly — saas | on-prem | hybrid | open-source`,
-    `- deal_size: one of exactly — <50k | 50k-250k | 250k-1m | 1m+`,
-    `- sales_cycle: one of exactly — <30d | 30-90d | 90-180d | 180d+`,
-    `- competitors: empty string "" if none found`,
+    `Enum constraints (use empty string "" if not determinable from page):`,
+    `- deployment_model: saas | on-prem | hybrid | open-source`,
+    `- deal_size: <50k | 50k-250k | 250k-1m | 1m+ | "" (leave blank if not stated)`,
+    `- sales_cycle: <30d | 30-90d | 90-180d | 180d+ | "" (leave blank if not stated)`,
+    `- value_propositions: minimum 2, maximum 6 items, all sourced from explicit page claims`,
   ].join('\n')
 
   const env: NodeJS.ProcessEnv = {
