@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { auth } from '@/auth'
 import { playbookService } from '@/server/playbooks/playbook-service'
 import { playbookRepository } from '@/server/playbooks/playbook-repository'
 import {
@@ -65,4 +66,26 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 
   return NextResponse.json({ data: playbook })
+}
+
+// Hard-delete a playbook plus every row attached to it (runs, events, sources,
+// sections, contacts) and drop any pending queue jobs. Irreversible.
+export async function DELETE(_req: Request, { params }: RouteContext) {
+  const { id } = await params
+  const session = await auth()
+  const userId = session?.user?.id
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const playbook = await playbookService.getById(id)
+  if (!playbook) {
+    return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
+  }
+  if (playbook.user_id && playbook.user_id !== userId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const result = await playbookService.deletePlaybook(id)
+  return NextResponse.json({ data: { deleted: result.deleted, id } })
 }

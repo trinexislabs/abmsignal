@@ -97,6 +97,18 @@ export default function NewPlaybookProcessingPage() {
 
         console.log('[new/processing] Create response status:', createRes.status)
 
+        if (createRes.status === 402) {
+          // No credits — route through the mock payment gateway. After paying
+          // the user returns to this page and we re-submit using the same
+          // localStorage form data, so they don't have to refill anything.
+          // (We intentionally do NOT clear formState here.)
+          console.log('[new/processing] Payment required — redirecting to mock gateway')
+          router.replace(
+            `/payment/mock?purpose=playbook&amount=49&returnTo=${encodeURIComponent('/playbook/new/processing')}`,
+          )
+          return
+        }
+
         if (!createRes.ok) {
           const errorBody = await createRes.text()
           console.error('[new/processing] Create failed:', createRes.status, errorBody)

@@ -138,6 +138,53 @@ export interface ApiStatus {
   progress_pct: number
   agent_status: AgentStatus[]
   failed_reason?: string
+  // Identifiers so the processing page can show "what" without a second fetch.
+  product_name?: string
+  target_company?: string
+  // Live runtime info — populated when a run is active (or has run previously).
+  // Older clients ignore unknown fields, so these additions are backward compatible.
+  active_run?: ApiActiveRun | null
+  agent_runtime_seconds?: number
+  created_at?: string
+  recent_events?: ApiEvent[]
+  counters?: ApiCounters
+}
+
+export interface ApiActiveRun {
+  id: string
+  phase: 'research' | 'writing' | 'review'
+  status: 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled'
+  started_at: string | null
+  created_at: string
+}
+
+export interface ApiEvent {
+  id: string
+  type: string
+  message: string
+  created_at: string
+}
+
+export interface ApiCounters {
+  sections_total: number
+  sections_complete: number
+  contacts_found: number
+  sources_count: number
+}
+
+export interface ApiActivePlaybook {
+  id: string
+  product_name: string
+  target_company: string
+  status: PlaybookStatus
+  progress_pct: number
+  current_agent: AgentStatus['agent'] | null
+  current_task: string | null
+  active_run: ApiActiveRun | null
+  agent_runtime_seconds: number
+  counters: ApiCounters
+  created_at: string
+  updated_at: string
 }
 
 // ─── Input types ─────────────────────────────────────────────────────────────

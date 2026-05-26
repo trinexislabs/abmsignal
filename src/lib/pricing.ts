@@ -2,6 +2,7 @@
 export type PlanId = 'free' | 'one_off' | 'growth'
 
 export const ONE_OFF_PRICE_USD = 49
+export const GROWTH_PRICE_USD = 299
 
 export const MVP_PLANS = [
   {

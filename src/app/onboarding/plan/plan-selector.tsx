@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Zap, ArrowRight, Loader2, Check, Sparkles, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ONE_OFF_PRICE_USD } from '@/lib/pricing'
+import { GROWTH_PRICE_USD, ONE_OFF_PRICE_USD } from '@/lib/pricing'
 
 const PLANS = [
   {
@@ -28,7 +28,7 @@ const PLANS = [
   {
     id: 'growth',
     name: 'Growth',
-    price: '$299',
+    price: `$${GROWTH_PRICE_USD}`,
     period: '/month',
     tagline: '10 playbooks per month, full dashboard.',
     icon: TrendingUp,
@@ -52,6 +52,15 @@ export function PlanSelector({ firstName }: { firstName: string }) {
   async function handleConfirm() {
     setLoading(true)
     try {
+      // Growth = monthly subscription, billed upfront via the mock gateway.
+      // The /api/payment/mock endpoint activates the plan on payment success.
+      if (selectedPlan === 'growth') {
+        router.push(`/payment/mock?purpose=plan&plan=growth&amount=${GROWTH_PRICE_USD}`)
+        return
+      }
+
+      // one_off = no upfront charge; just record the plan choice. Payment
+      // happens later, once per playbook generation.
       const res = await fetch('/api/user/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -168,7 +177,11 @@ export function PlanSelector({ firstName }: { firstName: string }) {
               </>
             )}
           </Button>
-          <p className="text-xs text-[#a1a1aa]">Billing activates when you generate your first playbook.</p>
+          <p className="text-xs text-[#a1a1aa]">
+            {selectedPlan === 'growth'
+              ? `You'll be charged $${GROWTH_PRICE_USD}/month upfront on the next step.`
+              : `No charge today — you'll pay $${ONE_OFF_PRICE_USD} per playbook when you generate one.`}
+          </p>
         </div>
       </div>
     </div>

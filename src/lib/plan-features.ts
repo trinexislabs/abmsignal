@@ -4,7 +4,7 @@ import type { PlanId } from '@/lib/pricing'
 const PLAN_FEATURES = {
   playbook_generate: ['one_off', 'growth'],
   dashboard_stats: ['growth'],
-  dashboard_recent: ['growth'],
+  dashboard_recent: ['one_off', 'growth'],
   playbook_history: ['growth'],
 } as const satisfies Record<string, readonly PlanId[]>
 

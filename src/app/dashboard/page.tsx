@@ -11,13 +11,17 @@ import {
   Play,
   PenLine,
   CreditCard,
+  Activity,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
+import { ActivePlaybooks } from '@/components/dashboard/active-playbooks'
+import { FailedPlaybookActions } from '@/components/dashboard/failed-playbook-actions'
 import { requireAuth } from '@/lib/auth/session'
 import { canAccess } from '@/lib/plan-features'
 import {
+  GROWTH_CYCLE_CREDITS,
   getUserPlaybookStats,
   getUserRecentPlaybooks,
   getUserCreditBalance,
@@ -25,7 +29,20 @@ import {
 } from '@/server/users/user-repository'
 import type { PlaybookStatus } from '@/types'
 
-function getActionButton(id: string, status: string) {
+const IN_PROGRESS_STATUSES: PlaybookStatus[] = [
+  'queued',
+  'researching',
+  'contact_review',
+  'writing',
+  'reviewing',
+]
+
+function getActionButton(
+  id: string,
+  status: string,
+  productName: string,
+  targetCompany: string,
+) {
   switch (status as PlaybookStatus) {
     case 'complete':
       return (
@@ -43,6 +60,36 @@ function getActionButton(id: string, status: string) {
           </Button>
         </Link>
       )
+    case 'contact_review':
+      return (
+        <Link href={`/playbook/${id}/contacts`}>
+          <Button size="sm" variant="outline" className="h-7 text-xs px-3 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50 gap-1.5">
+            <Eye className="w-3 h-3" /> Review
+          </Button>
+        </Link>
+      )
+    case 'queued':
+    case 'researching':
+    case 'writing':
+    case 'reviewing':
+      return (
+        <Link href={`/playbook/${id}/processing`}>
+          <Button size="sm" variant="outline" className="h-7 text-xs px-3 border-[#339af0]/30 text-[#339af0] hover:bg-[#339af0]/10 hover:border-[#339af0]/50 gap-1.5">
+            <Activity className="w-3 h-3" /> View Live
+          </Button>
+        </Link>
+      )
+    case 'error':
+    case 'rejected':
+    case 'failed':
+    case 'cancelled':
+      return (
+        <FailedPlaybookActions
+          playbookId={id}
+          productName={productName}
+          targetCompany={targetCompany}
+        />
+      )
     default:
       return (
         <Link href={`/playbook/${id}`}>
@@ -58,14 +105,18 @@ export default async function DashboardPage() {
   const session = await requireAuth()
   const userId = session.user?.id as string
 
-  const [stats, recentPlaybooks, credits, subscription] = await Promise.all([
-    getUserPlaybookStats(userId),
-    getUserRecentPlaybooks(userId, 5),
-    getUserCreditBalance(userId),
-    getUserSubscription(userId),
-  ])
-
+  // For one_off plan, only surface playbooks created in the last 7 days;
+  // longer history is a growth-tier feature.
+  const subscription = await getUserSubscription(userId)
   const plan = subscription?.plan ?? 'free'
+  const recentCutoff =
+    plan === 'one_off' ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) : undefined
+
+  const [stats, recentPlaybooks, credits] = await Promise.all([
+    getUserPlaybookStats(userId),
+    getUserRecentPlaybooks(userId, 5, recentCutoff),
+    getUserCreditBalance(userId),
+  ])
 
   // Free plan = no plan selected yet — send to onboarding
   if (plan === 'free') {
@@ -76,6 +127,22 @@ export default async function DashboardPage() {
   const showRecent = canAccess(plan, 'dashboard_recent')
 
   const firstName = session.user?.name?.split(' ')[0] ?? 'there'
+
+  // Cycle wording differs by plan: growth has "X of 10 this cycle · resets <date>",
+  // one_off has "X playbooks remaining" (top-up purchased per playbook).
+  const cycleEnd = subscription?.currentPeriodEnd ?? null
+  const creditsLabel =
+    plan === 'growth' ? 'Cycle Credits' : 'Playbook Credits'
+  const creditsValue =
+    plan === 'growth'
+      ? `${credits}/${GROWTH_CYCLE_CREDITS}`
+      : credits.toString()
+  const creditsHint =
+    plan === 'growth' && cycleEnd
+      ? `Resets ${cycleEnd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
+      : plan === 'growth'
+        ? 'Per 30-day cycle'
+        : undefined
 
   const STATS = [
     {
@@ -94,9 +161,10 @@ export default async function DashboardPage() {
       icon: Users,
     },
     {
-      label: 'Playbook Credits',
-      value: credits.toString(),
+      label: creditsLabel,
+      value: creditsValue,
       icon: CreditCard,
+      hint: creditsHint,
     },
   ]
 
@@ -136,11 +204,17 @@ export default async function DashboardPage() {
                 </div>
                 <p className="text-2xl font-bold text-white font-heading">{stat.value}</p>
                 <p className="text-xs text-[#a1a1aa] mt-0.5">{stat.label}</p>
+                {'hint' in stat && stat.hint && (
+                  <p className="text-[10px] text-[#a1a1aa]/70 mt-0.5">{stat.hint}</p>
+                )}
               </Card>
             )
           })}
         </div>
       )}
+
+      {/* In Progress — live cards (renders nothing when no active playbooks) */}
+      <ActivePlaybooks />
 
       {/* Quick Action Hero — always visible */}
       <Card className="bg-gradient-to-br from-[#1e3a5f]/60 via-[#141419] to-[#141419] border-[#339af0]/20 p-6 sm:p-8 relative overflow-hidden">
@@ -236,13 +310,20 @@ export default async function DashboardPage() {
                       </div>
 
                       <div>
-                        <p className="text-sm text-[#a1a1aa]">
-                          {formatDistanceToNow(pb.updatedAt, { addSuffix: true })}
-                        </p>
+                        {IN_PROGRESS_STATUSES.includes(pb.status as PlaybookStatus) ? (
+                          <p className="text-sm text-[#339af0] inline-flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#339af0] animate-pulse" />
+                            Running · started {formatDistanceToNow(pb.createdAt, { addSuffix: true })}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-[#a1a1aa]">
+                            {formatDistanceToNow(pb.updatedAt, { addSuffix: true })}
+                          </p>
+                        )}
                       </div>
 
                       <div className="sm:text-right">
-                        {getActionButton(pb.id, pb.status)}
+                        {getActionButton(pb.id, pb.status, pb.productName, pb.targetCompany)}
                       </div>
                     </div>
                   ))}

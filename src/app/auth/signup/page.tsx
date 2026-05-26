@@ -9,7 +9,7 @@ import { Zap, Mail, Lock, User, ArrowRight, Loader2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ONE_OFF_PRICE_USD } from '@/lib/pricing'
+import { GROWTH_PRICE_USD, ONE_OFF_PRICE_USD } from '@/lib/pricing'
 
 function GoogleIcon() {
   return (
@@ -130,6 +130,13 @@ function SignUpForm() {
       if (signInRes?.error) {
         toast.error('Account created. Please sign in.')
         router.push('/auth/signin')
+        return
+      }
+      // Growth users must pay the $299/month subscription before reaching the
+      // dashboard. one_off users land on /dashboard and only see the $49 gate
+      // when they click "Generate Playbook".
+      if (selectedPlan === 'growth') {
+        router.push(`/payment/mock?purpose=plan&plan=growth&amount=${GROWTH_PRICE_USD}`)
       } else {
         router.push('/dashboard')
       }
@@ -157,7 +164,7 @@ function SignUpForm() {
             <span className="font-heading font-bold text-xl text-white">ABMSignal</span>
           </Link>
           <h1 className="font-heading text-3xl font-bold text-white text-center">Create your account</h1>
-          <p className="text-[#a1a1aa] text-sm mt-2 text-center">Start with 1 free playbook credit. No card needed today.</p>
+          <p className="text-[#a1a1aa] text-sm mt-2 text-center">Choose your plan to get started.</p>
         </div>
 
         <div className="bg-[#141419] border border-white/[0.08] rounded-2xl p-8 space-y-5">
@@ -246,7 +253,9 @@ function SignUpForm() {
                 ))}
               </div>
               <p className="text-[11px] text-[#a1a1aa]">
-                Billing activates when you generate your first playbook.
+                {selectedPlan === 'growth'
+                  ? `You'll be charged $${GROWTH_PRICE_USD}/month right after sign-up — 10 playbooks per 30-day cycle.`
+                  : `No charge today — pay $${ONE_OFF_PRICE_USD} per playbook when you generate one.`}
               </p>
             </div>
 

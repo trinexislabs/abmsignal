@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
+import { prisma } from '@/server/db'
 import { playbookService } from '@/server/playbooks/playbook-service'
+import {
+  getUserCreditBalance,
+  getUserSubscription,
+} from '@/server/users/user-repository'
 import type { PlaybookCreateRequest } from '@/types'
 
 export async function GET() {
@@ -32,6 +37,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 })
   }
 
+  // Both plans are credit-gated: one_off pays per playbook, growth gets 10
+  // credits per 30-day cycle and can buy single top-ups when those run out.
+  if (userId) {
+    const sub = await getUserSubscription(userId)
+    if (sub?.plan === 'one_off' || sub?.plan === 'growth') {
+      const credits = await getUserCreditBalance(userId)
+      if (credits < 1) {
+        return NextResponse.json(
+          {
+            error:
+              sub.plan === 'growth'
+                ? 'No credits remaining in this cycle. Top up to generate another playbook.'
+                : 'Payment required before generating a playbook.',
+          },
+          { status: 402 },
+        )
+      }
+    }
+  }
+
   // Parse comma/newline-delimited fields into arrays
   const toArr = (s: string | undefined, sep: RegExp | string) =>
     s ? s.split(sep).map(v => v.trim()).filter(Boolean) : []
@@ -61,6 +86,18 @@ export async function POST(request: Request) {
     geography: target_account.geography,
     priorityTier: target_account.priority_tier,
   })
+
+  // Deduct one credit now that the playbook exists. Applies to both plans —
+  // growth credits come from the monthly cycle grant, one_off credits from
+  // per-playbook top-ups.
+  if (userId) {
+    const sub = await getUserSubscription(userId)
+    if (sub?.plan === 'one_off' || sub?.plan === 'growth') {
+      await prisma.userCredit.create({
+        data: { userId, amount: -1, reason: `playbook_consumed:${playbook.id}` },
+      })
+    }
+  }
 
   return NextResponse.json(
     {

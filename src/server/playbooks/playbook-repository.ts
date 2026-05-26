@@ -1,6 +1,10 @@
 import { prisma } from '../db'
 import type {
+  ApiActivePlaybook,
+  ApiActiveRun,
   ApiContact,
+  ApiCounters,
+  ApiEvent,
   ApiPlaybook,
   ApiSection,
   ApiSource,
@@ -11,6 +15,9 @@ import type {
   SourceInput,
 } from './playbook-types'
 import type { AgentStatus, PlaybookStatus } from '@/types'
+
+const TOTAL_SECTIONS = 18
+const ACTIVE_STATUSES = ['queued', 'researching', 'writing', 'reviewing', 'contact_review'] as const
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -207,13 +214,83 @@ export const playbookRepository = {
   async getStatus(id: string): Promise<ApiStatus | null> {
     const pb = await prisma.playbook.findUnique({ where: { id } })
     if (!pb) return null
+
+    // Fetch the most relevant run (currently running > most recently completed).
+    // We surface this so the frontend timer is grounded in DB time, not the moment
+    // the browser tab happened to mount.
+    const latestRun = await prisma.playbookRun.findFirst({
+      where: { playbookId: id },
+      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+    })
+    const activeRun = await prisma.playbookRun.findFirst({
+      where: { playbookId: id, status: { in: ['queued', 'running'] } },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    const surfaceRun = activeRun ?? latestRun
+    const agentRuntime = await computeAgentRuntime(id)
+    const counters = await computeCounters(id)
+    const recentEvents = await fetchRecentEvents(id, 10)
+
     return {
       playbook_id: pb.id,
       status: mapStatus(pb.status),
       progress_pct: pb.progressPct,
       agent_status: parseJson<AgentStatus[]>(pb.agentStatus, []),
       failed_reason: pb.failedReason ?? undefined,
+      product_name: pb.productName,
+      target_company: pb.targetCompany,
+      active_run: surfaceRun ? toApiActiveRun(surfaceRun) : null,
+      agent_runtime_seconds: agentRuntime,
+      created_at: pb.createdAt.toISOString(),
+      recent_events: recentEvents,
+      counters,
     }
+  },
+
+  async listActiveForUser(userId: string): Promise<ApiActivePlaybook[]> {
+    const playbooks = await prisma.playbook.findMany({
+      where: { userId, status: { in: [...ACTIVE_STATUSES] } },
+      orderBy: { createdAt: 'desc' },
+    })
+    if (playbooks.length === 0) return []
+
+    const runs = await prisma.playbookRun.findMany({
+      where: { playbookId: { in: playbooks.map(p => p.id) } },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    const activeRunByPb = new Map<string, typeof runs[number]>()
+    for (const r of runs) {
+      if (r.status === 'queued' || r.status === 'running') {
+        if (!activeRunByPb.has(r.playbookId)) activeRunByPb.set(r.playbookId, r)
+      }
+    }
+
+    const result: ApiActivePlaybook[] = []
+    for (const pb of playbooks) {
+      const agentStatuses = parseJson<AgentStatus[]>(pb.agentStatus, [])
+      const running = agentStatuses.find(a => a.status === 'running')
+      const counters = await computeCounters(pb.id)
+      const agentRuntime = await computeAgentRuntime(pb.id)
+      const activeRun = activeRunByPb.get(pb.id) ?? null
+
+      result.push({
+        id: pb.id,
+        product_name: pb.productName,
+        target_company: pb.targetCompany,
+        status: mapStatus(pb.status),
+        progress_pct: pb.progressPct,
+        current_agent: running?.agent ?? null,
+        current_task: running?.task ?? null,
+        active_run: activeRun ? toApiActiveRun(activeRun) : null,
+        agent_runtime_seconds: agentRuntime,
+        counters,
+        created_at: pb.createdAt.toISOString(),
+        updated_at: pb.updatedAt.toISOString(),
+      })
+    }
+    return result
   },
 
   async setStatus(
@@ -222,9 +299,16 @@ export const playbookRepository = {
     progressPct: number,
     agentStatus: AgentStatus[],
   ): Promise<void> {
+    // Clear failedReason whenever we transition out of a terminal-error state
+    // (e.g. user retried). Otherwise the UI keeps showing the prior error.
     await prisma.playbook.update({
       where: { id },
-      data: { status, progressPct, agentStatus: JSON.stringify(agentStatus) },
+      data: {
+        status,
+        progressPct,
+        agentStatus: JSON.stringify(agentStatus),
+        failedReason: null,
+      },
     })
   },
 
@@ -360,6 +444,30 @@ export const playbookRepository = {
     return true
   },
 
+  // ─── Deletion ────────────────────────────────────────────────────────────
+
+  // Hard-delete a playbook and ALL related rows. Schema has no ON DELETE CASCADE,
+  // so we explicitly remove children in dependency order before the playbook itself.
+  // Returns the run IDs that existed so the caller can clean up queue entries.
+  async deleteCascade(id: string): Promise<{ runIds: string[] }> {
+    const runs = await prisma.playbookRun.findMany({
+      where: { playbookId: id },
+      select: { id: true },
+    })
+    const runIds = runs.map(r => r.id)
+
+    await prisma.$transaction([
+      prisma.playbookEvent.deleteMany({ where: { playbookId: id } }),
+      prisma.playbookSource.deleteMany({ where: { playbookId: id } }),
+      prisma.playbookSection.deleteMany({ where: { playbookId: id } }),
+      prisma.playbookContact.deleteMany({ where: { playbookId: id } }),
+      prisma.playbookRun.deleteMany({ where: { playbookId: id } }),
+      prisma.playbook.delete({ where: { id } }),
+    ])
+
+    return { runIds }
+  },
+
   // ─── Events ──────────────────────────────────────────────────────────────
 
   async logEvent(
@@ -379,4 +487,66 @@ export const playbookRepository = {
       },
     })
   },
+}
+
+// ─── Helpers for status enrichment ────────────────────────────────────────────
+
+function toApiActiveRun(r: {
+  id: string; phase: string; status: string
+  startedAt: Date | null; createdAt: Date
+}): ApiActiveRun {
+  return {
+    id: r.id,
+    phase: r.phase as ApiActiveRun['phase'],
+    status: r.status as ApiActiveRun['status'],
+    started_at: r.startedAt?.toISOString() ?? null,
+    created_at: r.createdAt.toISOString(),
+  }
+}
+
+// Total seconds the agents have actively been running on this playbook —
+// sum of completed-run durations plus the elapsed time of any currently
+// running phase. Excludes the human contact-review gap, so the number
+// reflects real agent work, not wall-clock time since creation.
+async function computeAgentRuntime(playbookId: string): Promise<number> {
+  const runs = await prisma.playbookRun.findMany({
+    where: { playbookId, startedAt: { not: null } },
+  })
+  let totalMs = 0
+  const now = Date.now()
+  for (const r of runs) {
+    if (!r.startedAt) continue
+    const start = r.startedAt.getTime()
+    const end = r.completedAt?.getTime() ?? r.failedAt?.getTime() ?? (r.status === 'running' ? now : start)
+    totalMs += Math.max(0, end - start)
+  }
+  return Math.floor(totalMs / 1000)
+}
+
+async function computeCounters(playbookId: string): Promise<ApiCounters> {
+  const [sectionsComplete, contactsFound, sourcesCount] = await Promise.all([
+    prisma.playbookSection.count({ where: { playbookId, status: 'complete' } }),
+    prisma.playbookContact.count({ where: { playbookId } }),
+    prisma.playbookSource.count({ where: { playbookId } }),
+  ])
+  return {
+    sections_total: TOTAL_SECTIONS,
+    sections_complete: sectionsComplete,
+    contacts_found: contactsFound,
+    sources_count: sourcesCount,
+  }
+}
+
+async function fetchRecentEvents(playbookId: string, limit: number): Promise<ApiEvent[]> {
+  const events = await prisma.playbookEvent.findMany({
+    where: { playbookId },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  })
+  return events.map(e => ({
+    id: e.id,
+    type: e.type,
+    message: e.message,
+    created_at: e.createdAt.toISOString(),
+  }))
 }
