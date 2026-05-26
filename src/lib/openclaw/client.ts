@@ -285,6 +285,15 @@ export async function runAgentTask(
   const timeoutSeconds = Math.floor(AGENT_TIMEOUT_MS / 1000)
   const syntheticFlowId = `local-${runId}`
 
+  // openclaw --local mode persists the orchestrator's conversation in a single
+  // session file (agent:orchestrator:main) that grows across every invocation.
+  // That means prior turns — e.g. a previous playbook's research output — bleed
+  // into the next call's context, and the agent may echo stale phase/JSON
+  // shapes back instead of responding to the new prompt. We reset the session
+  // before each invocation so every prompt starts from a clean slate; the
+  // prompt itself contains all the context the agent needs.
+  await resetOrchestratorSession()
+
   let stdout = ''
   let stderr = ''
   try {
@@ -294,6 +303,10 @@ export async function runAgentTask(
         'agent',
         '--agent', 'orchestrator',
         '--local',
+        // Unique session per invocation so the agent's memory from a previous
+        // run (e.g. another playbook's research phase) cannot bleed into this
+        // one. Without this, every call shares the default "main" session.
+        '--session-id', `abmsignal-${runId}`,
         '--message', prompt,
         '--json',
         '--timeout', String(timeoutSeconds),
@@ -342,6 +355,35 @@ export async function runAgentTask(
   }
 
   return { ok: true, rawOutput, flowId: syntheticFlowId }
+}
+
+/**
+ * Wipe the orchestrator's "main" session entry so the next agent invocation
+ * starts a fresh conversation. The transcript jsonl is left on disk for
+ * post-hoc debugging — only the index entry that ties it to the live session
+ * is removed, which is enough for the agent to start over.
+ *
+ * Safe to call even when sessions.json doesn't exist yet or is malformed.
+ */
+async function resetOrchestratorSession(): Promise<void> {
+  const fs = await import('fs/promises')
+  const path = await import('path')
+  const sessionsPath = path.join(
+    OPENCLAW_STATE_DIR,
+    'agents/orchestrator/sessions/sessions.json',
+  )
+  try {
+    const raw = await fs.readFile(sessionsPath, 'utf8')
+    const data = JSON.parse(raw) as Record<string, unknown>
+    if (!('agent:orchestrator:main' in data)) return
+    delete data['agent:orchestrator:main']
+    await fs.writeFile(sessionsPath, JSON.stringify(data, null, 2))
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    if (code !== 'ENOENT') {
+      console.warn('[runAgentTask] session reset skipped:', (err as Error).message)
+    }
+  }
 }
 
 /**
