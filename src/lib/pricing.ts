@@ -1,8 +1,8 @@
 // MVP plans: one_off + growth. Multi-seat tiers reserved for future.
 export type PlanId = 'free' | 'one_off' | 'growth'
 
-export const ONE_OFF_PRICE_USD = 49
-export const GROWTH_PRICE_USD = 299
+export const ONE_OFF_PRICE_USD = 29
+export const GROWTH_PRICE_USD = 229
 
 export const MVP_PLANS = [
   {
@@ -19,7 +19,7 @@ export const MVP_PLANS = [
     id: 'growth' as const,
     name: 'Growth',
     pricePerUse: null,
-    priceMonthly: 299,
+    priceMonthly: 229,
     playbooksPerMonth: 10,
     seats: 1,
     isSubscription: true,
@@ -32,7 +32,7 @@ export const SUBSCRIPTION_PLANS = [
   {
     id: 'growth',
     name: 'Growth',
-    priceMonthly: 299,
+    priceMonthly: 229,
     playbooksPerMonth: 10,
     seats: 1,
     description: 'For teams ready to scale ABM with a monthly cadence.',
