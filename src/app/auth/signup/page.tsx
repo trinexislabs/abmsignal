@@ -35,7 +35,7 @@ const PLAN_OPTIONS = [
   {
     id: 'growth',
     name: 'Growth',
-    price: '$299',
+    price: `$${GROWTH_PRICE_USD}`,
     period: '/mo',
     sub: '10 playbooks / month',
     highlight: true,
