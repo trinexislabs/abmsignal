@@ -85,7 +85,7 @@ const steps = [
 const pricingPlans = [
   {
     name: 'One Off',
-    price: '$49',
+    price: '$29',
     period: 'one-time',
     playbooks: '1 playbook',
     badge: null,
@@ -101,7 +101,7 @@ const pricingPlans = [
   },
   {
     name: 'Growth',
-    price: '$299',
+    price: '$229',
     period: '/mo',
     playbooks: '10 playbooks/month',
     badge: 'Most Popular',
@@ -199,7 +199,7 @@ export default function LandingPage() {
                     size="lg"
                     className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold px-6 h-12 text-base rounded-xl glow-blue-sm"
                   >
-                    Start Free Trial
+                    Get Started
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
@@ -586,7 +586,7 @@ export default function LandingPage() {
                     size="lg"
                     className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold px-8 h-12 text-base rounded-xl"
                   >
-                    Start Free Trial
+                    Get Started
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
