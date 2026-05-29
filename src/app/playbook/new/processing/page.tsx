@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Zap } from 'lucide-react'
 import { formState } from '@/lib/form-state'
+import { ONE_OFF_PRICE_USD } from '@/lib/pricing'
 
 export default function NewPlaybookProcessingPage() {
   const router = useRouter()
@@ -104,7 +105,7 @@ export default function NewPlaybookProcessingPage() {
           // (We intentionally do NOT clear formState here.)
           console.log('[new/processing] Payment required — redirecting to mock gateway')
           router.replace(
-            `/payment/mock?purpose=playbook&amount=49&returnTo=${encodeURIComponent('/playbook/new/processing')}`,
+            `/payment/mock?purpose=playbook&amount=${ONE_OFF_PRICE_USD}&returnTo=${encodeURIComponent('/playbook/new/processing')}`,
           )
           return
         }
