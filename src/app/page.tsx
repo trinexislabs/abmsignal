@@ -129,8 +129,9 @@ const pricingPlans = [
     ],
     highlight: false,
     oneTime: false,
-    cta: 'Get started',
-    ctaHref: '/auth/signup?plan=professional',
+    comingSoon: true,
+    cta: 'Coming soon',
+    ctaHref: '',
   },
   {
     name: 'Agency',
@@ -148,8 +149,9 @@ const pricingPlans = [
     ],
     highlight: false,
     oneTime: false,
-    cta: 'Contact sales',
-    ctaHref: '/auth/signup?plan=agency',
+    comingSoon: true,
+    cta: 'Coming soon',
+    ctaHref: '',
   },
 ]
 
@@ -479,25 +481,32 @@ export default function LandingPage() {
             {pricingPlans.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative p-6 rounded-2xl border flex flex-col ${
-                  plan.highlight
+                className={`relative p-6 rounded-2xl border flex flex-col ${'comingSoon' in plan && plan.comingSoon
+                  ? 'bg-[#0d0d15] border-white/[0.04] opacity-60'
+                  : plan.highlight
                     ? 'bg-[#1e3a5f]/20 border-[#339af0]/40 glow-blue'
                     : plan.oneTime
                       ? 'bg-[#141419] border-white/[0.08]'
                       : 'bg-[#141419] border-white/[0.06]'
                 }`}
               >
-                {plan.badge && (
+                {'comingSoon' in plan && plan.comingSoon ? (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-white/10 text-[#a1a1aa] border border-white/10 px-3 text-xs font-semibold whitespace-nowrap">
+                      Coming Soon
+                    </Badge>
+                  </div>
+                ) : plan.badge ? (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="bg-[#339af0] text-white border-0 px-3 text-xs font-semibold whitespace-nowrap">
                       {plan.badge}
                     </Badge>
                   </div>
-                )}
+                ) : null}
 
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="font-heading font-bold text-white text-lg">{plan.name}</div>
+                    <div className={`font-heading font-bold text-lg ${'comingSoon' in plan && plan.comingSoon ? 'text-white/40' : 'text-white'}`}>{plan.name}</div>
                     {plan.oneTime && (
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#339af0]/10 text-[#339af0] border border-[#339af0]/20">
                         No subscription
@@ -506,23 +515,11 @@ export default function LandingPage() {
                   </div>
 
                   <div className="flex items-end gap-1 mb-2">
-                    <span className="font-heading text-4xl font-bold text-white">{plan.price}</span>
-                    <span
-                      className={`text-sm mb-1 ${
-                        plan.oneTime ? 'text-[#339af0]/70 font-medium' : 'text-[#a1a1aa]'
-                      }`}
-                    >
-                      {plan.period}
-                    </span>
+                    <span className={`font-heading text-4xl font-bold ${'comingSoon' in plan && plan.comingSoon ? 'text-white/30' : 'text-white'}`}>{plan.price}</span>
+                    <span className="text-sm mb-1 text-[#a1a1aa]">{plan.period}</span>
                   </div>
 
-                  <div
-                    className={`text-xs font-medium px-2 py-1 rounded-md inline-block ${
-                      plan.highlight
-                        ? 'bg-[#339af0]/10 text-[#339af0]'
-                        : 'bg-white/5 text-[#a1a1aa]'
-                    }`}
-                  >
+                  <div className="text-xs font-medium px-2 py-1 rounded-md inline-block bg-white/5 text-[#a1a1aa]/60">
                     {plan.playbooks}
                   </div>
                 </div>
@@ -530,30 +527,32 @@ export default function LandingPage() {
                 <ul className="space-y-2.5 mb-8 flex-1">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5 text-sm">
-                      <CheckCircle2
-                        className={`w-4 h-4 mt-0.5 shrink-0 ${
-                          plan.highlight ? 'text-[#339af0]' : 'text-[#a1a1aa]'
-                        }`}
-                      />
-                      <span className="text-[#a1a1aa]">{feature}</span>
+                      <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-white/20" />
+                      <span className="text-[#a1a1aa]/50">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
-                <Link href={plan.ctaHref}>
-                  <Button
-                    className={`w-full ${
-                      plan.highlight
-                        ? 'bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold'
-                        : plan.oneTime
-                          ? 'bg-white/8 hover:bg-white/12 text-white border border-[#339af0]/20 hover:border-[#339af0]/40'
-                          : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
-                    }`}
-                  >
-                    {plan.cta}
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                {'comingSoon' in plan && plan.comingSoon ? (
+                  <Button disabled className="w-full bg-white/5 text-white/30 border border-white/5 cursor-not-allowed">
+                    Coming soon
                   </Button>
-                </Link>
+                ) : (
+                  <Link href={plan.ctaHref}>
+                    <Button
+                      className={`w-full ${
+                        plan.highlight
+                          ? 'bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold'
+                          : plan.oneTime
+                            ? 'bg-white/8 hover:bg-white/12 text-white border border-[#339af0]/20 hover:border-[#339af0]/40'
+                            : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
+                      }`}
+                    >
+                      {plan.cta}
+                      <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    </Button>
+                  </Link>
+                )}
               </div>
             ))}
           </div>
