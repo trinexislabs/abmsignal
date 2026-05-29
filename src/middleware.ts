@@ -10,6 +10,20 @@ const AUTH_PAGES = ['/auth/signin', '/auth/signup']
 export default auth((req) => {
   const { nextUrl, auth: session } = req
   const isLoggedIn = !!session?.user
+  const isAdmin = session?.user?.role === 'admin'
+
+  // ── Admin portal (separate from the customer journey) ──────────────────────
+  // The /admin/login page is public; everything else under /admin requires an
+  // authenticated admin. The JWT role here is a gate hint — pages additionally
+  // re-verify via requireAdmin() against the DB.
+  if (nextUrl.pathname === '/admin/login') {
+    if (isAdmin) return NextResponse.redirect(new URL('/admin', nextUrl))
+    return NextResponse.next()
+  }
+  if (nextUrl.pathname.startsWith('/admin')) {
+    if (!isAdmin) return NextResponse.redirect(new URL('/admin/login', nextUrl))
+    return NextResponse.next()
+  }
 
   const isProtected = PROTECTED.some((p) => nextUrl.pathname.startsWith(p))
   const isAuthPage = AUTH_PAGES.some((p) => nextUrl.pathname.startsWith(p))
