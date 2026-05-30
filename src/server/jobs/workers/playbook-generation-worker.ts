@@ -1,9 +1,20 @@
 import { playbookRepository } from '../../playbooks/playbook-repository'
 import { runRepository } from '../../runs/run-repository'
+import { recordPlaybookFailure } from '../../playbooks/failure'
 import { runAgentTask } from '@/lib/openclaw/client'
 import { parseAgentOutput } from '../../agent/agent-output-schema'
 import { buildResearchPrompt } from '../../agent/agent-prompts'
 import type { AgentStatus } from '@/types'
+
+async function promoteUserQueue(userId: string | null | undefined): Promise<void> {
+  if (!userId) return
+  try {
+    const { promoteNextInQueue } = await import('../../playbooks/queue-promotion')
+    await promoteNextInQueue(userId)
+  } catch (err) {
+    console.warn('[research-worker] queue promotion failed:', err)
+  }
+}
 
 export async function runResearchWorker(runId: string): Promise<void> {
   const run = await runRepository.findById(runId)
@@ -25,8 +36,10 @@ export async function runResearchWorker(runId: string): Promise<void> {
 
   const playbook = await playbookRepository.findById(playbookId)
   if (!playbook) {
-    await runRepository.markFailed(runId, 'Playbook not found during research')
-    await playbookRepository.setFailed(playbookId, 'Playbook not found during research')
+    await recordPlaybookFailure({
+      playbookId, runId, phase: 'research',
+      error: 'Playbook not found during research',
+    })
     return
   }
 
@@ -72,21 +85,20 @@ export async function runResearchWorker(runId: string): Promise<void> {
   }
 
   if (!agentResult.ok) {
-    await runRepository.markFailed(runId, agentResult.error)
-    await playbookRepository.setFailed(playbookId, agentResult.error)
-    await playbookRepository.logEvent(
-      playbookId, 'run.failed', `Research run failed: ${agentResult.error}`, {}, runId,
-    )
+    await recordPlaybookFailure({
+      playbookId, runId, phase: 'research', error: agentResult.error,
+    })
+    await promoteUserQueue(playbook.user_id)
     return
   }
 
   const parsed = parseAgentOutput(agentResult.rawOutput, 'research')
   if (!parsed.ok) {
-    await runRepository.markFailed(runId, parsed.error, agentResult.rawOutput)
-    await playbookRepository.setFailed(playbookId, parsed.error)
-    await playbookRepository.logEvent(
-      playbookId, 'run.failed', `Research output parsing failed: ${parsed.error}`, {}, runId,
-    )
+    await recordPlaybookFailure({
+      playbookId, runId, phase: 'research',
+      error: parsed.error, rawOutput: agentResult.rawOutput,
+    })
+    await promoteUserQueue(playbook.user_id)
     return
   }
 
@@ -126,4 +138,7 @@ export async function runResearchWorker(runId: string): Promise<void> {
   await playbookRepository.logEvent(
     playbookId, 'contacts.ready', 'Contacts ready for human review', {}, runId,
   )
+
+  // OpenClaw has released its slot — advance the user's queue if anything is waiting
+  await promoteUserQueue(playbook.user_id)
 }

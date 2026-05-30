@@ -3,6 +3,8 @@ import { runRepository } from '../runs/run-repository'
 import { runResearchWorker } from '../jobs/workers/playbook-generation-worker'
 import { runWritingWorker } from '../jobs/workers/playbook-writing-worker'
 import { prisma } from '../db'
+import { recordPlaybookFailure } from './failure'
+import { refundGrowthCreditForErroredPlaybook } from '../users/user-repository'
 import type {
   ApiActivePlaybook,
   ApiContact,
@@ -86,7 +88,9 @@ export const playbookService = {
     return playbookRepository.listActiveForUser(userId)
   },
 
-  async startGeneration(playbookId: string): Promise<{ runId: string; alreadyActive: boolean }> {
+  async startGeneration(
+    playbookId: string,
+  ): Promise<{ runId: string | null; outcome: 'started' | 'already_running' | 'queued' }> {
     // Check if there is already an active run — but cancel stale queued runs that were
     // never picked up (worker wasn't running / Redis was down).
     const active = await runRepository.findActiveForPlaybook(playbookId)
@@ -99,38 +103,53 @@ export const playbookService = {
         await playbookRepository.logEvent(playbookId, 'run.stale_cancelled', 'Stale queued run cancelled; restarting', { runId: active.id })
       } else if (active.status === 'running' && (await isRunStale(active.id, active.startedAt))) {
         // Worker died mid-run (no events for STALE_RUN_IDLE_MS) — recover by marking failed
-        await runRepository.markFailed(active.id, 'Run idle for over 60 minutes — worker presumed dead')
-        await playbookRepository.setFailed(playbookId, 'Generation timed out (no activity for 60 minutes)')
-        await playbookRepository.logEvent(playbookId, 'run.stale_reaped', 'Stale running run reaped due to inactivity', { runId: active.id }, active.id)
+        await recordPlaybookFailure({
+          playbookId, runId: active.id, phase: 'generation',
+          error: 'Run idle for over 60 minutes — worker presumed dead (timed out)',
+        })
       } else {
-        return { runId: active.id, alreadyActive: true }
+        return { runId: active.id, outcome: 'already_running' }
       }
     }
 
-    // Create a new research run
-    const run = await runRepository.create(playbookId, 'research')
-    await playbookRepository.setStatus(playbookId, 'queued', 0, [
-      { agent: 'orchestrator', task: 'Queued for processing', status: 'pending' },
-      { agent: 'researcher', task: 'Waiting to start', status: 'pending' },
-      { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
-      { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
-    ])
+    const pb = await playbookRepository.findById(playbookId)
+    if (!pb) throw new Error(`Playbook ${playbookId} not found`)
+    const userId = pb.user_id || null
 
+    // Authoritative per-user concurrency guard: atomically claim the user's
+    // single runtime slot. If another of their playbooks already holds it, this
+    // one is held in the queue rather than dispatched — a worker will promote it
+    // when the active playbook releases the slot (completes / reaches contact
+    // review / fails). This prevents a single user from saturating the agent
+    // runtime no matter how generation is triggered (rapid creates, retries,
+    // direct API calls).
+    const claimed = await playbookRepository.claimRuntimeSlot(userId, playbookId)
+    if (!claimed) {
+      await prisma.playbook.update({ where: { id: playbookId }, data: { status: 'pending_queue' } })
+      await playbookRepository.logEvent(
+        playbookId,
+        'queue.deferred',
+        'Another playbook is already generating — queued behind it',
+        { userId },
+      )
+      return { runId: null, outcome: 'queued' }
+    }
+
+    // Slot won — create the research run and dispatch it.
+    const run = await runRepository.create(playbookId, 'research')
     await playbookRepository.logEvent(playbookId, 'generation.queued', 'Generation queued', { runId: run.id })
 
     await enqueueOrFallback('research', run.id, playbookId, () => {
       void runResearchWorker(run.id).catch(async (err: Error) => {
-        console.error(`[playbook-service] Research worker crashed for run ${run.id}:`, err.message)
         try {
-          await runRepository.markFailed(run.id, err.message)
-          await playbookRepository.setFailed(playbookId, err.message)
+          await recordPlaybookFailure({ playbookId, runId: run.id, phase: 'research', error: err })
         } catch (inner) {
-          console.error('[playbook-service] Failed to mark crash:', inner)
+          console.error('[playbook-service] Failed to mark research crash:', inner)
         }
       })
     })
 
-    return { runId: run.id, alreadyActive: false }
+    return { runId: run.id, outcome: 'started' }
   },
 
   async submitContactReview(
@@ -160,12 +179,10 @@ export const playbookService = {
 
     await enqueueOrFallback('writing', run.id, playbookId, () => {
       void runWritingWorker(run.id).catch(async (err: Error) => {
-        console.error(`[playbook-service] Writing worker crashed for run ${run.id}:`, err.message)
         try {
-          await runRepository.markFailed(run.id, err.message)
-          await playbookRepository.setFailed(playbookId, err.message)
+          await recordPlaybookFailure({ playbookId, runId: run.id, phase: 'writing', error: err })
         } catch (inner) {
-          console.error('[playbook-service] Failed to mark crash:', inner)
+          console.error('[playbook-service] Failed to mark writing crash:', inner)
         }
       })
     })
@@ -194,9 +211,20 @@ export const playbookService = {
   // job is removed, (b) active runs are flipped to 'cancelled' before deletion
   // so the in-flight worker's next DB write throws cleanly, and (c) all DB rows
   // are removed in one transaction so no orphan data is left behind.
-  async deletePlaybook(playbookId: string): Promise<{ deleted: boolean }> {
+  async deletePlaybook(
+    playbookId: string,
+  ): Promise<{ deleted: boolean; creditRefunded: boolean }> {
     const pb = await playbookRepository.findById(playbookId)
-    if (!pb) return { deleted: false }
+    if (!pb) return { deleted: false, creditRefunded: false }
+
+    // Capture the final status BEFORE we touch anything. A cycle-credit refund
+    // is only owed when the user is deleting a playbook that genuinely ended in
+    // the errored state — Condition 1. (findById maps DB 'failed' → 'error'.)
+    // Condition 2 — "the user chose to delete, not regenerate" — is satisfied
+    // structurally: regeneration runs through the generate endpoint, which never
+    // refunds; only this delete path does.
+    const wasErrored = pb.status === 'error'
+    const userId = pb.user_id || null
 
     // 1. Mark any queued/running runs as cancelled so the worker bails on its
     //    next DB touch. (We can't IPC-kill a worker process, but its next
@@ -232,7 +260,29 @@ export const playbookService = {
     // 3. Cascade-delete all DB rows.
     await playbookRepository.deleteCascade(playbookId)
 
-    return { deleted: true }
+    // 4. Refund a growth cycle credit if the user just deleted an errored
+    //    playbook. Done AFTER the cascade succeeds so we never credit back for a
+    //    delete that didn't actually happen. All eligibility checks (growth
+    //    plan, credit actually consumed, once-per-playbook, same cycle) live in
+    //    the helper; the UserCredit ledger is keyed to the user, not the
+    //    playbook, so it survives the cascade above.
+    let creditRefunded = false
+    if (wasErrored && userId) {
+      try {
+        const { refunded } = await refundGrowthCreditForErroredPlaybook(userId, playbookId)
+        creditRefunded = refunded
+        if (refunded) {
+          console.info(
+            `[playbook-service] refunded 1 growth cycle credit to user ${userId} for errored playbook ${playbookId}`,
+          )
+        }
+      } catch (err) {
+        // A failed refund must never block the delete itself — log and move on.
+        console.warn(`[playbook-service] credit refund skipped for ${playbookId}:`, err)
+      }
+    }
+
+    return { deleted: true, creditRefunded }
   },
 }
 
@@ -265,9 +315,10 @@ async function reapStaleRunsForUser(userId: string): Promise<void> {
   if (runs.length === 0) return
   for (const run of runs) {
     if (await isRunStale(run.id, run.startedAt?.toISOString() ?? null)) {
-      await runRepository.markFailed(run.id, 'Run idle for over 60 minutes — worker presumed dead')
-      await playbookRepository.setFailed(run.playbookId, 'Generation timed out (no activity for 60 minutes)')
-      await playbookRepository.logEvent(run.playbookId, 'run.stale_reaped', 'Stale running run reaped due to inactivity', { runId: run.id }, run.id)
+      await recordPlaybookFailure({
+        playbookId: run.playbookId, runId: run.id, phase: 'generation',
+        error: 'Run idle for over 60 minutes — worker presumed dead (timed out)',
+      })
     }
   }
 }

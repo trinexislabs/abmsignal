@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/server/db'
+import { playbookRepository } from '@/server/playbooks/playbook-repository'
 import { playbookService } from '@/server/playbooks/playbook-service'
 import {
   getUserCreditBalance,
   getUserSubscription,
+  playbookConsumedReason,
 } from '@/server/users/user-repository'
 import type { PlaybookCreateRequest } from '@/types'
 
@@ -39,6 +41,9 @@ export async function POST(request: Request) {
 
   // Both plans are credit-gated: one_off pays per playbook, growth gets 10
   // credits per 30-day cycle and can buy single top-ups when those run out.
+  // Both plans are also concurrency-gated: one_off blocks while any playbook
+  // is in-flight (research/writing), growth allows up to 4 queued at once.
+  let markPendingQueue = false
   if (userId) {
     const sub = await getUserSubscription(userId)
     if (sub?.plan === 'one_off' || sub?.plan === 'growth') {
@@ -53,6 +58,34 @@ export async function POST(request: Request) {
           },
           { status: 402 },
         )
+      }
+
+      const inFlight = await playbookRepository.countInFlightForUser(userId)
+
+      if (sub.plan === 'one_off') {
+        if (inFlight > 0) {
+          return NextResponse.json(
+            {
+              error:
+                'A playbook is already generating. One-off accounts process one at a time — wait for it to reach the contact review step or complete before starting another.',
+            },
+            { status: 409 },
+          )
+        }
+      } else {
+        // growth: cap at 4 non-terminal playbooks (pending_queue + in-flight + contact_review)
+        const nonTerminal = await playbookRepository.countNonTerminalForUser(userId)
+        if (nonTerminal >= 4) {
+          return NextResponse.json(
+            {
+              error:
+                'Queue is full (4 active playbooks max). Complete or delete an existing playbook to start a new one.',
+            },
+            { status: 409 },
+          )
+        }
+        // If something is already in-flight, the new playbook waits in the user queue
+        markPendingQueue = inFlight > 0
       }
     }
   }
@@ -87,6 +120,16 @@ export async function POST(request: Request) {
     priorityTier: target_account.priority_tier,
   })
 
+  // For growth users where another playbook is already in-flight, hold this
+  // one in the user queue. The generate endpoint will no-op for it; workers
+  // will auto-promote it when the current playbook releases its slot.
+  if (markPendingQueue) {
+    await prisma.playbook.update({
+      where: { id: playbook.id },
+      data: { status: 'pending_queue' },
+    })
+  }
+
   // Deduct one credit now that the playbook exists. Applies to both plans —
   // growth credits come from the monthly cycle grant, one_off credits from
   // per-playbook top-ups.
@@ -94,7 +137,7 @@ export async function POST(request: Request) {
     const sub = await getUserSubscription(userId)
     if (sub?.plan === 'one_off' || sub?.plan === 'growth') {
       await prisma.userCredit.create({
-        data: { userId, amount: -1, reason: `playbook_consumed:${playbook.id}` },
+        data: { userId, amount: -1, reason: playbookConsumedReason(playbook.id) },
       })
     }
   }

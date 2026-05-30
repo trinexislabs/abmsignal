@@ -9,6 +9,7 @@
 import { playbookRepository } from '../playbooks/playbook-repository'
 import { runRepository } from '../runs/run-repository'
 import { parseAgentOutput } from '../agent/agent-output-schema'
+import { extractAgentText } from '../agent/openclaw-adapter'
 import { prisma } from '../db'
 import type { PlaybookSection } from '../../generated/prisma/client'
 
@@ -95,6 +96,44 @@ async function test3_researchOutputParsing() {
     assert(result.data.contacts.length === 1, 'One contact parsed')
     assert(result.data.contacts[0].name === 'Jane Smith', 'Contact name correct')
   }
+}
+
+async function test3b_envelopeMultiPayloadExtraction() {
+  console.log('\n[3b] Multi-payload OpenClaw envelope extracts the JSON answer (regression)')
+  const answerJson = JSON.stringify({
+    phase: 'research',
+    status: 'contact_review',
+    progress_pct: 60,
+    contacts: [{ name: 'Jane Smith', title: 'CTO', company: 'TestCo', confidence: 'high' }],
+    sources: [],
+  })
+  // Mirrors the real failure: the agent emits conversational preamble in the
+  // FIRST payload and the JSON answer in a LATER payload. extractAgentText must
+  // not drop the later payloads (the old payloads[0]-only code did).
+  const envelope = JSON.stringify({
+    status: 'ok',
+    result: {
+      payloads: [
+        { text: 'Let me research TestCo to ensure specificity.' },
+        { text: 'Now I have enough data. Let me compile the JSON output.' },
+        { text: `\`\`\`json\n${answerJson}\n\`\`\`` },
+      ],
+    },
+  })
+
+  const extracted = extractAgentText(envelope)
+  assert(extracted.includes('"section_key"') === false, 'Extracted text is research, not writing')
+  assert(extracted.includes('Jane Smith'), 'Extracted text contains the JSON answer from a later payload')
+
+  const result = parseAgentOutput(extracted, 'research')
+  assert(result.ok, 'Multi-payload envelope parses OK after extraction')
+  if (result.ok) {
+    assert(result.data.contacts[0].name === 'Jane Smith', 'Contact recovered from later payload')
+  }
+
+  // Non-envelope input must pass through untouched.
+  const plain = extractAgentText('just plain agent text, no envelope')
+  assert(plain === 'just plain agent text, no envelope', 'Non-envelope input passes through unchanged')
 }
 
 async function test4_invalidResearchOutputFails() {
@@ -191,6 +230,196 @@ async function test8_failedRunSetsPlaybookError(playbookId: string, runId: strin
   assert(status?.failed_reason === 'Test error message', 'Failed reason preserved')
 }
 
+// ─── User-friendly failure messages + dev observability split ───────────────
+
+async function test14_recordPlaybookFailureSplitsAudiences() {
+  console.log('\n[14] recordPlaybookFailure: friendly for users, raw for admins')
+  const { recordPlaybookFailure } = await import('../playbooks/failure')
+  const pb = await playbookRepository.create({
+    productName: 'FailProd', productBrief: {}, targetCompany: 'FailCo',
+    industry: 'Tech', geography: 'US', priorityTier: 'tier1',
+  })
+  createdIds.push(pb.id)
+  const run = await runRepository.create(pb.id, 'writing')
+  const rawError = 'ZodError: sections[3].content_markdown expected string, received null'
+
+  await recordPlaybookFailure({
+    playbookId: pb.id, runId: run.id, phase: 'writing',
+    error: rawError, rawOutput: '{"garbage": true}',
+  })
+
+  // Playbook (user-facing) carries the friendly message, NOT the raw error.
+  const after = await playbookRepository.findById(pb.id)
+  assert(after?.status === 'error', 'Playbook marked error')
+  assert(!!after?.failed_reason && !after.failed_reason.includes('ZodError'), 'failed_reason hides raw ZodError')
+  assert(/support|retry|try again/i.test(after?.failed_reason ?? ''), 'failed_reason gives the user an action')
+
+  // Run (admin-facing) keeps the raw error + raw output.
+  const runRow = await prisma.playbookRun.findUnique({ where: { id: run.id } })
+  assert(runRow?.errorMessage === rawError, 'Run errorMessage keeps the raw error for admins')
+  assert(runRow?.status === 'failed', 'Run marked failed')
+  assert(runRow?.rawOutput === '{"garbage": true}', 'Raw agent output preserved on the run')
+
+  // Activity-feed event: friendly message, raw error tucked into metadata.
+  const failEvent = await prisma.playbookEvent.findFirst({
+    where: { playbookId: pb.id, type: 'run.failed' },
+    orderBy: { createdAt: 'desc' },
+  })
+  assert(!!failEvent && !failEvent.message.includes('ZodError'), 'run.failed event message hides raw error')
+  assert((failEvent?.metadata ?? '').includes('ZodError'), 'run.failed event metadata keeps raw error for admins')
+}
+
+async function test15_userMessageCategorization() {
+  console.log('\n[15] toUserFacingMessage categorizes common failures')
+  const { toUserFacingMessage } = await import('../playbooks/failure')
+  const timeout = toUserFacingMessage('Run idle for over 60 minutes — worker presumed dead', 'writing')
+  assert(/timed out/i.test(timeout) && /retry|try again/i.test(timeout), 'Timeout → retry guidance')
+  const net = toUserFacingMessage('fetch failed: ECONNREFUSED 127.0.0.1:8080', 'research')
+  assert(/reach the generation engine|try again/i.test(net), 'Connection error → engine-unavailable guidance')
+  const parse = toUserFacingMessage('Unexpected token < in JSON at position 0', 'writing')
+  assert(/unexpected result|retry/i.test(parse), 'Parse error → friendly retry guidance')
+  // No raw fragments ever leak through.
+  for (const m of [timeout, net, parse]) {
+    assert(!/ECONNREFUSED|JSON at position|presumed dead/i.test(m), 'No raw fragments leak to the user message')
+  }
+}
+
+// ─── Growth errored-delete credit refund ────────────────────────────────────
+
+const createdUserIds: string[] = []
+
+// A growth subscriber in an active 30-day cycle. Grants the 10-credit cycle and
+// (optionally) consumes one credit for a specific playbook id.
+async function makeGrowthUser(consumedForPlaybook?: string): Promise<string> {
+  const user = await prisma.user.create({
+    data: { email: `refund_test_${crypto.randomUUID()}@example.com` },
+  })
+  createdUserIds.push(user.id)
+  await prisma.userSubscription.create({
+    data: {
+      userId: user.id,
+      plan: 'growth',
+      status: 'active',
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+  })
+  await prisma.userCredit.create({ data: { userId: user.id, amount: 10, reason: 'growth_cycle_grant' } })
+  if (consumedForPlaybook) {
+    await prisma.userCredit.create({
+      data: { userId: user.id, amount: -1, reason: `playbook_consumed:${consumedForPlaybook}` },
+    })
+  }
+  return user.id
+}
+
+async function makeUserPlaybook(userId: string): Promise<string> {
+  const pb = await playbookRepository.create({
+    productName: 'RefundProd', productBrief: { description: 'x' },
+    targetCompany: 'RefundCo', industry: 'Tech', geography: 'US', priorityTier: 'tier1',
+  })
+  createdIds.push(pb.id)
+  await prisma.playbook.update({ where: { id: pb.id }, data: { userId } })
+  return pb.id
+}
+
+async function balance(userId: string): Promise<number> {
+  const r = await prisma.userCredit.aggregate({ where: { userId }, _sum: { amount: true } })
+  return r._sum.amount ?? 0
+}
+
+async function test9_growthErroredDeleteRefundsCredit() {
+  console.log('\n[9] Growth user deleting an errored playbook gets +1 credit back')
+  const { playbookService } = await import('../playbooks/playbook-service')
+  const userId = await makeGrowthUser()
+  const pbId = await makeUserPlaybook(userId)
+  await prisma.userCredit.create({ data: { userId, amount: -1, reason: `playbook_consumed:${pbId}` } })
+  await playbookRepository.setFailed(pbId, 'boom')
+
+  assert((await balance(userId)) === 9, 'Balance is 9 after consuming 1')
+
+  const res = await playbookService.deletePlaybook(pbId)
+  assert(res.deleted, 'Playbook deleted')
+  assert(res.creditRefunded, 'creditRefunded is true')
+  assert((await balance(userId)) === 10, 'Balance restored to 10')
+  const refundRow = await prisma.userCredit.findFirst({
+    where: { userId, reason: `errored_playbook_refund:${pbId}` },
+  })
+  assert(refundRow?.amount === 1, 'Refund ledger row written with +1')
+}
+
+async function test10_nonErroredDeleteDoesNotRefund() {
+  console.log('\n[10] Deleting a COMPLETE growth playbook does NOT refund')
+  const { playbookService } = await import('../playbooks/playbook-service')
+  const userId = await makeGrowthUser()
+  const pbId = await makeUserPlaybook(userId)
+  await prisma.userCredit.create({ data: { userId, amount: -1, reason: `playbook_consumed:${pbId}` } })
+  await playbookRepository.setComplete(pbId)
+
+  const res = await playbookService.deletePlaybook(pbId)
+  assert(res.deleted && !res.creditRefunded, 'Deleted but no refund for a complete playbook')
+  assert((await balance(userId)) === 9, 'Balance stays at 9 (no refund)')
+}
+
+async function test11_oneOffErroredDeleteDoesNotRefund() {
+  console.log('\n[11] one_off user deleting an errored playbook does NOT refund')
+  const { playbookService } = await import('../playbooks/playbook-service')
+  const user = await prisma.user.create({ data: { email: `refund_test_${crypto.randomUUID()}@example.com` } })
+  createdUserIds.push(user.id)
+  await prisma.userSubscription.create({ data: { userId: user.id, plan: 'one_off', status: 'active' } })
+  await prisma.userCredit.create({ data: { userId: user.id, amount: 1, reason: 'mock_payment_one_off' } })
+  const pbId = await makeUserPlaybook(user.id)
+  await prisma.userCredit.create({ data: { userId: user.id, amount: -1, reason: `playbook_consumed:${pbId}` } })
+  await playbookRepository.setFailed(pbId, 'boom')
+
+  const res = await playbookService.deletePlaybook(pbId)
+  assert(res.deleted && !res.creditRefunded, 'Deleted but no refund for one_off plan')
+  assert((await balance(user.id)) === 0, 'one_off balance stays at 0')
+}
+
+async function test12_refundIsIdempotentAndConsumptionRequired() {
+  console.log('\n[12] Refund needs a real consumption and is once-per-playbook')
+  const { refundGrowthCreditForErroredPlaybook } = await import('../users/user-repository')
+  const userId = await makeGrowthUser()
+
+  const ghostId = `pb_never_consumed_${crypto.randomUUID()}`
+  const r1 = await refundGrowthCreditForErroredPlaybook(userId, ghostId)
+  assert(!r1.refunded, 'No refund when nothing was consumed for the playbook')
+
+  const consumedId = `pb_consumed_${crypto.randomUUID()}`
+  await prisma.userCredit.create({ data: { userId, amount: -1, reason: `playbook_consumed:${consumedId}` } })
+  const r2 = await refundGrowthCreditForErroredPlaybook(userId, consumedId)
+  assert(r2.refunded, 'First refund succeeds')
+  const r3 = await refundGrowthCreditForErroredPlaybook(userId, consumedId)
+  assert(!r3.refunded, 'Second refund for same playbook is a no-op (idempotent)')
+  const refundRows = await prisma.userCredit.count({
+    where: { userId, reason: `errored_playbook_refund:${consumedId}` },
+  })
+  assert(refundRows === 1, 'Exactly one refund row exists')
+}
+
+async function test13_priorCycleConsumptionNotRefunded() {
+  console.log('\n[13] A credit spent in a prior (reset) cycle is not refunded')
+  const { refundGrowthCreditForErroredPlaybook } = await import('../users/user-repository')
+  const userId = await makeGrowthUser()
+  const oldId = `pb_old_cycle_${crypto.randomUUID()}`
+  await prisma.userCredit.create({
+    data: {
+      userId, amount: -1, reason: `playbook_consumed:${oldId}`,
+      createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
+    },
+  })
+  const r = await refundGrowthCreditForErroredPlaybook(userId, oldId)
+  assert(!r.refunded, 'No refund for a consumption from an already-reset prior cycle')
+}
+
+async function cleanupUsers(ids: string[]) {
+  for (const id of ids) {
+    await prisma.userCredit.deleteMany({ where: { userId: id } })
+    await prisma.userSubscription.deleteMany({ where: { userId: id } })
+    await prisma.user.deleteMany({ where: { id } })
+  }
+}
+
 async function main() {
   console.log('=== ABMSignal Backend Tests ===')
 
@@ -198,14 +427,23 @@ async function main() {
     const playbookId = await test1_createPlaybook()
     const runId = await test2_generateCreatesRun(playbookId)
     await test3_researchOutputParsing()
+    await test3b_envelopeMultiPayloadExtraction()
     await test4_invalidResearchOutputFails()
     await test5_contactApprovalSavesAndQueuesWriting(playbookId)
     await test6_writingOutputSavesSections(playbookId)
     await test7_statusEndpointShape(playbookId)
     await test8_failedRunSetsPlaybookError(playbookId, runId)
+    await test14_recordPlaybookFailureSplitsAudiences()
+    await test15_userMessageCategorization()
+    await test9_growthErroredDeleteRefundsCredit()
+    await test10_nonErroredDeleteDoesNotRefund()
+    await test11_oneOffErroredDeleteDoesNotRefund()
+    await test12_refundIsIdempotentAndConsumptionRequired()
+    await test13_priorCycleConsumptionNotRefunded()
   } finally {
     console.log('\n[cleanup] Removing test data...')
     await cleanup(createdIds)
+    await cleanupUsers(createdUserIds)
     await prisma.$disconnect()
   }
 

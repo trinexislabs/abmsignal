@@ -162,6 +162,36 @@ const agentStatuses = [
   { name: 'Reviewer', status: 'quality check pending', color: '#a78bfa', active: false },
 ]
 
+type SectionGroup = 'Intelligence' | 'Positioning' | 'Outreach' | 'Execution'
+
+const GROUP_COLORS: Record<SectionGroup, { text: string; border: string; bg: string; dot: string }> = {
+  Intelligence: { text: '#60a5fa', border: '#3b82f6/30', bg: '#1e3a5f/20', dot: '#3b82f6' },
+  Positioning:  { text: '#a78bfa', border: '#8b5cf6/30', bg: '#2d1b69/20', dot: '#8b5cf6' },
+  Outreach:     { text: '#34d399', border: '#10b981/30', bg: '#064e3b/20', dot: '#10b981' },
+  Execution:    { text: '#fbbf24', border: '#f59e0b/30', bg: '#451a03/20', dot: '#f59e0b' },
+}
+
+const PLAYBOOK_SECTIONS: { label: string; description: string; group: SectionGroup }[] = [
+  { label: 'Executive Summary',      description: 'Deal thesis, why now, headline opportunity',         group: 'Intelligence' },
+  { label: 'Account Snapshot',       description: 'Company profile, size, financials, tech stack',      group: 'Intelligence' },
+  { label: 'Account Fit Score',      description: 'ICP match score with evidence across 6 dimensions',  group: 'Intelligence' },
+  { label: 'Buying Committee',       description: 'Key stakeholders, roles, influence map',             group: 'Intelligence' },
+  { label: 'Pain Hypotheses',        description: 'Data-backed challenges most likely driving urgency', group: 'Intelligence' },
+  { label: 'Why Now',                description: 'Trigger events & signals creating a buying window',  group: 'Intelligence' },
+  { label: 'Value Proposition',      description: 'Tailored pitch mapped to the account\'s priorities', group: 'Positioning' },
+  { label: 'Competitive Landscape',  description: 'Incumbent vendors, weaknesses, displacement angles', group: 'Positioning' },
+  { label: 'Cultural Context',       description: 'Regional & industry norms shaping every interaction', group: 'Positioning' },
+  { label: 'Deal Motion',            description: 'Recommended sales motion, entry point & sequence',   group: 'Positioning' },
+  { label: 'Personalized Sequences', description: 'Per-contact LinkedIn, email & call scripts',         group: 'Outreach' },
+  { label: 'Discovery Guide',        description: '10 tailored questions to surface MEDDIC criteria',   group: 'Outreach' },
+  { label: 'Demo Strategy',          description: 'Persona-specific demo flow with proof points',       group: 'Outreach' },
+  { label: 'Battle Cards',           description: 'Objection handling vs. named competitors',           group: 'Outreach' },
+  { label: 'Pilot Design',           description: 'Scoped proof-of-concept blueprint for this account', group: 'Execution' },
+  { label: 'ROI Model',              description: 'Account-specific business case & payback estimate',  group: 'Execution' },
+  { label: 'Deal Execution Plan',    description: 'Week-by-week milestone roadmap to close',            group: 'Execution' },
+  { label: 'Appendix',              description: 'Sources, signal log, raw research references',        group: 'Execution' },
+]
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
@@ -428,10 +458,12 @@ export default function LandingPage() {
             })}
           </div>
 
-          {/* Example account callout */}
-          <div className="mt-16 p-6 rounded-2xl bg-[#141419] border border-[#339af0]/15 relative overflow-hidden">
+          {/* Example account callout + what's inside */}
+          <div className="mt-16 rounded-2xl bg-[#141419] border border-[#339af0]/15 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-[#1e3a5f]/10 to-transparent pointer-events-none" />
-            <div className="relative flex flex-col md:flex-row items-start md:items-center gap-4">
+
+            {/* Example header row */}
+            <div className="relative flex flex-col md:flex-row items-start md:items-center gap-4 p-6 border-b border-white/[0.05]">
               <div className="w-12 h-12 rounded-xl bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center shrink-0">
                 <Bot className="w-6 h-6 text-[#339af0]" />
               </div>
@@ -456,6 +488,48 @@ export default function LandingPage() {
                   <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
                 </Button>
               </Link>
+            </div>
+
+            {/* 18-section topic list */}
+            <div className="relative p-6">
+              <p className="text-xs font-medium text-[#a1a1aa] uppercase tracking-wider mb-4">
+                What&apos;s inside every playbook — 18 AI-generated sections
+              </p>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3">
+                {PLAYBOOK_SECTIONS.map(({ label, description, group }, i) => (
+                  <div key={label} className="flex items-start gap-2.5">
+                    <span className="text-[10px] font-mono text-[#339af0]/60 mt-0.5 w-5 shrink-0 tabular-nums">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <p className="text-xs font-medium text-white leading-snug">{label}</p>
+                      <p className="text-[11px] text-[#a1a1aa]/80 leading-snug">{description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 mt-5 pt-4 border-t border-white/[0.05]">
+                {(['Intelligence', 'Positioning', 'Outreach', 'Execution'] as const).map(g => (
+                  <span
+                    key={g}
+                    className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border"
+                    style={{
+                      color: GROUP_COLORS[g].text,
+                      borderColor: GROUP_COLORS[g].border,
+                      backgroundColor: GROUP_COLORS[g].bg,
+                    }}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ backgroundColor: GROUP_COLORS[g].dot }}
+                    />
+                    {g}
+                  </span>
+                ))}
+                <span className="text-[10px] text-[#a1a1aa]/60 self-center ml-1">
+                  — every section hyper-personalized to your target account
+                </span>
+              </div>
             </div>
           </div>
         </div>

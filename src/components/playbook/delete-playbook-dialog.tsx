@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { AlertTriangle, Loader2, Trash2 } from 'lucide-react'
 import {
   Dialog,
@@ -20,7 +21,7 @@ interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   // Called after the API confirms deletion. If omitted, we navigate to /dashboard.
-  onDeleted?: () => void
+  onDeleted?: (result: { creditRefunded: boolean }) => void
 }
 
 export function DeletePlaybookDialog({
@@ -40,13 +41,29 @@ export function DeletePlaybookDialog({
     setDeleting(true)
     try {
       const res = await fetch(`/api/playbooks/${playbookId}`, { method: 'DELETE' })
+      const body = await res.json().catch(() => ({} as Record<string, unknown>))
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? `Delete failed (${res.status})`)
+        throw new Error((body as { error?: string }).error ?? `Delete failed (${res.status})`)
       }
+
+      // Growth users get a cycle credit back for deleting a failed production —
+      // reassure them right away that they weren't charged for it.
+      const data = (body as { data?: { credit_refunded?: boolean; message?: string } }).data
+      const creditRefunded = data?.credit_refunded === true
+      if (creditRefunded) {
+        toast.success('Credit refunded', {
+          description:
+            data?.message ??
+            "We've added 1 credit back to your current cycle quota — you're not charged for failed productions.",
+          duration: 7000,
+        })
+      } else {
+        toast.success('Playbook deleted')
+      }
+
       onOpenChange(false)
       if (onDeleted) {
-        onDeleted()
+        onDeleted({ creditRefunded })
       } else {
         router.push('/dashboard')
         router.refresh()

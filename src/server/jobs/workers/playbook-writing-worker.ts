@@ -1,9 +1,20 @@
 import { playbookRepository } from '../../playbooks/playbook-repository'
 import { runRepository } from '../../runs/run-repository'
+import { recordPlaybookFailure } from '../../playbooks/failure'
 import { runAgentTask } from '@/lib/openclaw/client'
 import { parseAgentOutput } from '../../agent/agent-output-schema'
 import { buildWritingPromptBatch, WRITING_BATCH_1_KEYS, WRITING_BATCH_2_KEYS } from '../../agent/agent-prompts'
 import type { AgentStatus } from '@/types'
+
+async function promoteUserQueue(userId: string | null | undefined): Promise<void> {
+  if (!userId) return
+  try {
+    const { promoteNextInQueue } = await import('../../playbooks/queue-promotion')
+    await promoteNextInQueue(userId)
+  } catch (err) {
+    console.warn('[writing-worker] queue promotion failed:', err)
+  }
+}
 
 export async function runWritingWorker(runId: string): Promise<void> {
   const run = await runRepository.findById(runId)
@@ -25,8 +36,10 @@ export async function runWritingWorker(runId: string): Promise<void> {
 
   const playbook = await playbookRepository.findById(playbookId)
   if (!playbook) {
-    await runRepository.markFailed(runId, 'Playbook not found during writing')
-    await playbookRepository.setFailed(playbookId, 'Playbook not found during writing')
+    await recordPlaybookFailure({
+      playbookId, runId, phase: 'writing',
+      error: 'Playbook not found during writing',
+    })
     return
   }
 
@@ -85,21 +98,20 @@ export async function runWritingWorker(runId: string): Promise<void> {
   }
 
   if (!result1.ok) {
-    await runRepository.markFailed(runId, result1.error)
-    await playbookRepository.setFailed(playbookId, result1.error)
-    await playbookRepository.logEvent(
-      playbookId, 'run.failed', `Writing run (batch 1) failed: ${result1.error}`, {}, runId,
-    )
+    await recordPlaybookFailure({
+      playbookId, runId, phase: 'writing', error: result1.error,
+    })
+    await promoteUserQueue(playbook.user_id)
     return
   }
 
   const parsed1 = parseAgentOutput(result1.rawOutput, 'writing')
   if (!parsed1.ok) {
-    await runRepository.markFailed(runId, parsed1.error, result1.rawOutput)
-    await playbookRepository.setFailed(playbookId, parsed1.error)
-    await playbookRepository.logEvent(
-      playbookId, 'run.failed', `Writing batch 1 parse failed: ${parsed1.error}`, {}, runId,
-    )
+    await recordPlaybookFailure({
+      playbookId, runId, phase: 'writing',
+      error: parsed1.error, rawOutput: result1.rawOutput,
+    })
+    await promoteUserQueue(playbook.user_id)
     return
   }
 
@@ -123,24 +135,33 @@ export async function runWritingWorker(runId: string): Promise<void> {
   await runRepository.saveRawOutput(runId, result2.ok ? result2.rawOutput : result2.error)
 
   if (!result2.ok) {
-    // Save batch 1 sections to avoid losing work, mark partial failure
+    // Save batch 1 sections to avoid losing work, then record the failure.
     await playbookRepository.logEvent(
-      playbookId, 'run.partial', `Writing batch 2 failed: ${result2.error} — saving batch 1 sections`, {}, runId,
+      playbookId, 'run.partial',
+      'Generated the first set of sections before an issue interrupted the rest — your partial progress was saved.',
+      { rawError: result2.error }, runId,
     )
     await playbookRepository.replaceSections(playbookId, mapSections(parsed1.data.sections))
-    await runRepository.markFailed(runId, result2.error)
-    await playbookRepository.setFailed(playbookId, `Batch 2 failed: ${result2.error}`)
+    await recordPlaybookFailure({
+      playbookId, runId, phase: 'writing', error: result2.error,
+    })
+    await promoteUserQueue(playbook.user_id)
     return
   }
 
   const parsed2 = parseAgentOutput(result2.rawOutput, 'writing')
   if (!parsed2.ok) {
     await playbookRepository.logEvent(
-      playbookId, 'run.partial', `Writing batch 2 parse failed: ${parsed2.error} — saving batch 1 sections`, {}, runId,
+      playbookId, 'run.partial',
+      'Generated the first set of sections before an issue interrupted the rest — your partial progress was saved.',
+      { rawError: parsed2.error }, runId,
     )
     await playbookRepository.replaceSections(playbookId, mapSections(parsed1.data.sections))
-    await runRepository.markFailed(runId, parsed2.error, result2.rawOutput)
-    await playbookRepository.setFailed(playbookId, `Batch 2 parse failed: ${parsed2.error}`)
+    await recordPlaybookFailure({
+      playbookId, runId, phase: 'writing',
+      error: parsed2.error, rawOutput: result2.rawOutput,
+    })
+    await promoteUserQueue(playbook.user_id)
     return
   }
 
@@ -178,6 +199,9 @@ export async function runWritingWorker(runId: string): Promise<void> {
     { agent: 'writer', task: 'All 18 sections generated', status: 'complete' },
     { agent: 'reviewer', task: 'Quality review complete', status: 'complete' },
   ])
+
+  // Playbook complete — advance the user's queue if anything is waiting
+  await promoteUserQueue(playbook.user_id)
 }
 
 type RawSection = {

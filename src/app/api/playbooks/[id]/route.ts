@@ -87,5 +87,16 @@ export async function DELETE(_req: Request, { params }: RouteContext) {
   }
 
   const result = await playbookService.deletePlaybook(id)
-  return NextResponse.json({ data: { deleted: result.deleted, id } })
+  return NextResponse.json({
+    data: {
+      deleted: result.deleted,
+      id,
+      // Growth users get a cycle credit back when they delete a failed
+      // production — surface it so the UI can reassure them they weren't charged.
+      credit_refunded: result.creditRefunded,
+      message: result.creditRefunded
+        ? "This playbook ended in an error, so we've added 1 credit back to your current cycle quota — you're not charged for failed productions."
+        : undefined,
+    },
+  })
 }

@@ -22,10 +22,11 @@ import {
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { DeletePlaybookDialog } from '@/components/playbook/delete-playbook-dialog'
 import { cn } from '@/lib/utils'
-import { Trash2, RefreshCw } from 'lucide-react'
+import { Trash2, RefreshCw, LifeBuoy } from 'lucide-react'
+import { SUPPORT_EMAIL } from '@/lib/support'
 import type { AgentStatus, PlaybookStatus } from '@/types'
 
 // ─────────────────────────────────────────────────────────
@@ -105,6 +106,7 @@ const AGENT_ORDER: AgentStatus['agent'][] = ['orchestrator', 'researcher', 'writ
 const STATUS_LABELS: Record<PlaybookStatus, string> = {
   draft: 'Draft',
   queued: 'Queued',
+  pending_queue: 'In Queue',
   researching: 'Researching Account',
   contact_review: 'Contact Review Ready',
   writing: 'Writing Playbook',
@@ -119,6 +121,7 @@ const STATUS_LABELS: Record<PlaybookStatus, string> = {
 const STATUS_BADGE: Record<PlaybookStatus, string> = {
   draft: 'bg-white/10 text-white border-white/20',
   queued: 'bg-white/10 text-white border-white/20',
+  pending_queue: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
   researching: 'bg-[#339af0]/15 text-[#339af0] border-[#339af0]/30',
   contact_review: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
   writing: 'bg-[#339af0]/15 text-[#339af0] border-[#339af0]/30',
@@ -637,6 +640,8 @@ export default function ProcessingPage() {
               <p className="text-xs text-[#a1a1aa] leading-relaxed">
                 {currentStatus === 'researching' &&
                   'The research agent is running Universal Deep Research loops across public data sources to build a full account intelligence dossier. Once contacts are discovered, you’ll review and verify them before the writer agent begins crafting personalized sequences.'}
+                {currentStatus === 'pending_queue' &&
+                  'This playbook is waiting in your queue. Your other playbook is still generating — as soon as it reaches the contact review step or completes, this one will start automatically. You can close this tab; we\'ll run it in the background.'}
                 {currentStatus === 'queued' &&
                   'Your playbook is queued and will start within moments. The orchestrator is preparing the research pipeline.'}
                 {currentStatus === 'contact_review' &&
@@ -663,21 +668,21 @@ export default function ProcessingPage() {
             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 mb-4">
               <p className="text-sm text-red-400 mb-1 font-medium">
                 {currentStatus === 'rejected'
-                  ? 'Playbook generation was rejected'
+                  ? "We couldn't complete this playbook"
                   : currentStatus === 'cancelled'
                     ? 'Playbook generation was cancelled'
-                    : 'An error occurred during generation'}
+                    : "Generation didn't finish"}
               </p>
               <p className="text-xs text-[#a1a1aa]">
                 {currentStatus === 'rejected'
-                  ? 'The agent could not process this request. This may be due to insufficient product information.'
+                  ? 'We were unable to process this request — this can happen when the product brief is too sparse for the agent to work with. Try adding more detail and regenerating.'
                   : statusData?.failed_reason
                     ? statusData.failed_reason
-                    : 'The agent encountered an unexpected error. You can try again with the same inputs, or delete this playbook to start over.'}
+                    : "Something went wrong while generating your playbook. Your inputs are saved — please retry. If the issue persists, contact our support team and we'll help."}
               </p>
               {(statusData?.product_name || statusData?.target_company) && (
                 <p className="text-[11px] text-[#a1a1aa]/80 mt-2">
-                  Product brief & target account are saved — retry reuses them automatically.
+                  Your product brief & target account are saved — retry reuses them automatically.
                 </p>
               )}
             </div>
@@ -734,7 +739,24 @@ export default function ProcessingPage() {
                 <Trash2 className="w-4 h-4" />
                 Delete playbook
               </Button>
+              <a
+                href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
+                  `Playbook generation issue (${id})`,
+                )}&body=${encodeURIComponent(
+                  `Hi team,\n\nMy playbook (ID: ${id}) failed to generate. Please investigate.\n\nThanks,`,
+                )}`}
+                className={cn(
+                  buttonVariants({ variant: 'ghost' }),
+                  'text-[#a1a1aa] hover:text-white hover:bg-white/[0.04] gap-2',
+                )}
+              >
+                <LifeBuoy className="w-4 h-4" />
+                Contact support
+              </a>
             </div>
+            <p className="text-[11px] text-[#a1a1aa]/70 mt-3 text-center">
+              Reference ID for support: <span className="font-mono text-[#a1a1aa]">{id}</span>
+            </p>
           </div>
         )}
       </div>
