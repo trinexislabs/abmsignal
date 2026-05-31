@@ -1,12 +1,11 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
+import { NewPlaybookButton } from '@/components/dashboard/new-playbook-button'
 import {
   FileText,
   Microscope,
   Users,
-  Plus,
-  ArrowRight,
   Eye,
   Play,
   PenLine,
@@ -181,12 +180,9 @@ export default async function DashboardPage() {
           </p>
         </div>
         {showStats && (
-          <Link href="/playbook/new/product">
-            <Button className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-medium gap-2 hidden sm:flex">
-              <Plus className="w-4 h-4" />
-              New Playbook
-            </Button>
-          </Link>
+          <NewPlaybookButton
+            className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-medium hidden sm:flex"
+          />
         )}
       </div>
 
@@ -249,16 +245,11 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="flex-shrink-0">
-            <Link href="/playbook/new/product">
-              <Button
-                size="lg"
-                className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold gap-2 px-6 shadow-[0_0_20px_rgba(51,154,240,0.3)] hover:shadow-[0_0_30px_rgba(51,154,240,0.4)] transition-shadow"
-              >
-                <Plus className="w-5 h-5" />
-                New Playbook
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+            <NewPlaybookButton
+              size="lg"
+              showArrow
+              className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold px-6 shadow-[0_0_20px_rgba(51,154,240,0.3)] hover:shadow-[0_0_30px_rgba(51,154,240,0.4)] transition-shadow"
+            />
           </div>
         </div>
       </Card>

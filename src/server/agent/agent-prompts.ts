@@ -314,6 +314,12 @@ export function buildWritingPrompt(ctx: WritingContext): string {
     `\`\`\``,
     ``,
     `All 18 sections must be present. Content must be specific to ${ctx.targetCompany}.`,
+    ``,
+    `## OUTPUT DISCIPLINE — CRITICAL`,
+    `- Do NOT narrate or announce your plan. No preamble such as "Let me research ${ctx.targetCompany} before writing." or "Now I'll compile the JSON."`,
+    `- Perform any research silently using your tools, then emit the JSON in the SAME response.`,
+    `- Respond with ONLY the JSON object — no commentary before or after it.`,
+    `- Do NOT end your turn until the complete JSON object has been written. A reply containing only a sentence of intent is a failure.`,
   ].join('\n')
 }
 
@@ -540,5 +546,11 @@ export function buildWritingPromptBatch(
     `\`\`\``,
     ``,
     `All ${batchKeys.length} assigned sections must be present. Content must be specific to ${ctx.targetCompany}.`,
+    ``,
+    `## OUTPUT DISCIPLINE — CRITICAL`,
+    `- Do NOT narrate or announce your plan. No preamble such as "Let me research ${ctx.targetCompany} before writing." or "Now I'll compile the JSON."`,
+    `- Perform any research silently using your tools, then emit the JSON in the SAME response.`,
+    `- Respond with ONLY the JSON object — no commentary before or after it.`,
+    `- Do NOT end your turn until the complete JSON object has been written. A reply containing only a sentence of intent is a failure.`,
   ].join('\n')
 }

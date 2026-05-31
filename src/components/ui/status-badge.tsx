@@ -50,6 +50,11 @@ const STATUS_CONFIG: Record<PlaybookStatus, { label: string; className: string; 
     className: 'bg-white/10 text-white/60 border-white/20',
     dot: 'bg-white/40 animate-pulse',
   },
+  pending_queue: {
+    label: 'In Queue',
+    className: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/25',
+    dot: 'bg-indigo-400',
+  },
   failed: {
     label: 'Failed',
     className: 'bg-red-500/20 text-red-400 border-red-500/30',

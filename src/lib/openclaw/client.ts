@@ -284,77 +284,122 @@ export async function runAgentTask(
 
   const timeoutSeconds = Math.floor(AGENT_TIMEOUT_MS / 1000)
   const syntheticFlowId = `local-${runId}`
+  const sessionId = `abmsignal-${runId}`
 
   // openclaw --local mode persists the orchestrator's conversation in a single
   // session file (agent:orchestrator:main) that grows across every invocation.
   // That means prior turns — e.g. a previous playbook's research output — bleed
   // into the next call's context, and the agent may echo stale phase/JSON
   // shapes back instead of responding to the new prompt. We reset the session
-  // before each invocation so every prompt starts from a clean slate; the
+  // before the FIRST invocation so every prompt starts from a clean slate; the
   // prompt itself contains all the context the agent needs.
   await resetOrchestratorSession()
 
-  let stdout = ''
-  let stderr = ''
-  try {
-    const result = await execFileAsync(
-      OPENCLAW_BIN,
-      [
-        'agent',
-        '--agent', 'orchestrator',
-        '--local',
-        // Unique session per invocation so the agent's memory from a previous
-        // run (e.g. another playbook's research phase) cannot bleed into this
-        // one. Without this, every call shares the default "main" session.
-        '--session-id', `abmsignal-${runId}`,
-        '--message', prompt,
-        '--json',
-        '--timeout', String(timeoutSeconds),
-      ],
-      {
-        env: {
-          ...process.env,
-          OPENCLAW_STATE_DIR,
-          OPENCLAW_CONFIG_PATH,
+  // A single agent invocation against the per-run session. `resume` reuses the
+  // same session WITHOUT resetting, so a follow-up message sees everything the
+  // agent already did this run (its research, tool results, etc.).
+  const invokeOnce = async (
+    message: string,
+  ): Promise<{ rawOutput: string | null; hardError?: string }> => {
+    let stdout = ''
+    let stderr = ''
+    try {
+      const result = await execFileAsync(
+        OPENCLAW_BIN,
+        [
+          'agent',
+          '--agent', 'orchestrator',
+          '--local',
+          // Unique session per run so the agent's memory from a previous run
+          // (e.g. another playbook's research phase) cannot bleed into this one.
+          // Without this, every call shares the default "main" session.
+          '--session-id', sessionId,
+          '--message', message,
+          '--json',
+          '--timeout', String(timeoutSeconds),
+        ],
+        {
+          env: {
+            ...process.env,
+            OPENCLAW_STATE_DIR,
+            OPENCLAW_CONFIG_PATH,
+          },
+          maxBuffer: 50 * 1024 * 1024, // 50 MB — playbook output can be large
+          timeout: AGENT_TIMEOUT_MS + 30_000, // process-level kill timeout with 30s buffer
         },
-        maxBuffer: 50 * 1024 * 1024, // 50 MB — playbook output can be large
-        timeout: AGENT_TIMEOUT_MS + 30_000, // process-level kill timeout with 30s buffer
-      },
-    )
-    stdout = result.stdout
-    stderr = result.stderr
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    // Preserve any partial output captured before the failure for diagnostics
-    const e = err as { stdout?: string; stderr?: string }
-    if (e.stdout) stdout = e.stdout
-    if (e.stderr) stderr = e.stderr
-    if (msg.includes('ETIMEDOUT') || msg.includes('timed out')) {
-      return { ok: false, error: `Agent task timed out after ${Math.round(AGENT_TIMEOUT_MS / 60000)}min` }
+      )
+      stdout = result.stdout
+      stderr = result.stderr
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      // Preserve any partial output captured before the failure for diagnostics
+      const e = err as { stdout?: string; stderr?: string }
+      if (e.stdout) stdout = e.stdout
+      if (e.stderr) stderr = e.stderr
+      if (msg.includes('ETIMEDOUT') || msg.includes('timed out')) {
+        return { rawOutput: null, hardError: `Agent task timed out after ${Math.round(AGENT_TIMEOUT_MS / 60000)}min` }
+      }
+      // Non-timeout subprocess failure with no recoverable output
+      if (!stdout && !stderr) {
+        return { rawOutput: null, hardError: `Agent subprocess failed: ${msg.slice(0, 300)}` }
+      }
+      // Fall through — try to extract a payload from whatever was captured
     }
-    // Non-timeout subprocess failure with no recoverable output
-    if (!stdout && !stderr) {
-      return { ok: false, error: `Agent subprocess failed: ${msg.slice(0, 300)}` }
-    }
-    // Fall through — try to extract a payload from whatever was captured
+
+    // openclaw --local mode writes the JSON envelope to STDERR (after log lines),
+    // while gateway mode writes it to STDOUT. Support both.
+    // Envelope shapes:
+    //   gateway:  { runId, status, result: { payloads: [{ text }], meta } }
+    //   --local:  { payloads: [{ text, mediaUrl }], meta }
+    return { rawOutput: extractAgentText(stdout) ?? extractAgentText(stderr) }
   }
 
-  // openclaw --local mode writes the JSON envelope to STDERR (after log lines),
-  // while gateway mode writes it to STDOUT. Support both.
-  // Envelope shapes:
-  //   gateway:  { runId, status, result: { payloads: [{ text }], meta } }
-  //   --local:  { payloads: [{ text, mediaUrl }], meta }
-  const rawOutput = extractAgentText(stdout) ?? extractAgentText(stderr)
+  // First attempt: send the real task prompt.
+  const first = await invokeOnce(prompt)
+  if (first.hardError && !first.rawOutput) {
+    // Timeout / subprocess crash — nudging a dead process won't help.
+    return { ok: false, error: first.hardError }
+  }
+
+  let rawOutput = first.rawOutput
+
+  // The orchestrator model (glm-5.1) intermittently ends its turn after only a
+  // preamble — e.g. "Let me research Unilever thoroughly before writing." — and
+  // never emits the required JSON. The work was effectively skipped, not just
+  // mis-extracted. When the reply contains no JSON object, re-prompt in the SAME
+  // session (the agent retains its context) and force it to output the JSON now.
+  // Observed to recover reliably; research already self-heals via run retries,
+  // but the writing batches do not, so this is what was failing every playbook.
+  for (let nudge = 0; nudge < MAX_JSON_NUDGES && !looksLikeJsonOutput(rawOutput); nudge++) {
+    const retry = await invokeOnce(JSON_NUDGE_MESSAGE)
+    if (retry.rawOutput && retry.rawOutput.trim()) rawOutput = retry.rawOutput
+  }
 
   if (!rawOutput || !rawOutput.trim()) {
-    const tail = (stderr || stdout || '').slice(-300).replace(/\s+/g, ' ').trim()
     return {
       ok: false,
-      error: `Agent completed but returned no text payload${tail ? ` — tail: ${tail}` : ''}`,
+      error: 'Agent completed but returned no text payload',
     }
   }
 
   return { ok: true, rawOutput, flowId: syntheticFlowId }
+}
+
+// How many times to re-prompt the agent for JSON when it stalls with a preamble.
+const MAX_JSON_NUDGES = 2
+
+const JSON_NUDGE_MESSAGE =
+  'Output the complete JSON object for the task above now. Respond with ONLY the ' +
+  'JSON object — no preamble, no explanation, no commentary. Begin your reply with "{".'
+
+/**
+ * Heuristic: does the agent's reply actually contain a JSON object, or is it a
+ * conversational stall ("Let me research X before writing.")? Mirrors the
+ * extraction in parseAgentOutput — a ```json fence or a bare {...} block.
+ */
+function looksLikeJsonOutput(text: string | null): boolean {
+  if (!text) return false
+  return /```json/i.test(text) || /\{[\s\S]*\}/.test(text)
 }
 
 /**

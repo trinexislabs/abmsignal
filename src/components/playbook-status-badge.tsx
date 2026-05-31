@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 const STATUS_CONFIG: Record<PlaybookStatus, { label: string; className: string }> = {
   draft: { label: 'Draft', className: 'bg-white/10 text-white/60 border-white/20' },
   queued: { label: 'Queued', className: 'bg-white/10 text-white/60 border-white/20 animate-pulse' },
+  pending_queue: { label: 'In Queue', className: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/25' },
   researching: { label: 'Researching', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse' },
   contact_review: { label: 'Contact Review', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
   writing: { label: 'Writing', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30 animate-pulse' },

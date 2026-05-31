@@ -7,7 +7,6 @@ import { useSession, signOut } from 'next-auth/react'
 import { cn, getUserInitials } from '@/lib/utils'
 import {
   LayoutDashboard,
-  FileText,
   Settings,
   Zap,
   LogOut,
@@ -30,9 +29,8 @@ import {
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Playbooks', href: '/dashboard/playbooks', icon: FileText },
-  { label: 'Billing', href: '/settings/billing', icon: CreditCard },
-  { label: 'Settings', href: '/settings', icon: Settings },
+  { label: 'Billing', href: '/dashboard/settings/billing', icon: CreditCard },
+  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]
 
 function UserAvatar({ image, name, size = 'sm' }: { image?: string | null; name?: string | null; size?: 'sm' | 'md' }) {
@@ -157,11 +155,11 @@ function Sidebar({ collapsed, onCollapse }: { collapsed: boolean; onCollapse: ()
               <p className="text-xs text-[#a1a1aa]">{user?.email}</p>
             </div>
             <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
+            <DropdownMenuItem onClick={() => router.push('/dashboard/settings')} className="cursor-pointer">
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/settings/billing')} className="cursor-pointer">
+            <DropdownMenuItem onClick={() => router.push('/dashboard/settings/billing')} className="cursor-pointer">
               <CreditCard className="w-4 h-4 mr-2" />
               Billing
             </DropdownMenuItem>
@@ -306,7 +304,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <p className="text-xs text-[#a1a1aa] truncate">{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => router.push('/dashboard/settings')} className="cursor-pointer">
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/10" />

@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { marked } from 'marked'
 import { AppSidebar } from '@/components/app-sidebar'
 import { PlaybookStatusBadge } from '@/components/playbook-status-badge'
 import { Button } from '@/components/ui/button'
@@ -152,6 +153,27 @@ interface UrlMapEntry {
   url: string
   confidence?: SourceConfidence
   verificationStatus?: SourceVerificationStatus
+}
+
+marked.setOptions({ gfm: true, breaks: false })
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+// Escape a string for use inside a CSS string literal (e.g. `content: "..."`).
+// CSS strings can't contain raw quotes, backslashes, or newlines.
+function escapeCssString(s: string): string {
+  return s
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, ' ')
+    .replace(/\r/g, '')
 }
 
 interface SourceBadgeProps {
@@ -558,63 +580,564 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
     const win = window.open('', '_blank')
     if (!win) return
 
-    const sectionsHtml = orderedSectionTypes
-      .map((sectionType) => {
-        const meta = SECTION_META[sectionType]
-        const section = sectionsByType.get(sectionType)
-        const content = section ? (savedContents[section.id] ?? section.content) : ''
-        if (!content?.trim()) return ''
-        const htmlContent = content
-          .replace(/\(source:\s*(https?:\/\/[^\s)]+)\)/gi, '')
-          .replace(/\[\d+\]/g, '')
-          .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-          .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-          .replace(/^\*\*(.+)\*\*$/gm, '<p><strong>$1</strong></p>')
-          .replace(/^- (.+)$/gm, '<li>$1</li>')
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
-          .replace(/^(?!<[hup]|<li|<ul|<blockquote)(.+)$/gm, '<p>$1</p>')
-        return `<section><h2 class="section-title">${meta.order}. ${meta.title}</h2><div class="section-content">${htmlContent}</div></section>`
-      })
-      .filter(Boolean)
-      .join('\n')
+    type Built = { order: number; title: string; html: string; refs: string[] }
+    const built: Built[] = []
 
-    win.document.write(`<!DOCTYPE html>
-<html>
+    for (const sectionType of orderedSectionTypes) {
+      const meta = SECTION_META[sectionType]
+      const section = sectionsByType.get(sectionType)
+      const raw = section ? (savedContents[section.id] ?? section.content) : ''
+      if (!raw?.trim()) continue
+
+      const { processed, urls } = processSourceMarkers(raw)
+      const withCites = processed.replace(/\[(\d+)\]/g, '<sup class="cite">$1</sup>')
+      const html = marked.parse(withCites, { async: false }) as string
+      built.push({ order: meta.order, title: meta.title, html, refs: urls })
+    }
+
+    const productName = escapeHtml(playbook.product_name)
+    const targetCompany = escapeHtml(playbook.target_company)
+    const productNameCss = escapeCssString(playbook.product_name)
+    const targetCompanyCss = escapeCssString(playbook.target_company)
+    const generatedDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    })
+
+    const tocHtml = built
+      .map(b => `
+        <li class="toc-item">
+          <span class="toc-num">${String(b.order).padStart(2, '0')}</span>
+          <span class="toc-title">${escapeHtml(b.title)}</span>
+          <span class="toc-dots"></span>
+        </li>`)
+      .join('')
+
+    const sectionsHtml = built.map(b => `
+      <section class="pb-section">
+        <header class="section-header">
+          <span class="section-num">${String(b.order).padStart(2, '0')}</span>
+          <h1 class="section-title">${escapeHtml(b.title)}</h1>
+        </header>
+        <div class="section-body">${b.html}</div>
+        ${b.refs.length ? `
+        <aside class="refs">
+          <h4 class="refs-title">References</h4>
+          <ol class="refs-list">
+            ${b.refs.map(u => `<li><a href="${escapeHtml(u)}">${escapeHtml(u)}</a></li>`).join('')}
+          </ol>
+        </aside>` : ''}
+      </section>`).join('\n')
+
+    const doc = `<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>${playbook.product_name} → ${playbook.target_company} — ABM Playbook</title>
+<title>${productName} &rarr; ${targetCompany} &mdash; ABM Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: Georgia, serif; font-size: 12pt; color: #111; margin: 0; padding: 0; }
-  .cover { page-break-after: always; display: flex; flex-direction: column; justify-content: center; padding: 80px 60px; }
-  .cover h1 { font-size: 28pt; margin: 0 0 12px; }
-  .cover p { font-size: 13pt; color: #555; margin: 4px 0; }
-  .cover .badge { display: inline-block; background: #1e3a5f; color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 10pt; margin-top: 24px; }
-  section { page-break-inside: avoid; padding: 40px 60px 20px; border-bottom: 1px solid #eee; }
-  section:last-child { border-bottom: none; }
-  .section-title { font-size: 16pt; color: #1e3a5f; margin: 0 0 16px; border-bottom: 2px solid #339af0; padding-bottom: 8px; }
-  .section-content h2 { font-size: 13pt; color: #222; margin: 16px 0 8px; }
-  .section-content h3 { font-size: 11pt; color: #444; margin: 12px 0 6px; }
-  .section-content p { margin: 6px 0; line-height: 1.6; }
-  .section-content ul { margin: 8px 0; padding-left: 20px; }
-  .section-content li { margin: 4px 0; line-height: 1.5; }
-  @page { margin: 0; }
-  @media print { body { -webkit-print-color-adjust: exact; } }
+  :root {
+    --navy: #1e3a5f;
+    --navy-deep: #14283f;
+    --accent: #339af0;
+    --ink: #1a1a1a;
+    --body: #2b2b32;
+    --muted: #6b7280;
+    --rule: #e5e7eb;
+    --rule-soft: #f1f3f5;
+    --surface: #f8fafc;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
+    color: var(--ink);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  @page {
+    size: A4;
+    margin: 24mm 22mm 24mm 22mm;
+    @top-left {
+      content: "ABMSignal Playbook";
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #9aa3b2;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding-bottom: 6mm;
+    }
+    @top-right {
+      content: "${productNameCss} \\2192  ${targetCompanyCss}";
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #9aa3b2;
+      padding-bottom: 6mm;
+    }
+    @bottom-right {
+      content: counter(page) " / " counter(pages);
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #9aa3b2;
+      padding-top: 6mm;
+    }
+    @bottom-left {
+      content: "Confidential";
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #9aa3b2;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding-top: 6mm;
+    }
+  }
+  @page :first {
+    margin: 0;
+    @top-left { content: none; }
+    @top-right { content: none; }
+    @bottom-left { content: none; }
+    @bottom-right { content: none; }
+  }
+  @page toc {
+    @top-right { content: "Table of Contents"; }
+  }
+
+  /* ===== Cover ===== */
+  .cover {
+    page: cover;
+    page-break-after: always;
+    break-after: page;
+    height: 297mm;
+    padding: 28mm 22mm;
+    background: linear-gradient(160deg, #0a1628 0%, #14283f 50%, #1e3a5f 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: "";
+    position: absolute;
+    right: -100mm;
+    top: -60mm;
+    width: 260mm;
+    height: 260mm;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(51,154,240,0.18) 0%, rgba(51,154,240,0) 60%);
+    pointer-events: none;
+  }
+  .cover-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 12pt;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover-brand-mark {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0a1628;
+    font-weight: 800;
+    font-size: 14pt;
+  }
+  .cover-body { position: relative; z-index: 1; }
+  .cover-eyebrow {
+    color: var(--accent);
+    font-size: 9pt;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .cover-title {
+    font-size: 32pt;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 14px;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+  .cover-arrow {
+    color: var(--accent);
+    font-weight: 400;
+    padding: 0 8px;
+  }
+  .cover-sub {
+    font-size: 12pt;
+    color: rgba(255,255,255,0.75);
+    margin: 0;
+    max-width: 130mm;
+    line-height: 1.45;
+  }
+  .cover-meta {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 32px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  .cover-meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .cover-meta-label {
+    font-size: 8pt;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+  }
+  .cover-meta-value {
+    font-size: 11pt;
+    color: #fff;
+    font-weight: 500;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: rgba(51,154,240,0.18);
+    border: 1px solid rgba(51,154,240,0.4);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* ===== TOC ===== */
+  .toc {
+    page: toc;
+    page-break-after: always;
+    break-after: page;
+    padding-top: 4mm;
+  }
+  .toc-heading {
+    font-size: 22pt;
+    color: var(--ink);
+    margin: 0 0 4px;
+    letter-spacing: -0.3px;
+  }
+  .toc-rule {
+    width: 48px;
+    height: 3px;
+    background: var(--accent);
+    margin: 12px 0 24px;
+  }
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .toc-item {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px dotted #d1d5db;
+    font-size: 11pt;
+    color: var(--ink);
+  }
+  .toc-num {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 10pt;
+    min-width: 24px;
+  }
+  .toc-title { flex: 1; font-weight: 500; }
+  .toc-dots { color: #cbd5e1; }
+
+  /* ===== Sections ===== */
+  .pb-section {
+    page-break-before: always;
+    break-before: page;
+    padding-top: 4mm;
+  }
+  .pb-section:first-of-type {
+    page-break-before: auto;
+    break-before: auto;
+  }
+  .section-header {
+    margin: 0 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--navy);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .section-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .section-title {
+    font-size: 20pt;
+    margin: 0;
+    color: var(--navy);
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .section-body {
+    orphans: 3;
+    widows: 3;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* ===== Body content ===== */
+  .section-body h1 { font-size: 14pt; margin: 22px 0 10px; color: var(--ink); page-break-after: avoid; break-after: avoid; }
+  .section-body h2 { font-size: 12.5pt; margin: 20px 0 8px; color: var(--navy-deep); page-break-after: avoid; break-after: avoid; }
+  .section-body h3 { font-size: 11pt; margin: 16px 0 6px; color: var(--navy-deep); font-weight: 600; page-break-after: avoid; break-after: avoid; }
+  .section-body h4 { font-size: 10pt; margin: 14px 0 4px; color: var(--ink); text-transform: uppercase; letter-spacing: 0.5px; page-break-after: avoid; break-after: avoid; }
+  .section-body p { margin: 8px 0; line-height: 1.65; }
+  .section-body strong { color: var(--ink); font-weight: 600; }
+  .section-body em { color: var(--ink); }
+
+  .section-body ul, .section-body ol {
+    margin: 10px 0;
+    padding-left: 22px;
+  }
+  .section-body li {
+    margin: 5px 0;
+    line-height: 1.6;
+  }
+  .section-body ul li::marker { color: var(--accent); }
+  .section-body ol li::marker { color: var(--accent); font-weight: 600; }
+  .section-body li > ul, .section-body li > ol { margin: 4px 0; }
+
+  .section-body hr {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 22px 0;
+  }
+
+  /* Blockquotes -> callouts */
+  .section-body blockquote {
+    margin: 14px 0;
+    padding: 12px 16px 12px 18px;
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    color: var(--body);
+    font-style: normal;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .section-body blockquote p { margin: 4px 0; }
+
+  /* Code */
+  .section-body code {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    background: var(--rule-soft);
+    color: var(--navy-deep);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9.5pt;
+  }
+  .section-body pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 6px;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    font-size: 9pt;
+    line-height: 1.5;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 12px 0;
+  }
+  .section-body pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* Tables */
+  .section-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 18px;
+    font-size: 9.5pt;
+    page-break-inside: auto;
+    break-inside: auto;
+    table-layout: fixed;
+  }
+  .section-body thead { display: table-header-group; }
+  .section-body tr { page-break-inside: avoid; break-inside: avoid; }
+  .section-body th {
+    background: var(--navy);
+    color: #fff;
+    text-align: left;
+    padding: 9px 12px;
+    font-weight: 600;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border: 1px solid var(--navy);
+    word-break: break-word;
+  }
+  .section-body td {
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    vertical-align: top;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .section-body tbody tr:nth-child(even) td {
+    background: #fafbfc;
+  }
+
+  /* Links */
+  .section-body a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(51,154,240,0.3);
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
+  /* Citation chips */
+  .cite {
+    display: inline-block;
+    font-family: 'Space Grotesk', sans-serif;
+    background: rgba(51,154,240,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(51,154,240,0.35);
+    border-radius: 3px;
+    padding: 0 4px;
+    font-size: 7pt;
+    font-weight: 700;
+    line-height: 1.4;
+    vertical-align: super;
+    margin-left: 1px;
+  }
+  .cite::before { content: "["; }
+  .cite::after { content: "]"; }
+
+  /* References block */
+  .refs {
+    margin-top: 22px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border-left: 3px solid var(--navy);
+    border-radius: 0 4px 4px 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .refs-title {
+    font-size: 8.5pt;
+    margin: 0 0 8px;
+    color: var(--navy-deep);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+  }
+  .refs-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 8.5pt;
+    color: var(--muted);
+  }
+  .refs-list li {
+    margin: 3px 0;
+    line-height: 1.4;
+    word-break: break-all;
+  }
+  .refs-list a {
+    color: var(--muted);
+    border: none;
+  }
+
+  /* Print fidelity & overflow safety */
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cover, .section-body th, .section-body pre, .cover-badge, .refs, .section-body blockquote, .cite { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    img, svg { max-width: 100%; height: auto; }
+    .section-body { max-width: 100%; overflow: hidden; }
+  }
 </style>
 </head>
 <body>
-<div class="cover">
-  <p style="color:#339af0;font-family:sans-serif;font-size:10pt;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">ABMSignal Playbook</p>
-  <h1>${playbook.product_name} → ${playbook.target_company}</h1>
-  <p>Generated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-  <span class="badge">Confidential</span>
-</div>
-${sectionsHtml}
+  <section class="cover">
+    <div class="cover-brand">
+      <span class="cover-brand-mark">A</span>
+      <span>ABMSignal</span>
+    </div>
+    <div class="cover-body">
+      <p class="cover-eyebrow">Account-Based Marketing Playbook</p>
+      <h1 class="cover-title">${productName} <span class="cover-arrow">&rarr;</span> ${targetCompany}</h1>
+      <p class="cover-sub">A launch-ready, hyper-personalized engagement plan built from deep account research, verified contacts, and culturally-adapted outreach.</p>
+    </div>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Product</span>
+        <span class="cover-meta-value">${productName}</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Target Account</span>
+        <span class="cover-meta-value">${targetCompany}</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Generated</span>
+        <span class="cover-meta-value">${generatedDate}</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Status</span>
+        <span class="cover-badge">Confidential</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="toc">
+    <h1 class="toc-heading">Table of Contents</h1>
+    <div class="toc-rule"></div>
+    <ol class="toc-list">${tocHtml}</ol>
+  </section>
+
+  ${sectionsHtml}
 </body>
-</html>`)
+</html>`
+
+    win.document.open()
+    win.document.write(doc)
     win.document.close()
-    win.focus()
-    setTimeout(() => win.print(), 500)
+
+    const triggerPrint = () => {
+      win.focus()
+      win.print()
+    }
+    const fontsApi = (win.document as Document & { fonts?: { ready: Promise<unknown> } }).fonts
+    if (fontsApi?.ready) {
+      fontsApi.ready.then(triggerPrint).catch(triggerPrint)
+    } else {
+      setTimeout(triggerPrint, 600)
+    }
   }
 
   return (

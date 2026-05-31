@@ -17,7 +17,32 @@ import type {
 import type { AgentStatus, PlaybookStatus } from '@/types'
 
 const TOTAL_SECTIONS = 18
-const ACTIVE_STATUSES = ['queued', 'researching', 'writing', 'reviewing', 'contact_review'] as const
+const ACTIVE_STATUSES = ['pending_queue', 'queued', 'researching', 'writing', 'reviewing', 'contact_review'] as const
+
+// Front-line (advisory) concurrency set for the create gate. Includes 'draft':
+// a freshly created playbook is dispatched moments later (generate fires right
+// after create), so it must count — otherwise two rapid creates both read
+// inFlight=0 and slip the gate before either transitions to 'queued'. This is a
+// check-then-act gate; the authoritative limit is enforced atomically at
+// dispatch via claimRuntimeSlot().
+const IN_FLIGHT_STATUSES = ['draft', 'queued', 'researching', 'writing', 'reviewing'] as const
+
+// Statuses where a playbook is genuinely occupying the user's single runtime
+// slot (OpenClaw actively running). Used by the atomic dispatch claim — 'draft'
+// is intentionally excluded here because the claim itself is what promotes a
+// draft into 'queued'; two racing drafts serialize so only one wins the slot.
+const RUNTIME_SLOT_STATUSES = ['queued', 'researching', 'writing', 'reviewing'] as const
+
+// Source statuses a playbook may be dispatched from (initial run or retry).
+const CLAIMABLE_SOURCE_STATUSES = ['draft', 'pending_queue', 'error', 'failed', 'rejected', 'cancelled'] as const
+
+// The agent-status banner shown the moment a playbook is dispatched/queued.
+const QUEUED_AGENT_STATUS: AgentStatus[] = [
+  { agent: 'orchestrator', task: 'Queued for processing', status: 'pending' },
+  { agent: 'researcher', task: 'Waiting to start', status: 'pending' },
+  { agent: 'writer', task: 'Waiting for research data', status: 'pending' },
+  { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
+]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -246,6 +271,67 @@ export const playbookRepository = {
       recent_events: recentEvents,
       counters,
     }
+  },
+
+  // Playbooks where OpenClaw is actively running (blocks new dispatches)
+  async countInFlightForUser(userId: string): Promise<number> {
+    return prisma.playbook.count({
+      where: { userId, status: { in: [...IN_FLIGHT_STATUSES] } },
+    })
+  },
+
+  // All non-terminal playbooks — in-flight + contact_review + pending_queue (for cap enforcement)
+  async countNonTerminalForUser(userId: string): Promise<number> {
+    return prisma.playbook.count({
+      where: { userId, status: { in: [...ACTIVE_STATUSES] } },
+    })
+  },
+
+  // Atomically claim the user's single runtime slot for `playbookId`, moving it
+  // to 'queued' — but ONLY if no other playbook for that user is currently
+  // occupying the slot (RUNTIME_SLOT_STATUSES). This is the authoritative
+  // per-user concurrency guard: it's a single conditional UPDATE, and because
+  // SQLite/libsql serializes writers, two racing dispatches can never both win
+  // (the loser sees the winner's committed 'queued' row and its NOT EXISTS
+  // fails). Returns true iff this call won the slot.
+  //
+  // Anonymous playbooks (userId === null) can't be grouped by user, so they
+  // transition unconditionally — total load is still bounded by the global
+  // worker concurrency cap.
+  async claimRuntimeSlot(userId: string | null, playbookId: string): Promise<boolean> {
+    const agentStatusJson = JSON.stringify(QUEUED_AGENT_STATUS)
+
+    if (userId === null) {
+      const res = await prisma.playbook.updateMany({
+        where: { id: playbookId, status: { in: [...CLAIMABLE_SOURCE_STATUSES] } },
+        data: { status: 'queued', progressPct: 0, agentStatus: agentStatusJson, failedReason: null },
+      })
+      return res.count === 1
+    }
+
+    // Correlated NOT EXISTS can't be expressed via Prisma's typed API, so this
+    // one path uses raw SQL. All bound values (including the status sets) use
+    // placeholders, so there's no injection surface.
+    const claimablePlaceholders = CLAIMABLE_SOURCE_STATUSES.map(() => '?').join(', ')
+    const runtimePlaceholders = RUNTIME_SLOT_STATUSES.map(() => '?').join(', ')
+    const affected = await prisma.$executeRawUnsafe(
+      `UPDATE "Playbook"
+          SET "status" = 'queued', "progressPct" = 0, "agentStatus" = ?, "failedReason" = NULL
+        WHERE "id" = ?
+          AND "status" IN (${claimablePlaceholders})
+          AND NOT EXISTS (
+                SELECT 1 FROM "Playbook" AS p2
+                WHERE p2."userId" = ? AND p2."id" <> ?
+                  AND p2."status" IN (${runtimePlaceholders})
+              )`,
+      agentStatusJson,
+      playbookId,
+      ...CLAIMABLE_SOURCE_STATUSES,
+      userId,
+      playbookId,
+      ...RUNTIME_SLOT_STATUSES,
+    )
+    return affected === 1
   },
 
   async listActiveForUser(userId: string): Promise<ApiActivePlaybook[]> {

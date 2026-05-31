@@ -15,6 +15,34 @@ const AGENT_TIMEOUT_MS = parseInt(process.env.AGENT_TIMEOUT_MS ?? '600000', 10) 
 const LOG_DIR = process.env.LOG_DIR ?? '/tmp/abmsignal-logs'
 const AGENT_ID = process.env.ORCHESTRATOR_AGENT_ID ?? 'orchestrator'
 
+// OpenClaw --json mode wraps the agent response in a JSON envelope whose
+// `result.payloads` is an ordered list of the agent's emitted messages. The
+// agent commonly emits conversational preamble first ("Let me research…",
+// "Now I'll compile the JSON output.") and the actual JSON answer in a LATER
+// payload. We concatenate every payload's text — not just payloads[0] — so the
+// JSON answer is never dropped. parseAgentOutput extracts the JSON block out of
+// the surrounding prose, so leading/trailing chatter is harmless. If `raw` is
+// not an OpenClaw envelope, it's returned unchanged.
+export function extractAgentText(raw: string): string {
+  try {
+    const envelope = JSON.parse(raw) as {
+      status?: string
+      result?: { payloads?: Array<{ text?: string }> }
+    }
+    const payloads = envelope.result?.payloads
+    if (Array.isArray(payloads)) {
+      const combined = payloads
+        .map((p) => (typeof p?.text === 'string' ? p.text : ''))
+        .filter((t) => t.length > 0)
+        .join('\n')
+      if (combined.length > 0) return combined
+    }
+  } catch {
+    // Not an OpenClaw JSON envelope — use raw as-is
+  }
+  return raw
+}
+
 function ensureLogDir() {
   if (!fs.existsSync(LOG_DIR)) {
     fs.mkdirSync(LOG_DIR, { recursive: true })
@@ -66,22 +94,7 @@ async function runAgent(
     throw Object.assign(new Error(stderr || 'OpenClaw process failed'), { logPath, stdout })
   }
 
-  // OpenClaw --json mode wraps the agent response in a JSON envelope.
-  // Extract the actual agent text from result.payloads[0].text so that
-  // parseAgentOutput receives a plain string with real newlines and quotes,
-  // not JSON-escaped sequences that break JSON.parse downstream.
-  try {
-    const envelope = JSON.parse(stdout) as {
-      status?: string
-      result?: { payloads?: Array<{ text?: string }> }
-    }
-    const text = envelope.result?.payloads?.[0]?.text
-    if (typeof text === 'string') {
-      stdout = text
-    }
-  } catch {
-    // Not an OpenClaw JSON envelope — use stdout as-is
-  }
+  stdout = extractAgentText(stdout)
 
   const logPath = saveLog(runId, phase, stdout, stderr)
   return { stdout, stderr, logPath }
