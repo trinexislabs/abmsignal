@@ -21,6 +21,10 @@ interface Props {
   growthPrice: number
   sectionsCount: number
   contactsCount: number
+  // True when the viewer already holds an active Growth subscription — they're
+  // over their 10/cycle quota, so we only offer the $29 overage unlock.
+  isGrowthSubscriber?: boolean
+  cycleResetsAt?: string
   // Called after a successful unlock (one-off purchase or Growth subscription)
   // so the page can re-fetch and reveal the real content.
   onUnlocked: () => void
@@ -44,9 +48,13 @@ export function PlaybookPaywall({
   growthPrice,
   sectionsCount,
   contactsCount,
+  isGrowthSubscriber = false,
+  cycleResetsAt,
   onUnlocked,
 }: Props) {
-  const [choice, setChoice] = useState<Choice | null>(null)
+  // An over-quota Growth subscriber only gets the one-off overage path — they're
+  // already subscribed, so we pre-select it and hide the subscribe option.
+  const [choice, setChoice] = useState<Choice | null>(isGrowthSubscriber ? 'one_off' : null)
   const [name, setName] = useState('')
   const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242')
   const [expiry, setExpiry] = useState('12/29')
@@ -70,7 +78,7 @@ export function PlaybookPaywall({
 
       const payload =
         choice === 'growth'
-          ? { purpose: 'plan', plan: 'growth', amount: growthPrice }
+          ? { purpose: 'plan', plan: 'growth', amount: growthPrice, playbookId }
           : { purpose: 'unlock', playbookId, amount: oneOffPrice }
 
       const res = await fetch('/api/payment/mock', {
@@ -118,20 +126,44 @@ export function PlaybookPaywall({
             </div>
 
             <h2 className="font-heading text-xl font-bold text-white">
-              Your playbook is generated and ready
+              {isGrowthSubscriber
+                ? "You've used all 10 playbooks this cycle"
+                : 'Your playbook is generated and ready'}
             </h2>
             <p className="text-sm text-[#a1a1aa] mt-1.5 leading-relaxed">
-              We&apos;ve built a complete, hyper-personalized ABM playbook —{' '}
-              <span className="text-white font-medium">{sectionsCount} sections</span>
-              {contactsCount > 0 && (
+              {isGrowthSubscriber ? (
                 <>
-                  {' '}and{' '}
-                  <span className="text-white font-medium">
-                    {contactsCount} verified contact{contactsCount !== 1 ? 's' : ''}
-                  </span>
+                  This is an extra playbook beyond your Growth cycle allowance. Unlock it now
+                  for{' '}
+                  <span className="text-white font-medium">${oneOffPrice}</span>
+                  {cycleResetsAt && (
+                    <>
+                      , or wait until your quota resets on{' '}
+                      <span className="text-white font-medium">
+                        {new Date(cycleResetsAt).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    </>
+                  )}
+                  .
+                </>
+              ) : (
+                <>
+                  We&apos;ve built a complete, hyper-personalized ABM playbook —{' '}
+                  <span className="text-white font-medium">{sectionsCount} sections</span>
+                  {contactsCount > 0 && (
+                    <>
+                      {' '}and{' '}
+                      <span className="text-white font-medium">
+                        {contactsCount} verified contact{contactsCount !== 1 ? 's' : ''}
+                      </span>
+                    </>
+                  )}
+                  . Unlock it to review, edit, and export the full document.
                 </>
               )}
-              . Unlock it to review, edit, and export the full document.
             </p>
 
             {choice === null ? (
@@ -184,14 +216,16 @@ export function PlaybookPaywall({
               </div>
             ) : (
               <div className="mt-5">
-                <button
-                  onClick={() => setChoice(null)}
-                  disabled={submitting || success}
-                  className="inline-flex items-center gap-1.5 text-xs text-[#a1a1aa] hover:text-white mb-4 disabled:opacity-50"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  Back to options
-                </button>
+                {!isGrowthSubscriber && (
+                  <button
+                    onClick={() => setChoice(null)}
+                    disabled={submitting || success}
+                    className="inline-flex items-center gap-1.5 text-xs text-[#a1a1aa] hover:text-white mb-4 disabled:opacity-50"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    Back to options
+                  </button>
+                )}
 
                 {/* Line item */}
                 <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0f] p-4 flex items-center justify-between mb-4">

@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { NewPlaybookButton } from '@/components/dashboard/new-playbook-button'
 import {
@@ -117,11 +116,9 @@ export default async function DashboardPage() {
     getUserCreditBalance(userId),
   ])
 
-  // Free plan = no plan selected yet — send to onboarding
-  if (plan === 'free') {
-    redirect('/onboarding/plan')
-  }
-
+  // No forced plan selection: free (pay-per-playbook) users see the dashboard
+  // and generate freely. Payment is collected from the paywall after a playbook
+  // is generated.
   const showStats = canAccess(plan, 'dashboard_stats')
   const showRecent = canAccess(plan, 'dashboard_recent')
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/server/db'
 import { activateGrowthCycle, upsertUserPlan } from '@/server/users/user-repository'
+import { tryGrowthAutoUnlock } from '@/server/playbooks/playbook-access'
 import { GROWTH_PRICE_USD, ONE_OFF_PRICE_USD } from '@/lib/pricing'
 
 type MockPaymentRequest = {
@@ -91,6 +92,12 @@ export async function POST(request: Request) {
       // Sets plan=growth, status=active, currentPeriodEnd=+30d, and resets
       // credits to exactly 10 — handles both first-time activation and renewal.
       await activateGrowthCycle(userId)
+      // When subscribing from a completed playbook's paywall, unlock that
+      // playbook immediately by consuming the first of the fresh 10 credits.
+      if (playbookId) {
+        await tryGrowthAutoUnlock(playbookId, userId)
+        return NextResponse.json({ ok: true, redirect: `/playbook/${playbookId}` })
+      }
     } else {
       await upsertUserPlan(userId, plan)
     }

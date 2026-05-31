@@ -43,40 +43,37 @@ export async function POST(request: Request) {
 
   // Generation is free under the post-generation paywall — no upfront payment.
   // Payment is collected after the playbook is generated (see the review-page
-  // paywall + /api/payment/mock unlock). We still concurrency-gate by plan to
-  // protect the agent runtime: one_off blocks while any playbook is in-flight,
-  // growth allows up to 4 non-terminal at once.
+  // paywall + /api/payment/mock unlock). We still concurrency-gate to protect
+  // the agent runtime: Growth subscribers may have up to 4 non-terminal at once;
+  // everyone else (free / pay-per-playbook) processes one at a time.
   let markPendingQueue = false
   if (userId) {
     const sub = await getUserSubscription(userId)
-    if (sub?.plan === 'one_off' || sub?.plan === 'growth') {
-      const inFlight = await playbookRepository.countInFlightForUser(userId)
+    const inFlight = await playbookRepository.countInFlightForUser(userId)
 
-      if (sub.plan === 'one_off') {
-        if (inFlight > 0) {
-          return NextResponse.json(
-            {
-              error:
-                'A playbook is already generating. One-off accounts process one at a time — wait for it to reach the contact review step or complete before starting another.',
-            },
-            { status: 409 },
-          )
-        }
-      } else {
-        // growth: cap at 4 non-terminal playbooks (pending_queue + in-flight + contact_review)
-        const nonTerminal = await playbookRepository.countNonTerminalForUser(userId)
-        if (nonTerminal >= 4) {
-          return NextResponse.json(
-            {
-              error:
-                'Queue is full (4 active playbooks max). Complete or delete an existing playbook to start a new one.',
-            },
-            { status: 409 },
-          )
-        }
-        // If something is already in-flight, the new playbook waits in the user queue
-        markPendingQueue = inFlight > 0
+    if (sub?.plan === 'growth') {
+      // growth: cap at 4 non-terminal playbooks (pending_queue + in-flight + contact_review)
+      const nonTerminal = await playbookRepository.countNonTerminalForUser(userId)
+      if (nonTerminal >= 4) {
+        return NextResponse.json(
+          {
+            error:
+              'Queue is full (4 active playbooks max). Complete or delete an existing playbook to start a new one.',
+          },
+          { status: 409 },
+        )
       }
+      // If something is already in-flight, the new playbook waits in the user queue
+      markPendingQueue = inFlight > 0
+    } else if (inFlight > 0) {
+      // free / one_off: one playbook at a time
+      return NextResponse.json(
+        {
+          error:
+            'A playbook is already generating. Please wait for it to reach the contact review step or complete before starting another.',
+        },
+        { status: 409 },
+      )
     }
   }
 

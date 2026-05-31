@@ -1,6 +1,7 @@
 import { playbookRepository } from '../../playbooks/playbook-repository'
 import { runRepository } from '../../runs/run-repository'
 import { recordPlaybookFailure } from '../../playbooks/failure'
+import { tryGrowthAutoUnlock } from '../../playbooks/playbook-access'
 import { runAgentTask } from '@/lib/openclaw/client'
 import { parseAgentOutput } from '../../agent/agent-output-schema'
 import { buildWritingPromptBatch, WRITING_BATCH_1_KEYS, WRITING_BATCH_2_KEYS } from '../../agent/agent-prompts'
@@ -199,6 +200,21 @@ export async function runWritingWorker(runId: string): Promise<void> {
     { agent: 'writer', task: 'All 18 sections generated', status: 'complete' },
     { agent: 'reviewer', task: 'Quality review complete', status: 'complete' },
   ])
+
+  // Growth subscribers auto-unlock within their 10/cycle quota — consume a cycle
+  // credit and mark the playbook paid so it opens without a paywall. Over quota
+  // (or non-subscribers) this is a no-op and the $29 paywall shows on the review
+  // page. Never let a failure here break completion.
+  try {
+    const { unlocked } = await tryGrowthAutoUnlock(playbookId, playbook.user_id)
+    if (unlocked) {
+      await playbookRepository.logEvent(
+        playbookId, 'playbook.unlocked', 'Auto-unlocked from Growth cycle quota', {}, runId,
+      )
+    }
+  } catch (err) {
+    console.warn('[writing-worker] growth auto-unlock skipped:', err)
+  }
 
   // Playbook complete — advance the user's queue if anything is waiting
   await promoteUserQueue(playbook.user_id)

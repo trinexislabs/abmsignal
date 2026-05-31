@@ -137,6 +137,8 @@ interface PlaybookData {
     growth_price: number
     contacts_count: number
     sections_count: number
+    is_growth_subscriber?: boolean
+    cycle_resets_at?: string
   }
 }
 
@@ -1310,6 +1312,8 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                   growthPrice={playbook.payment?.growth_price ?? GROWTH_PRICE_USD}
                   sectionsCount={playbook.payment?.sections_count ?? playbook.sections.length}
                   contactsCount={playbook.payment?.contacts_count ?? 0}
+                  isGrowthSubscriber={playbook.payment?.is_growth_subscriber ?? false}
+                  cycleResetsAt={playbook.payment?.cycle_resets_at}
                   onUnlocked={fetchPlaybook}
                 />
               </>

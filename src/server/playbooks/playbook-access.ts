@@ -1,4 +1,9 @@
-import { getUserSubscription } from '../users/user-repository'
+import { prisma } from '../db'
+import {
+  getUserSubscription,
+  getUserCreditBalance,
+  playbookConsumedReason,
+} from '../users/user-repository'
 import { GROWTH_PRICE_USD, ONE_OFF_PRICE_USD } from '@/lib/pricing'
 import type { ApiPlaybook } from './playbook-types'
 
@@ -9,30 +14,27 @@ import type { ApiPlaybook } from './playbook-types'
 // bodies and contact PII never leave the server). This module is the single
 // source of truth for "can this viewer see the real content" and for producing
 // the stripped, locked response shape.
+//
+// Unlock is recorded as Playbook.paymentStatus = 'paid'. It's set by:
+//   • a one-off $29 purchase (see /api/payment/mock purpose:'unlock'),
+//   • a Growth subscriber consuming one of their 10 cycle credits — done at
+//     completion (worker) and when they first subscribe (see tryGrowthAutoUnlock).
+// Because the decision is persisted, the read check below is a pure, side-effect
+// free paymentStatus lookup.
 
 // A viewer may see real content when ANY of these hold:
 //   • the playbook hasn't finished generating yet — the whole generation phase
 //     (research / writing / the contact-review checkpoint) stays open so the
 //     pipeline behaves exactly as before;
-//   • the playbook has been paid for (one-off unlock);
-//   • the viewer owns the playbook AND has an active Growth subscription, which
-//     blanket-unlocks all of their playbooks for the life of the subscription.
-export async function canAccessPlaybookContent(
-  playbook: Pick<ApiPlaybook, 'status' | 'payment_status' | 'user_id'>,
-  viewerUserId: string | null | undefined,
-): Promise<boolean> {
+//   • the playbook has been paid for (one-off unlock OR a consumed Growth credit).
+export function canAccessPlaybookContent(
+  playbook: Pick<ApiPlaybook, 'status' | 'payment_status'>,
+): boolean {
   // Only a completed playbook is ever locked. Everything mid-generation is open.
+  // Growth quota unlocks are persisted as paymentStatus='paid', so this is a pure
+  // status/payment check that needs no viewer identity.
   if (playbook.status !== 'complete') return true
-
-  if (playbook.payment_status === 'paid') return true
-
-  // Owner with an active Growth subscription → everything unlocked.
-  if (viewerUserId && playbook.user_id && viewerUserId === playbook.user_id) {
-    const sub = await getUserSubscription(viewerUserId)
-    if (sub?.plan === 'growth' && sub.status === 'active') return true
-  }
-
-  return false
+  return playbook.payment_status === 'paid'
 }
 
 // Returns true when the playbook is a completed, unpaid artifact that should be
@@ -43,11 +45,16 @@ export function isLockable(
   return playbook.status === 'complete' && playbook.payment_status !== 'paid'
 }
 
+interface LockMeta {
+  isGrowthSubscriber: boolean
+  cycleResetsAt?: string
+}
+
 // Strip every piece of real content from a playbook so a locked viewer gets only
 // the structure (section titles / ordering) plus counts to drive the paywall.
 // The section bodies, inline source markers, structured sources, and all contact
 // PII are removed before the object ever leaves the server.
-export function lockPlaybookContent(playbook: ApiPlaybook): ApiPlaybook {
+export function lockPlaybookContent(playbook: ApiPlaybook, meta: LockMeta): ApiPlaybook {
   return {
     ...playbook,
     locked: true,
@@ -57,6 +64,11 @@ export function lockPlaybookContent(playbook: ApiPlaybook): ApiPlaybook {
       growth_price: GROWTH_PRICE_USD,
       contacts_count: playbook.contacts.length,
       sections_count: playbook.sections.length,
+      // When the viewer is already an active Growth subscriber, seeing this
+      // paywall means they're OVER their cycle quota — the UI then offers only
+      // the $29 overage unlock (not another subscription).
+      is_growth_subscriber: meta.isGrowthSubscriber,
+      cycle_resets_at: meta.cycleResetsAt,
     },
     sections: playbook.sections.map(s => ({
       ...s,
@@ -75,6 +87,75 @@ export async function projectPlaybookForViewer(
   playbook: ApiPlaybook,
   viewerUserId: string | null | undefined,
 ): Promise<ApiPlaybook> {
-  const allowed = await canAccessPlaybookContent(playbook, viewerUserId)
-  return allowed ? playbook : lockPlaybookContent(playbook)
+  if (canAccessPlaybookContent(playbook)) return playbook
+
+  // Locked — enrich the paywall with the viewer's subscription state so the UI
+  // can decide between "subscribe or pay $29" vs. "over quota, pay $29 overage".
+  let isGrowthSubscriber = false
+  let cycleResetsAt: string | undefined
+  if (viewerUserId) {
+    const sub = await getUserSubscription(viewerUserId)
+    if (sub?.plan === 'growth' && sub.status === 'active') {
+      isGrowthSubscriber = true
+      cycleResetsAt = sub.currentPeriodEnd?.toISOString()
+    }
+  }
+  return lockPlaybookContent(playbook, { isGrowthSubscriber, cycleResetsAt })
+}
+
+// Consume one Growth cycle credit to permanently unlock a completed playbook, if
+// the owner is an active Growth subscriber with quota remaining. Returns whether
+// the playbook ended up unlocked by this call.
+//
+// Called at two authoritative, single-execution points (never on a GET):
+//   • playbook completion (writing worker) — auto-unlocks within quota,
+//   • Growth subscription activation (mock payment) — unlocks the playbook that
+//     triggered the subscribe.
+// Over-quota (0 credits) → returns { unlocked: false }; the review-page paywall
+// then offers the $29 overage. Idempotent per playbook via the consumption row.
+export async function tryGrowthAutoUnlock(
+  playbookId: string,
+  userId: string | null | undefined,
+): Promise<{ unlocked: boolean }> {
+  if (!userId) return { unlocked: false }
+
+  const sub = await getUserSubscription(userId)
+  if (sub?.plan !== 'growth' || sub.status !== 'active') return { unlocked: false }
+
+  const pb = await prisma.playbook.findUnique({
+    where: { id: playbookId },
+    select: { paymentStatus: true, userId: true },
+  })
+  if (!pb || pb.userId !== userId) return { unlocked: false }
+  if (pb.paymentStatus === 'paid') return { unlocked: false }
+
+  // Idempotency: if a consumption row already exists for this playbook but the
+  // status wasn't flipped (e.g. a prior partial run), just mark it paid — don't
+  // consume a second credit.
+  const alreadyConsumed = await prisma.userCredit.findFirst({
+    where: { userId, reason: playbookConsumedReason(playbookId) },
+    select: { id: true },
+  })
+  if (alreadyConsumed) {
+    await prisma.playbook.update({
+      where: { id: playbookId },
+      data: { paymentStatus: 'paid', paidAt: new Date(), paymentReference: 'growth_quota' },
+    })
+    return { unlocked: true }
+  }
+
+  // Quota check: no cycle credits left → leave pending so the overage paywall shows.
+  const balance = await getUserCreditBalance(userId)
+  if (balance < 1) return { unlocked: false }
+
+  await prisma.$transaction([
+    prisma.userCredit.create({
+      data: { userId, amount: -1, reason: playbookConsumedReason(playbookId) },
+    }),
+    prisma.playbook.update({
+      where: { id: playbookId },
+      data: { paymentStatus: 'paid', paidAt: new Date(), paymentReference: 'growth_quota' },
+    }),
+  ])
+  return { unlocked: true }
 }

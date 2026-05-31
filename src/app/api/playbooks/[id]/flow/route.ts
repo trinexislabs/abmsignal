@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
 import { playbookService } from '@/server/playbooks/playbook-service'
 import { canAccessPlaybookContent } from '@/server/playbooks/playbook-access'
 
@@ -25,9 +24,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
   // rawOutput holds the raw agent JSON — i.e. the full generated playbook. Drop
   // it (and worker log paths) for a locked playbook so timeline polling can't be
   // used to exfiltrate the deliverable.
-  const session = await auth()
-  const allowed = await canAccessPlaybookContent(playbook, session?.user?.id)
-  const safeRuns = allowed
+  const safeRuns = canAccessPlaybookContent(playbook)
     ? runs
     : runs.map((r) => ({ ...r, rawOutput: null, stdoutPath: null, stderrPath: null }))
 

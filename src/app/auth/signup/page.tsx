@@ -1,15 +1,14 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { toast } from 'sonner'
-import { Zap, Mail, Lock, User, ArrowRight, Loader2, Check } from 'lucide-react'
+import { Zap, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { GROWTH_PRICE_USD, ONE_OFF_PRICE_USD } from '@/lib/pricing'
 
 function GoogleIcon() {
   return (
@@ -22,90 +21,12 @@ function GoogleIcon() {
   )
 }
 
-const PLAN_OPTIONS = [
-  {
-    id: 'one_off',
-    name: 'One Off',
-    price: `$${ONE_OFF_PRICE_USD}`,
-    period: 'one-time',
-    sub: 'Per playbook · no subscription',
-    highlight: false,
-    features: ['Full playbook generation', 'PDF export', 'Email support'],
-  },
-  {
-    id: 'growth',
-    name: 'Growth',
-    price: `$${GROWTH_PRICE_USD}`,
-    period: '/mo',
-    sub: '10 playbooks / month',
-    highlight: true,
-    features: ['Everything in One Off', '10 playbooks / month', 'Full dashboard & history'],
-  },
-]
-
-function PlanCard({
-  plan,
-  selected,
-  onSelect,
-}: {
-  plan: (typeof PLAN_OPTIONS)[number]
-  selected: boolean
-  onSelect: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`relative p-4 rounded-xl border text-left transition-all w-full ${
-        selected
-          ? 'border-[#339af0]/60 bg-[#1e3a5f]/30 shadow-[0_0_12px_rgba(51,154,240,0.15)]'
-          : 'border-white/[0.08] bg-[#0d0d15] hover:border-white/20'
-      }`}
-    >
-      {plan.highlight && (
-        <span className="absolute -top-2.5 left-3 text-[9px] font-bold bg-[#339af0] text-white px-2 py-0.5 rounded-full uppercase tracking-wide">
-          Most Popular
-        </span>
-      )}
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <div className="text-sm font-semibold text-white mb-0.5">{plan.name}</div>
-          <div className="flex items-baseline gap-0.5">
-            <span className="text-base font-bold text-[#339af0]">{plan.price}</span>
-            <span className="text-[11px] text-[#a1a1aa]">{plan.period}</span>
-          </div>
-          <div className="text-[11px] text-[#a1a1aa] mt-0.5">{plan.sub}</div>
-        </div>
-        <div
-          className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-            selected ? 'border-[#339af0] bg-[#339af0]' : 'border-white/20'
-          }`}
-        >
-          {selected && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
-        </div>
-      </div>
-      <ul className="mt-2.5 space-y-1">
-        {plan.features.map((f) => (
-          <li key={f} className="text-[11px] text-[#a1a1aa] flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-[#339af0]/60 flex-shrink-0" />
-            {f}
-          </li>
-        ))}
-      </ul>
-    </button>
-  )
-}
-
 function SignUpForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const preselectedPlan = searchParams.get('plan') ?? 'growth'
-  const initialPlan = ['one_off', 'growth'].includes(preselectedPlan) ? preselectedPlan : 'growth'
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [selectedPlan, setSelectedPlan] = useState(initialPlan)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
@@ -119,7 +40,7 @@ function SignUpForm() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, plan: selectedPlan }),
+        body: JSON.stringify({ name, email, password }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -132,14 +53,9 @@ function SignUpForm() {
         router.push('/auth/signin')
         return
       }
-      // Growth users must pay the $299/month subscription before reaching the
-      // dashboard. one_off users land on /dashboard and only see the $49 gate
-      // when they click "Generate Playbook".
-      if (selectedPlan === 'growth') {
-        router.push(`/payment/mock?purpose=plan&plan=growth&amount=${GROWTH_PRICE_USD}`)
-      } else {
-        router.push('/dashboard')
-      }
+      // No plan selection at sign-up — go straight to the dashboard. Payment is
+      // collected from the paywall after the first playbook is generated.
+      router.push('/dashboard')
     } finally {
       setLoading(false)
     }
@@ -147,8 +63,7 @@ function SignUpForm() {
 
   async function handleGoogle() {
     setGoogleLoading(true)
-    // OAuth users land on /onboarding/plan to pick their plan
-    await signIn('google', { callbackUrl: '/onboarding/plan' })
+    await signIn('google', { callbackUrl: '/dashboard' })
   }
 
   return (
@@ -164,7 +79,9 @@ function SignUpForm() {
             <span className="font-heading font-bold text-xl text-white">ABMSignal</span>
           </Link>
           <h1 className="font-heading text-3xl font-bold text-white text-center">Create your account</h1>
-          <p className="text-[#a1a1aa] text-sm mt-2 text-center">Choose your plan to get started.</p>
+          <p className="text-[#a1a1aa] text-sm mt-2 text-center">
+            Start free — generate your first playbook, then choose how to pay.
+          </p>
         </div>
 
         <div className="bg-[#141419] border border-white/[0.08] rounded-2xl p-8 space-y-5">
@@ -240,24 +157,10 @@ function SignUpForm() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-white text-sm font-medium">Choose your plan</Label>
-              <div className="grid grid-cols-2 gap-3">
-                {PLAN_OPTIONS.map((plan) => (
-                  <PlanCard
-                    key={plan.id}
-                    plan={plan}
-                    selected={selectedPlan === plan.id}
-                    onSelect={() => setSelectedPlan(plan.id)}
-                  />
-                ))}
-              </div>
-              <p className="text-[11px] text-[#a1a1aa]">
-                {selectedPlan === 'growth'
-                  ? `You'll be charged $${GROWTH_PRICE_USD}/month right after sign-up — 10 playbooks per 30-day cycle.`
-                  : `No charge today — pay $${ONE_OFF_PRICE_USD} per playbook when you generate one.`}
-              </p>
-            </div>
+            <p className="text-[11px] text-[#a1a1aa] leading-relaxed">
+              No card required to sign up. After your first playbook is generated you can
+              unlock it for a one-off fee or subscribe to Growth.
+            </p>
 
             <Button
               type="submit"
@@ -292,9 +195,5 @@ function SignUpForm() {
 }
 
 export default function SignUpPage() {
-  return (
-    <Suspense>
-      <SignUpForm />
-    </Suspense>
-  )
+  return <SignUpForm />
 }

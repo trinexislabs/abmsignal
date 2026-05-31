@@ -103,6 +103,10 @@ export interface ApiPlaybook {
     growth_price: number
     contacts_count: number
     sections_count: number
+    // True when the viewer already holds an active Growth subscription (so this
+    // paywall is an over-quota overage, not a first-time subscribe decision).
+    is_growth_subscriber?: boolean
+    cycle_resets_at?: string
   }
   sections: ApiSection[]
   contacts: ApiContact[]
