@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { marked } from 'marked'
 import { AppSidebar } from '@/components/app-sidebar'
 import { PlaybookStatusBadge } from '@/components/playbook-status-badge'
+import { PlaybookPaywall } from '@/components/playbook/playbook-paywall'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ONE_OFF_PRICE_USD, GROWTH_PRICE_USD } from '@/lib/pricing'
 import { SECTION_META, type SectionType, type SourceReference, type SourceConfidence, type SourceVerificationStatus } from '@/types'
 import {
   FileText,
@@ -29,6 +31,7 @@ import {
   Share2,
   ChevronRight,
   Bot,
+  Lock,
   Loader2,
   ExternalLink,
   AlertTriangle,
@@ -124,6 +127,17 @@ interface PlaybookData {
   status: string
   sections: ApiSection[]
   contacts: unknown[]
+  // Present when the completed playbook is locked behind the post-generation
+  // paywall — the API has stripped section bodies + contact PII from this payload.
+  locked?: boolean
+  payment_status?: 'pending' | 'paid'
+  payment?: {
+    status: 'pending' | 'paid'
+    price_one_off: number
+    growth_price: number
+    contacts_count: number
+    sections_count: number
+  }
 }
 
 // Parse (source: URL) patterns from content and return index positions
@@ -472,23 +486,24 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => { setMounted(true) }, [])
 
+  const fetchPlaybook = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/playbooks/${id}`, { cache: 'no-store' })
+      if (res.ok) {
+        const json = await res.json()
+        setPlaybook(json.data)
+      }
+    } catch (err) {
+      console.error('[playbook] Failed to fetch:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [id])
+
   useEffect(() => {
     if (!id || !mounted) return
-    async function fetchPlaybook() {
-      try {
-        const res = await fetch(`/api/playbooks/${id}`)
-        if (res.ok) {
-          const json = await res.json()
-          setPlaybook(json.data)
-        }
-      } catch (err) {
-        console.error('[playbook] Failed to fetch:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchPlaybook()
-  }, [id, mounted])
+  }, [id, mounted, fetchPlaybook])
 
   const handleSourceUpdate = useCallback((sectionId: string, sourceId: string, status: SourceVerificationStatus) => {
     setSourceStatuses(prev => ({
@@ -515,6 +530,10 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
       </div>
     )
   }
+
+  // Completed-but-unpaid playbook: the API has stripped real content from this
+  // payload. We render a blurred skeleton + paywall over the normal chrome.
+  const locked = !!playbook.locked
 
   const sectionsByType = new Map<SectionType, ApiSection>()
   for (const s of playbook.sections) {
@@ -577,6 +596,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
 
   function handleExportPdf() {
     if (!playbook) return
+    // Defense-in-depth: a locked playbook has no real content in the DOM anyway,
+    // but never attempt an export until it's unlocked.
+    if (playbook.locked) return
     const win = window.open('', '_blank')
     if (!win) return
 
@@ -1158,20 +1180,30 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-[#a1a1aa] hover:text-white hover:bg-white/5 gap-1.5">
-              <Share2 className="w-3.5 h-3.5" />
-              Share
-            </Button>
-            <Link href={`/playbook/${id}/review`}>
-              <Button variant="outline" size="sm" className="border-white/10 bg-white/5 text-white hover:bg-white/10 gap-1.5">
-                <Star className="w-3.5 h-3.5" />
-                Quality Review
-              </Button>
-            </Link>
-            <Button size="sm" onClick={handleExportPdf} className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
-              <Download className="w-3.5 h-3.5" />
-              Export PDF
-            </Button>
+            {locked ? (
+              // Locked: no Share / Quality Review / Export until unlocked.
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full">
+                <Lock className="w-3 h-3" />
+                Locked
+              </span>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="text-[#a1a1aa] hover:text-white hover:bg-white/5 gap-1.5">
+                  <Share2 className="w-3.5 h-3.5" />
+                  Share
+                </Button>
+                <Link href={`/playbook/${id}/review`}>
+                  <Button variant="outline" size="sm" className="border-white/10 bg-white/5 text-white hover:bg-white/10 gap-1.5">
+                    <Star className="w-3.5 h-3.5" />
+                    Quality Review
+                  </Button>
+                </Link>
+                <Button size="sm" onClick={handleExportPdf} className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
+                  <Download className="w-3.5 h-3.5" />
+                  Export PDF
+                </Button>
+              </>
+            )}
           </div>
         </header>
 
@@ -1187,7 +1219,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                   const Icon = SECTION_ICONS[sectionType]
                   const section = sectionsByType.get(sectionType)
                   const isActive = activeSectionType === sectionType
-                  const hasSection = !!section?.content?.trim()
+                  // When locked, the body is withheld but the playbook is complete —
+                  // show every section as generated so the structure reads as full.
+                  const hasSection = locked ? !!section : !!section?.content?.trim()
 
                   return (
                     <button
@@ -1242,8 +1276,44 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </aside>
 
-          <main className="flex-1 overflow-y-auto bg-[#0a0a0f]">
-            {showSources ? (
+          <main className="flex-1 overflow-y-auto bg-[#0a0a0f] relative">
+            {locked ? (
+              <>
+                {/* Blurred skeleton stand-in — no real content is present in the
+                    DOM (the API stripped it); this just communicates that a full,
+                    dense playbook exists behind the paywall. */}
+                <div
+                  aria-hidden="true"
+                  className="max-w-4xl mx-auto px-8 py-8 blur-[6px] select-none pointer-events-none"
+                >
+                  <div className="mb-6">
+                    <div className="h-3 w-40 rounded bg-white/10 mb-3" />
+                    <div className="h-7 w-2/3 rounded bg-white/15" />
+                  </div>
+                  <div className="rounded-xl border border-white/[0.06] bg-[#141419] p-6 space-y-3">
+                    {[
+                      '92%', '88%', '95%', '70%', '84%', '60%',
+                      '90%', '76%', '93%', '67%', '81%', '58%',
+                      '89%', '72%', '85%',
+                    ].map((w, i) => (
+                      <div
+                        key={i}
+                        className={`h-3.5 rounded bg-white/10 ${i % 6 === 5 ? 'mb-4' : ''}`}
+                        style={{ width: w }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <PlaybookPaywall
+                  playbookId={id}
+                  oneOffPrice={playbook.payment?.price_one_off ?? ONE_OFF_PRICE_USD}
+                  growthPrice={playbook.payment?.growth_price ?? GROWTH_PRICE_USD}
+                  sectionsCount={playbook.payment?.sections_count ?? playbook.sections.length}
+                  contactsCount={playbook.payment?.contacts_count ?? 0}
+                  onUnlocked={fetchPlaybook}
+                />
+              </>
+            ) : showSources ? (
               <div className="max-w-4xl mx-auto px-8 py-8">
                 <div className="flex items-start justify-between mb-6">
                   <div>

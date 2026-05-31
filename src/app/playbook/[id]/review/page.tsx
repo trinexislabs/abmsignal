@@ -2,6 +2,7 @@
 
 import { useState, use, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { AppSidebar } from '@/components/app-sidebar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -30,6 +31,7 @@ interface PlaybookData {
   status: string
   sections: { id: string; title: string; type: string; content: string }[]
   contacts: { name: string; title: string; confidence: string; source: string }[]
+  locked?: boolean
 }
 
 function assessQuality(playbook: PlaybookData): QualityCheckItem[] {
@@ -133,11 +135,18 @@ function assessQuality(playbook: PlaybookData): QualityCheckItem[] {
 
 export default function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter()
   const [playbook, setPlaybook] = useState<PlaybookData | null>(null)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
+
+  // The quality review depends on the real content. A locked (unpaid) playbook
+  // has its content withheld, so send the user to the review page paywall.
+  useEffect(() => {
+    if (playbook?.locked) router.replace(`/playbook/${id}`)
+  }, [playbook?.locked, id, router])
 
   useEffect(() => {
     if (!id || !mounted) return

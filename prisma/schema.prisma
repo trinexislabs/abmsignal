@@ -139,6 +139,9 @@ model Playbook {
   progressPct       Int       @default(0)
   agentStatus       String    @default("[]") // JSON array of AgentStatus
   failedReason      String?
+  paymentStatus     String    @default("pending") // "pending" | "paid" — gates content access post-generation
+  paidAt            DateTime?
+  paymentReference  String?
   completedAt       DateTime?
   openclawSessionId String?
   createdAt         DateTime  @default(now())

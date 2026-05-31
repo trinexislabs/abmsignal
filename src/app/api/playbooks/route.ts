@@ -3,11 +3,8 @@ import { auth } from '@/auth'
 import { prisma } from '@/server/db'
 import { playbookRepository } from '@/server/playbooks/playbook-repository'
 import { playbookService } from '@/server/playbooks/playbook-service'
-import {
-  getUserCreditBalance,
-  getUserSubscription,
-  playbookConsumedReason,
-} from '@/server/users/user-repository'
+import { projectPlaybookForViewer } from '@/server/playbooks/playbook-access'
+import { getUserSubscription } from '@/server/users/user-repository'
 import type { PlaybookCreateRequest } from '@/types'
 
 export async function GET() {
@@ -16,7 +13,12 @@ export async function GET() {
   const playbooks = userId
     ? await playbookService.listByUser(userId)
     : await playbookService.listAll()
-  return NextResponse.json({ data: playbooks })
+  // Strip content from any completed-but-unpaid playbook so the list never leaks
+  // locked deliverables (section bodies, contact PII). Open playbooks pass through.
+  const projected = await Promise.all(
+    playbooks.map((pb) => projectPlaybookForViewer(pb, userId)),
+  )
+  return NextResponse.json({ data: projected })
 }
 
 export async function POST(request: Request) {
@@ -39,27 +41,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 })
   }
 
-  // Both plans are credit-gated: one_off pays per playbook, growth gets 10
-  // credits per 30-day cycle and can buy single top-ups when those run out.
-  // Both plans are also concurrency-gated: one_off blocks while any playbook
-  // is in-flight (research/writing), growth allows up to 4 queued at once.
+  // Generation is free under the post-generation paywall — no upfront payment.
+  // Payment is collected after the playbook is generated (see the review-page
+  // paywall + /api/payment/mock unlock). We still concurrency-gate by plan to
+  // protect the agent runtime: one_off blocks while any playbook is in-flight,
+  // growth allows up to 4 non-terminal at once.
   let markPendingQueue = false
   if (userId) {
     const sub = await getUserSubscription(userId)
     if (sub?.plan === 'one_off' || sub?.plan === 'growth') {
-      const credits = await getUserCreditBalance(userId)
-      if (credits < 1) {
-        return NextResponse.json(
-          {
-            error:
-              sub.plan === 'growth'
-                ? 'No credits remaining in this cycle. Top up to generate another playbook.'
-                : 'Payment required before generating a playbook.',
-          },
-          { status: 402 },
-        )
-      }
-
       const inFlight = await playbookRepository.countInFlightForUser(userId)
 
       if (sub.plan === 'one_off') {
@@ -130,17 +120,8 @@ export async function POST(request: Request) {
     })
   }
 
-  // Deduct one credit now that the playbook exists. Applies to both plans —
-  // growth credits come from the monthly cycle grant, one_off credits from
-  // per-playbook top-ups.
-  if (userId) {
-    const sub = await getUserSubscription(userId)
-    if (sub?.plan === 'one_off' || sub?.plan === 'growth') {
-      await prisma.userCredit.create({
-        data: { userId, amount: -1, reason: playbookConsumedReason(playbook.id) },
-      })
-    }
-  }
+  // No credit is consumed at creation under the post-generation paywall —
+  // monetization happens at unlock time on the review page.
 
   return NextResponse.json(
     {

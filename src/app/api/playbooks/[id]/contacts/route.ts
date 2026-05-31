@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
+import { auth } from '@/auth'
 import { playbookService } from '@/server/playbooks/playbook-service'
+import { canAccessPlaybookContent } from '@/server/playbooks/playbook-access'
 import { MOCK_CONTACTS } from '@/lib/mock-data'
 
 interface RouteContext {
@@ -11,6 +13,14 @@ export async function GET(_req: Request, { params }: RouteContext) {
 
   const playbook = await playbookService.getById(id)
   if (playbook) {
+    // The contact-review checkpoint runs mid-generation (status !== 'complete')
+    // and must stay open. Once the playbook is complete, contacts are part of the
+    // sellable deliverable — withhold them while the playbook is locked.
+    const session = await auth()
+    const allowed = await canAccessPlaybookContent(playbook, session?.user?.id)
+    if (!allowed) {
+      return NextResponse.json({ data: [], locked: true })
+    }
     const contacts = await playbookService.getContacts(id)
     return NextResponse.json({ data: contacts })
   }

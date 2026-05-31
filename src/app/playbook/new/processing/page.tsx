@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Zap } from 'lucide-react'
 import { formState } from '@/lib/form-state'
-import { ONE_OFF_PRICE_USD } from '@/lib/pricing'
 
 export default function NewPlaybookProcessingPage() {
   const router = useRouter()
@@ -98,17 +97,9 @@ export default function NewPlaybookProcessingPage() {
 
         console.log('[new/processing] Create response status:', createRes.status)
 
-        if (createRes.status === 402) {
-          // No credits — route through the mock payment gateway. After paying
-          // the user returns to this page and we re-submit using the same
-          // localStorage form data, so they don't have to refill anything.
-          // (We intentionally do NOT clear formState here.)
-          console.log('[new/processing] Payment required — redirecting to mock gateway')
-          router.replace(
-            `/payment/mock?purpose=playbook&amount=${ONE_OFF_PRICE_USD}&returnTo=${encodeURIComponent('/playbook/new/processing')}`,
-          )
-          return
-        }
+        // Generation is free under the post-generation paywall — payment is
+        // collected on the review page after the playbook is generated, so there
+        // is no longer a pre-generation payment redirect here.
 
         if (!createRes.ok) {
           const errorBody = await createRes.text()

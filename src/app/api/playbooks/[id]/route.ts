@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { playbookService } from '@/server/playbooks/playbook-service'
 import { playbookRepository } from '@/server/playbooks/playbook-repository'
+import { projectPlaybookForViewer } from '@/server/playbooks/playbook-access'
 import {
   MOCK_PLAYBOOKS,
   MOCK_CONTACTS,
@@ -18,7 +19,11 @@ export async function GET(_req: Request, { params }: RouteContext) {
 
   const playbook = await playbookService.getById(id)
   if (playbook) {
-    return NextResponse.json({ data: playbook })
+    // Withhold real content for a completed-but-unpaid playbook unless the
+    // viewer has unlocked it (paid) or owns it under an active Growth sub.
+    const session = await auth()
+    const projected = await projectPlaybookForViewer(playbook, session?.user?.id)
+    return NextResponse.json({ data: projected })
   }
 
   // Fall back to mock data for demo IDs (pb-001, pb-002, pb-003)
