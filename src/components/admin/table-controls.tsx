@@ -41,12 +41,12 @@ export function SearchInput({ placeholder = 'Search…' }: { placeholder?: strin
       }}
       className="relative flex-1 min-w-[200px] max-w-sm"
     >
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#a1a1aa] pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-9 pl-9 pr-3 rounded-lg bg-[#0d0d15] border border-white/[0.08] text-sm text-white placeholder:text-[#a1a1aa]/50 focus:outline-none focus:border-amber-500/40"
+        className="w-full h-9 pl-9 pr-3 rounded-lg bg-[#0B0F13] border border-[#374151] text-sm text-white placeholder:text-[#9CA3AF]/50 focus:outline-none focus:border-amber-500/40"
       />
     </form>
   )
@@ -67,10 +67,10 @@ export function FilterSelect({
     <select
       value={current}
       onChange={(e) => setParams({ [param]: e.target.value })}
-      className="h-9 px-3 rounded-lg bg-[#0d0d15] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-amber-500/40 cursor-pointer"
+      className="h-9 px-3 rounded-lg bg-[#0B0F13] border border-[#374151] text-sm text-white focus:outline-none focus:border-amber-500/40 cursor-pointer"
     >
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value} className="bg-[#141419]">
+        <option key={opt.value} value={opt.value} className="bg-[#111827]">
           {opt.label}
         </option>
       ))}
@@ -89,26 +89,26 @@ export function Pagination({
 }) {
   const setParams = useSetParams()
   if (totalPages <= 1) {
-    return <p className="text-xs text-[#a1a1aa]">{total} total</p>
+    return <p className="text-xs text-[#9CA3AF]">{total} total</p>
   }
 
   return (
     <div className="flex items-center justify-between">
-      <p className="text-xs text-[#a1a1aa]">
+      <p className="text-xs text-[#9CA3AF]">
         Page {page} of {totalPages} · {total} total
       </p>
       <div className="flex items-center gap-1">
         <button
           disabled={page <= 1}
           onClick={() => setParams({ page: String(page - 1) })}
-          className="flex items-center gap-1 h-8 px-3 rounded-lg bg-[#0d0d15] border border-white/[0.08] text-xs text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-white/20 transition-colors"
+          className="flex items-center gap-1 h-8 px-3 rounded-lg bg-[#0B0F13] border border-[#374151] text-xs text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#374151]/60 transition-colors"
         >
           <ChevronLeft className="w-3.5 h-3.5" /> Prev
         </button>
         <button
           disabled={page >= totalPages}
           onClick={() => setParams({ page: String(page + 1) })}
-          className="flex items-center gap-1 h-8 px-3 rounded-lg bg-[#0d0d15] border border-white/[0.08] text-xs text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-white/20 transition-colors"
+          className="flex items-center gap-1 h-8 px-3 rounded-lg bg-[#0B0F13] border border-[#374151] text-xs text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#374151]/60 transition-colors"
         >
           Next <ChevronRight className="w-3.5 h-3.5" />
         </button>

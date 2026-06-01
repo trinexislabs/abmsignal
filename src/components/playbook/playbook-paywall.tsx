@@ -109,16 +109,16 @@ export function PlaybookPaywall({
   return (
     <div className="absolute inset-0 z-30 flex items-start justify-center overflow-y-auto px-4 py-10">
       {/* Backdrop tint over the blurred skeleton beneath */}
-      <div className="absolute inset-0 bg-[#0a0a0f]/70 backdrop-blur-[2px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[#0B0F13]/70 backdrop-blur-[2px] pointer-events-none" />
 
       <div className="relative w-full max-w-lg">
-        <div className="rounded-2xl border border-white/[0.08] bg-[#141419] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-[#339af0]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="rounded-2xl border border-[#374151] bg-[#111827] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-[#10B981]/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative p-6">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-9 h-9 rounded-lg bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center">
-                <Lock className="w-4 h-4 text-[#339af0]" />
+              <div className="w-9 h-9 rounded-lg bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center">
+                <Lock className="w-4 h-4 text-[#10B981]" />
               </div>
               <span className="text-[10px] font-semibold text-green-300 bg-green-500/10 border border-green-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Ready
@@ -130,7 +130,7 @@ export function PlaybookPaywall({
                 ? "You've used all 10 playbooks this cycle"
                 : 'Your playbook is generated and ready'}
             </h2>
-            <p className="text-sm text-[#a1a1aa] mt-1.5 leading-relaxed">
+            <p className="text-sm text-[#9CA3AF] mt-1.5 leading-relaxed">
               {isGrowthSubscriber ? (
                 <>
                   This is an extra playbook beyond your Growth cycle allowance. Unlock it now
@@ -171,12 +171,12 @@ export function PlaybookPaywall({
                 {/* One-off unlock */}
                 <button
                   onClick={() => setChoice('one_off')}
-                  className="w-full text-left rounded-xl border border-white/[0.08] bg-[#0a0a0f] hover:border-[#339af0]/40 hover:bg-[#0d0d15] transition-all p-4 group"
+                  className="w-full text-left rounded-xl border border-[#374151] bg-[#0B0F13] hover:border-[#10B981]/40 hover:bg-[#0B0F13] transition-all p-4 group"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-white">Unlock this playbook</p>
-                      <p className="text-xs text-[#a1a1aa] mt-0.5">
+                      <p className="text-xs text-[#9CA3AF] mt-0.5">
                         One-time payment · this playbook only
                       </p>
                     </div>
@@ -187,29 +187,29 @@ export function PlaybookPaywall({
                 {/* Growth subscription */}
                 <button
                   onClick={() => setChoice('growth')}
-                  className="w-full text-left rounded-xl border border-[#339af0]/30 bg-[#1e3a5f]/20 hover:border-[#339af0]/60 hover:bg-[#1e3a5f]/30 transition-all p-4 relative"
+                  className="w-full text-left rounded-xl border border-[#10B981]/30 bg-[#0B3D2E]/20 hover:border-[#10B981]/60 hover:bg-[#0B3D2E]/30 transition-all p-4 relative"
                 >
-                  <span className="absolute -top-2 right-3 text-[9px] font-semibold text-[#0a0a0f] bg-[#339af0] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  <span className="absolute -top-2 right-3 text-[9px] font-semibold text-[#0B0F13] bg-[#10B981] px-2 py-0.5 rounded-full uppercase tracking-wider">
                     Best value
                   </span>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-white flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-[#339af0]" />
+                        <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />
                         Subscribe to Growth
                       </p>
-                      <p className="text-xs text-[#a1a1aa] mt-0.5">
+                      <p className="text-xs text-[#9CA3AF] mt-0.5">
                         Unlock this + all future playbooks · cancel anytime
                       </p>
                     </div>
                     <span className="font-heading font-bold text-white text-lg">
                       ${growthPrice}
-                      <span className="text-xs text-[#a1a1aa] font-normal">/mo</span>
+                      <span className="text-xs text-[#9CA3AF] font-normal">/mo</span>
                     </span>
                   </div>
                 </button>
 
-                <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#a1a1aa] pt-1">
+                <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#9CA3AF] pt-1">
                   <ShieldCheck className="w-3 h-3" />
                   <span>You only pay once your playbook is ready — never for failed runs.</span>
                 </div>
@@ -220,7 +220,7 @@ export function PlaybookPaywall({
                   <button
                     onClick={() => setChoice(null)}
                     disabled={submitting || success}
-                    className="inline-flex items-center gap-1.5 text-xs text-[#a1a1aa] hover:text-white mb-4 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-white mb-4 disabled:opacity-50"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     Back to options
@@ -228,16 +228,16 @@ export function PlaybookPaywall({
                 )}
 
                 {/* Line item */}
-                <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0f] p-4 flex items-center justify-between mb-4">
+                <div className="rounded-xl border border-[#374151] bg-[#0B0F13] p-4 flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-md bg-[#1e3a5f]/60 border border-[#339af0]/20 flex items-center justify-center">
-                      <CreditCard className="w-3.5 h-3.5 text-[#339af0]" />
+                    <div className="w-7 h-7 rounded-md bg-[#0B3D2E]/60 border border-[#10B981]/20 flex items-center justify-center">
+                      <CreditCard className="w-3.5 h-3.5 text-[#10B981]" />
                     </div>
                     <div>
                       <p className="text-xs font-medium text-white">
                         {choice === 'growth' ? 'Growth plan (monthly)' : 'One-off playbook unlock'}
                       </p>
-                      <p className="text-[10px] text-[#a1a1aa]">
+                      <p className="text-[10px] text-[#9CA3AF]">
                         {choice === 'growth' ? 'Billed monthly · cancel anytime' : 'One-time charge'}
                       </p>
                     </div>
@@ -245,7 +245,7 @@ export function PlaybookPaywall({
                   <p className="font-heading font-bold text-white text-lg">
                     ${amount}
                     {choice === 'growth' && (
-                      <span className="text-xs text-[#a1a1aa] font-normal">/mo</span>
+                      <span className="text-xs text-[#9CA3AF] font-normal">/mo</span>
                     )}
                   </p>
                 </div>
@@ -257,7 +257,7 @@ export function PlaybookPaywall({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Jane Smith"
-                      className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/40 focus:border-[#339af0]/50 h-10 text-sm"
+                      className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/40 focus:border-[#10B981]/50 h-10 text-sm"
                     />
                   </div>
                   <div>
@@ -267,7 +267,7 @@ export function PlaybookPaywall({
                       onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                       placeholder="4242 4242 4242 4242"
                       inputMode="numeric"
-                      className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/40 focus:border-[#339af0]/50 h-10 text-sm tabular-nums"
+                      className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/40 focus:border-[#10B981]/50 h-10 text-sm tabular-nums"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -278,7 +278,7 @@ export function PlaybookPaywall({
                         onChange={(e) => setExpiry(formatExpiry(e.target.value))}
                         placeholder="MM/YY"
                         inputMode="numeric"
-                        className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/40 focus:border-[#339af0]/50 h-10 text-sm tabular-nums"
+                        className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/40 focus:border-[#10B981]/50 h-10 text-sm tabular-nums"
                       />
                     </div>
                     <div>
@@ -288,7 +288,7 @@ export function PlaybookPaywall({
                         onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         placeholder="123"
                         inputMode="numeric"
-                        className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/40 focus:border-[#339af0]/50 h-10 text-sm tabular-nums"
+                        className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/40 focus:border-[#10B981]/50 h-10 text-sm tabular-nums"
                       />
                     </div>
                   </div>
@@ -298,7 +298,7 @@ export function PlaybookPaywall({
                   onClick={handleSubmit}
                   disabled={!formValid || submitting || success}
                   size="lg"
-                  className="w-full mt-5 bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold h-11 rounded-xl shadow-[0_0_20px_rgba(51,154,240,0.25)]"
+                  className="w-full mt-5 bg-[#10B981] hover:bg-[#059669] text-white font-semibold h-11 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.25)]"
                 >
                   {success ? (
                     <><CheckCircle2 className="w-4 h-4 mr-2" />Unlocked</>
@@ -309,7 +309,7 @@ export function PlaybookPaywall({
                   )}
                 </Button>
 
-                <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-[#a1a1aa]">
+                <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-[#9CA3AF]">
                   <ShieldCheck className="w-3 h-3" />
                   <span>Mock gateway — no real charge. Replace with Stripe before launch.</span>
                 </div>

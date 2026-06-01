@@ -145,7 +145,7 @@ export default function NewPlaybookProcessingPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">⚠️</span>
@@ -153,7 +153,7 @@ export default function NewPlaybookProcessingPage() {
           <p className="text-red-400 mb-4 text-sm">{error}</p>
           <Link
             href="/playbook/new/product"
-            className="text-[#339af0] text-sm hover:underline"
+            className="text-[#10B981] text-sm hover:underline"
           >
             ← Start over
           </Link>
@@ -165,10 +165,10 @@ export default function NewPlaybookProcessingPage() {
   // Don't render dynamic content until client-side hydration is complete
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 rounded-xl bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center mx-auto mb-5">
-            <Zap className="w-7 h-7 text-[#339af0] animate-pulse" />
+          <div className="w-14 h-14 rounded-xl bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center mx-auto mb-5">
+            <Zap className="w-7 h-7 text-[#10B981] animate-pulse" />
           </div>
           <p className="text-white font-semibold text-lg mb-1">Loading…</p>
         </div>
@@ -177,13 +177,13 @@ export default function NewPlaybookProcessingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+    <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center">
       <div className="text-center">
-        <div className="w-14 h-14 rounded-xl bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center mx-auto mb-5">
-          <Zap className="w-7 h-7 text-[#339af0] animate-pulse" />
+        <div className="w-14 h-14 rounded-xl bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center mx-auto mb-5">
+          <Zap className="w-7 h-7 text-[#10B981] animate-pulse" />
         </div>
         <p className="text-white font-semibold text-lg mb-1">Starting your playbook…</p>
-        <p className="text-[#a1a1aa] text-sm">Setting up your research pipeline</p>
+        <p className="text-[#9CA3AF] text-sm">Setting up your research pipeline</p>
       </div>
     </div>
   )

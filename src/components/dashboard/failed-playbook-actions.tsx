@@ -44,7 +44,7 @@ export function FailedPlaybookActions({ playbookId, productName, targetCompany }
           variant="outline"
           onClick={handleRetry}
           disabled={retrying}
-          className="h-7 text-xs px-2.5 border-[#339af0]/30 text-[#339af0] hover:bg-[#339af0]/10 hover:border-[#339af0]/50 gap-1.5"
+          className="h-7 text-xs px-2.5 border-[#10B981]/30 text-[#10B981] hover:bg-[#10B981]/10 hover:border-[#10B981]/50 gap-1.5"
         >
           {retrying ? (
             <Loader2 className="w-3 h-3 animate-spin" />

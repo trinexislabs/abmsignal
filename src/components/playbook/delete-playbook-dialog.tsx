@@ -77,13 +77,13 @@ export function DeletePlaybookDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#141419] border-red-500/20 text-white sm:max-w-md">
+      <DialogContent className="bg-[#111827] border-red-500/20 text-white sm:max-w-md">
         <DialogHeader>
           <div className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/25 flex items-center justify-center mb-3">
             <AlertTriangle className="w-5 h-5 text-red-400" />
           </div>
           <DialogTitle className="text-white font-heading">Delete this playbook?</DialogTitle>
-          <DialogDescription className="text-[#a1a1aa] leading-relaxed">
+          <DialogDescription className="text-[#9CA3AF] leading-relaxed">
             You&apos;re about to permanently delete the playbook for{' '}
             <span className="font-semibold text-white">{targetCompany}</span>
             {productName && (
@@ -110,7 +110,7 @@ export function DeletePlaybookDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={deleting}
-            className="border-white/10 text-white hover:bg-white/[0.04]"
+            className="border-[#374151] text-white hover:bg-white/[0.04]"
           >
             Cancel
           </Button>

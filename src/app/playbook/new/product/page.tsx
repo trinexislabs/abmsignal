@@ -43,19 +43,19 @@ function FormSelect({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          'w-full h-10 rounded-xl bg-[#0a0a0f] border border-white/10 px-3 pr-8 text-sm appearance-none cursor-pointer',
-          'focus:outline-none focus:border-[#339af0]/50',
-          value ? 'text-white' : 'text-[#a1a1aa]/60'
+          'w-full h-10 rounded-xl bg-[#0B0F13] border border-[#374151] px-3 pr-8 text-sm appearance-none cursor-pointer',
+          'focus:outline-none focus:border-[#10B981]/50',
+          value ? 'text-white' : 'text-[#9CA3AF]/60'
         )}
       >
         <option value="" disabled>{placeholder}</option>
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value} className="bg-[#141419] text-white">
+          <option key={opt.value} value={opt.value} className="bg-[#111827] text-white">
             {opt.label}
           </option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa]" />
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
     </div>
   )
 }
@@ -84,8 +84,8 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
                   isDone
                     ? 'bg-green-500/20 border-green-500/40 text-green-400'
                     : isActive
-                    ? 'bg-[#339af0]/20 border-[#339af0]/60 text-[#339af0]'
-                    : 'bg-white/5 border-white/15 text-[#a1a1aa]'
+                    ? 'bg-[#10B981]/20 border-[#10B981]/60 text-[#10B981]'
+                    : 'bg-white/5 border-white/15 text-[#9CA3AF]'
                 )}
               >
                 {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : step.number}
@@ -93,7 +93,7 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
               <span
                 className={cn(
                   'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-[#a1a1aa]'
+                  isActive ? 'text-white' : 'text-[#9CA3AF]'
                 )}
               >
                 {step.label}
@@ -103,7 +103,7 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
               <div
                 className={cn(
                   'h-px w-12 transition-colors',
-                  isDone ? 'bg-[#339af0]/40' : 'bg-white/10'
+                  isDone ? 'bg-[#10B981]/40' : 'bg-white/10'
                 )}
               />
             )}
@@ -143,18 +143,18 @@ function ValuePropsInput({
     <div className="space-y-2">
       {values.map((val, i) => (
         <div key={i} className="flex items-center gap-2">
-          <span className="text-[#a1a1aa] text-xs w-4 text-right flex-shrink-0">{i + 1}.</span>
+          <span className="text-[#9CA3AF] text-xs w-4 text-right flex-shrink-0">{i + 1}.</span>
           <Input
             value={val}
             onChange={(e) => update(i, e.target.value)}
             placeholder={`Value prop ${i + 1}...`}
-            className="flex-1 bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-9 text-sm"
+            className="flex-1 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 h-9 text-sm"
           />
           {values.length > 1 && (
             <button
               type="button"
               onClick={() => remove(i)}
-              className="p-1.5 text-[#a1a1aa] hover:text-red-400 transition-colors"
+              className="p-1.5 text-[#9CA3AF] hover:text-red-400 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -165,7 +165,7 @@ function ValuePropsInput({
         <button
           type="button"
           onClick={add}
-          className="flex items-center gap-1.5 text-xs text-[#339af0] hover:text-[#339af0]/80 transition-colors mt-1"
+          className="flex items-center gap-1.5 text-xs text-[#10B981] hover:text-[#10B981]/80 transition-colors mt-1"
         >
           <Plus className="w-3.5 h-3.5" />
           Add value prop
@@ -299,13 +299,13 @@ export default function ProductBriefPage() {
         form.value_propositions.some((v) => v.trim().length > 0)
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0B0F13]">
       {/* Top nav */}
-      <div className="border-b border-white/[0.06] bg-[#0a0a0f]/80 backdrop-blur-xl sticky top-0 z-30">
+      <div className="border-b border-[#374151] bg-[#0B0F13]/80 backdrop-blur-xl sticky top-0 z-30">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded-lg bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-[#339af0]" />
+            <div className="w-7 h-7 rounded-lg bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 text-[#10B981]" />
             </div>
             <span className="font-heading font-bold text-sm text-white">ABMSignal</span>
           </Link>
@@ -320,13 +320,13 @@ export default function ProductBriefPage() {
           <h1 className="font-heading text-2xl font-bold text-white mb-1">
             Step 1: Product Brief
           </h1>
-          <p className="text-sm text-[#a1a1aa]">
+          <p className="text-sm text-[#9CA3AF]">
             Tell us about your product so we can personalize the outreach perfectly.
           </p>
         </div>
 
         {/* Mode toggle */}
-        <div className="flex gap-1 p-1 bg-[#141419] border border-white/[0.06] rounded-xl mb-6 w-fit">
+        <div className="flex gap-1 p-1 bg-[#111827] border border-[#374151] rounded-xl mb-6 w-fit">
           {(['form', 'url'] as Mode[]).map((m) => (
             <button
               key={m}
@@ -335,8 +335,8 @@ export default function ProductBriefPage() {
               className={cn(
                 'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
                 mode === m
-                  ? 'bg-[#1e3a5f] text-white border border-[#339af0]/25 shadow-sm'
-                  : 'text-[#a1a1aa] hover:text-white'
+                  ? 'bg-[#0B3D2E] text-white border border-[#10B981]/25 shadow-sm'
+                  : 'text-[#9CA3AF] hover:text-white'
               )}
             >
               {m === 'form' ? (
@@ -356,7 +356,7 @@ export default function ProductBriefPage() {
 
         {/* ── URL Mode ── */}
         {mode === 'url' && (
-          <Card className="bg-[#141419] border-white/[0.06] p-6">
+          <Card className="bg-[#111827] border-[#374151] p-6">
             <Label className="text-sm font-medium text-white mb-3 block">Product URL</Label>
             <div className="flex gap-3">
               <Input
@@ -369,12 +369,12 @@ export default function ProductBriefPage() {
                   setAnalysisError(null)
                 }}
                 placeholder="https://yourproduct.com"
-                className="flex-1 bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-10"
+                className="flex-1 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 h-10"
               />
               <Button
                 onClick={handleAnalyzeUrl}
                 disabled={!urlInput.trim() || analyzing}
-                className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-2 px-5 h-10 flex-shrink-0"
+                className="bg-[#10B981] hover:bg-[#059669] text-white gap-2 px-5 h-10 flex-shrink-0"
               >
                 {analyzing ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -386,7 +386,7 @@ export default function ProductBriefPage() {
                 {analyzing ? 'Analyzing…' : analyzed ? 'Analyzed' : 'Analyze URL'}
               </Button>
             </div>
-            <p className="text-xs text-[#a1a1aa] mt-2.5">
+            <p className="text-xs text-[#9CA3AF] mt-2.5">
               We'll scrape your positioning, value props, and target personas automatically.
             </p>
 
@@ -395,7 +395,7 @@ export default function ProductBriefPage() {
                 <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-red-400 mb-0.5">Analysis failed</p>
-                  <p className="text-xs text-[#a1a1aa]">{analysisError}</p>
+                  <p className="text-xs text-[#9CA3AF]">{analysisError}</p>
                 </div>
               </div>
             )}
@@ -410,10 +410,10 @@ export default function ProductBriefPage() {
                     <span className={cn(
                       'text-[10px] font-medium px-2 py-0.5 rounded border',
                       analysisSource === 'ai'
-                        ? 'text-[#339af0] bg-[#339af0]/10 border-[#339af0]/20'
+                        ? 'text-[#10B981] bg-[#10B981]/10 border-[#10B981]/20'
                         : analysisSource === 'html'
                         ? 'text-violet-400 bg-violet-500/10 border-violet-500/20'
-                        : 'text-[#a1a1aa] bg-white/5 border-white/10',
+                        : 'text-[#9CA3AF] bg-white/5 border-[#374151]',
                     )}>
                       {analysisSource === 'ai' ? 'AI-analyzed' : analysisSource === 'html' ? 'Auto-extracted' : 'Meta-extracted'}
                     </span>
@@ -421,7 +421,7 @@ export default function ProductBriefPage() {
                   <button
                     type="button"
                     onClick={() => setMode('form')}
-                    className="flex items-center gap-1.5 text-xs text-[#339af0] hover:text-[#339af0]/80 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-[#10B981] hover:text-[#10B981]/80 transition-colors"
                   >
                     <FileText className="w-3.5 h-3.5" />
                     Edit in Form Mode
@@ -429,28 +429,28 @@ export default function ProductBriefPage() {
                 </div>
 
                 {/* Extracted fields preview */}
-                <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0f] divide-y divide-white/[0.04]">
+                <div className="rounded-xl border border-[#374151] bg-[#0B0F13] divide-y divide-white/[0.04]">
                   {/* Product name + description */}
                   <div className="px-4 py-3">
                     <div className="flex items-start gap-2 mb-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#339af0] flex-shrink-0 mt-0.5" />
+                      <Sparkles className="w-3.5 h-3.5 text-[#10B981] flex-shrink-0 mt-0.5" />
                       <span className="text-sm font-semibold text-white">{extractedData.product_name || '—'}</span>
                     </div>
                     {extractedData.description && (
-                      <p className="text-xs text-[#a1a1aa] leading-relaxed pl-5">{extractedData.description}</p>
+                      <p className="text-xs text-[#9CA3AF] leading-relaxed pl-5">{extractedData.description}</p>
                     )}
                   </div>
 
                   {/* Value propositions */}
                   {extractedData.value_propositions.length > 0 && (
                     <div className="px-4 py-3">
-                      <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-2">
+                      <p className="text-[10px] text-[#9CA3AF] uppercase tracking-widest mb-2">
                         Value Props ({extractedData.value_propositions.length})
                       </p>
                       <ul className="space-y-1">
                         {extractedData.value_propositions.map((vp, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-[#a1a1aa]">
-                            <span className="text-[#339af0] flex-shrink-0 mt-0.5">•</span>
+                          <li key={i} className="flex items-start gap-2 text-xs text-[#9CA3AF]">
+                            <span className="text-[#10B981] flex-shrink-0 mt-0.5">•</span>
                             {vp}
                           </li>
                         ))}
@@ -462,25 +462,25 @@ export default function ProductBriefPage() {
                   <div className="px-4 py-3 grid grid-cols-2 gap-3">
                     {extractedData.target_personas && (
                       <div>
-                        <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-1">Personas</p>
+                        <p className="text-[10px] text-[#9CA3AF] uppercase tracking-widest mb-1">Personas</p>
                         <p className="text-xs text-white">{extractedData.target_personas}</p>
                       </div>
                     )}
                     {extractedData.deployment_model && (
                       <div>
-                        <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-1">Deployment</p>
+                        <p className="text-[10px] text-[#9CA3AF] uppercase tracking-widest mb-1">Deployment</p>
                         <p className="text-xs text-white capitalize">{extractedData.deployment_model}</p>
                       </div>
                     )}
                     {extractedData.deal_size && (
                       <div>
-                        <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-1">Deal Size</p>
+                        <p className="text-[10px] text-[#9CA3AF] uppercase tracking-widest mb-1">Deal Size</p>
                         <p className="text-xs text-white">{extractedData.deal_size}</p>
                       </div>
                     )}
                     {extractedData.competitors && (
                       <div>
-                        <p className="text-[10px] text-[#a1a1aa] uppercase tracking-widest mb-1">Competitors</p>
+                        <p className="text-[10px] text-[#9CA3AF] uppercase tracking-widest mb-1">Competitors</p>
                         <p className="text-xs text-white">{extractedData.competitors}</p>
                       </div>
                     )}
@@ -488,7 +488,7 @@ export default function ProductBriefPage() {
                 </div>
 
                 {analysisSource !== 'ai' && (
-                  <p className="text-xs text-[#a1a1aa]">
+                  <p className="text-xs text-[#9CA3AF]">
                     {analysisSource === 'html'
                       ? 'Extracted from page structure. Review the fields and use Form Mode to refine.'
                       : 'Only meta tags were found. Switch to Form Mode to fill in the remaining fields.'}
@@ -501,40 +501,40 @@ export default function ProductBriefPage() {
 
         {/* ── Form Mode ── */}
         {mode === 'form' && (
-          <Card className="bg-[#141419] border-white/[0.06] p-6 space-y-6">
+          <Card className="bg-[#111827] border-[#374151] p-6 space-y-6">
             {/* Product Name */}
             <div>
               <Label className="text-sm font-medium text-white mb-1.5 block">
-                Product Name <span className="text-[#339af0]">*</span>
+                Product Name <span className="text-[#10B981]">*</span>
               </Label>
               <Input
                 value={form.product_name}
                 onChange={(e) => set('product_name', e.target.value)}
                 placeholder="e.g. Nexara AI"
-                className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-10"
+                className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 h-10"
               />
             </div>
 
             {/* Description */}
             <div>
               <Label className="text-sm font-medium text-white mb-1.5 block">
-                Product Description <span className="text-[#339af0]">*</span>
+                Product Description <span className="text-[#10B981]">*</span>
               </Label>
               <Textarea
                 value={form.description}
                 onChange={(e) => set('description', e.target.value)}
                 placeholder="What does your product do? What problem does it solve?"
                 rows={3}
-                className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 resize-none text-sm"
+                className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 resize-none text-sm"
               />
             </div>
 
             {/* Value Propositions */}
             <div>
               <Label className="text-sm font-medium text-white mb-1.5 block">
-                Value Propositions <span className="text-[#339af0]">*</span>
+                Value Propositions <span className="text-[#10B981]">*</span>
               </Label>
-              <p className="text-xs text-[#a1a1aa] mb-3">
+              <p className="text-xs text-[#9CA3AF] mb-3">
                 List 3–5 specific, measurable value props your product delivers.
               </p>
               <ValuePropsInput
@@ -546,15 +546,15 @@ export default function ProductBriefPage() {
             {/* Target Personas */}
             <div>
               <Label className="text-sm font-medium text-white mb-1.5 block">
-                Target Personas <span className="text-[#339af0]">*</span>
+                Target Personas <span className="text-[#10B981]">*</span>
               </Label>
               <Input
                 value={form.target_personas}
                 onChange={(e) => set('target_personas', e.target.value)}
                 placeholder="e.g. Head of Payments, CTO, CDO"
-                className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-10"
+                className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 h-10"
               />
-              <p className="text-xs text-[#a1a1aa] mt-1.5">Separate multiple personas with commas.</p>
+              <p className="text-xs text-[#9CA3AF] mt-1.5">Separate multiple personas with commas.</p>
             </div>
 
             {/* Key Differentiators */}
@@ -567,7 +567,7 @@ export default function ProductBriefPage() {
                 onChange={(e) => set('differentiators', e.target.value)}
                 placeholder="What makes you different vs. alternatives? Be specific."
                 rows={2}
-                className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 resize-none text-sm"
+                className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 resize-none text-sm"
               />
             </div>
 
@@ -580,9 +580,9 @@ export default function ProductBriefPage() {
                 value={form.competitors}
                 onChange={(e) => set('competitors', e.target.value)}
                 placeholder="e.g. Kyriba, TreasuryXpress, ION Treasury"
-                className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-10"
+                className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 h-10"
               />
-              <p className="text-xs text-[#a1a1aa] mt-1.5">Comma-separated.</p>
+              <p className="text-xs text-[#9CA3AF] mt-1.5">Comma-separated.</p>
             </div>
 
             {/* Grid row: Deployment + Deal Size + Sales Cycle */}
@@ -645,7 +645,7 @@ export default function ProductBriefPage() {
         <div className="flex items-center justify-between mt-6">
           <Button
             variant="ghost"
-            className="text-[#a1a1aa] hover:text-white"
+            className="text-[#9CA3AF] hover:text-white"
             onClick={handleSaveDraft}
           >
             Save Draft
@@ -653,7 +653,7 @@ export default function ProductBriefPage() {
           <Button
             onClick={handleNext}
             disabled={!isFormValid}
-            className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold gap-2 px-6"
+            className="bg-[#10B981] hover:bg-[#059669] text-white font-semibold gap-2 px-6"
           >
             Next: Target Account
             <ArrowRight className="w-4 h-4" />

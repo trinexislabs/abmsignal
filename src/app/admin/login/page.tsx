@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center px-4 py-16">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative w-full max-w-md">
@@ -50,17 +50,17 @@ export default function AdminLoginPage() {
             <ShieldAlert className="w-6 h-6 text-amber-400" />
           </div>
           <h1 className="font-heading text-3xl font-bold text-white text-center">Admin Portal</h1>
-          <p className="text-[#a1a1aa] text-sm mt-2 text-center">
+          <p className="text-[#9CA3AF] text-sm mt-2 text-center">
             Restricted access — operator sign-in only.
           </p>
         </div>
 
-        <div className="bg-[#141419] border border-white/[0.08] rounded-2xl p-8">
+        <div className="bg-[#111827] border border-[#374151] rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="admin-email" className="text-white text-sm font-medium">Email address</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa] pointer-events-none" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
                 <Input
                   id="admin-email"
                   type="email"
@@ -69,14 +69,14 @@ export default function AdminLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="pl-10 h-11 bg-[#0d0d15] border-white/[0.08] text-white placeholder:text-[#a1a1aa] focus-visible:border-amber-500/50 focus-visible:ring-amber-500/20 rounded-xl"
+                  className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-amber-500/50 focus-visible:ring-amber-500/20 rounded-xl"
                 />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="admin-password" className="text-white text-sm font-medium">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa] pointer-events-none" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
                 <Input
                   id="admin-password"
                   type="password"
@@ -85,14 +85,14 @@ export default function AdminLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="pl-10 h-11 bg-[#0d0d15] border-white/[0.08] text-white placeholder:text-[#a1a1aa] focus-visible:border-amber-500/50 focus-visible:ring-amber-500/20 rounded-xl"
+                  className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-amber-500/50 focus-visible:ring-amber-500/20 rounded-xl"
                 />
               </div>
             </div>
             <Button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full h-11 bg-amber-500 hover:bg-amber-500/90 text-[#0a0a0f] font-semibold rounded-xl"
+              className="w-full h-11 bg-amber-500 hover:bg-amber-500/90 text-[#0B0F13] font-semibold rounded-xl"
             >
               {loading ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying...</>
@@ -103,7 +103,7 @@ export default function AdminLoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-[#a1a1aa]/60 mt-6">
+        <p className="text-center text-xs text-[#9CA3AF]/60 mt-6">
           Authorized personnel only. Activity may be monitored.
         </p>
       </div>

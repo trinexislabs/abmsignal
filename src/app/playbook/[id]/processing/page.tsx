@@ -119,12 +119,12 @@ const STATUS_LABELS: Record<PlaybookStatus, string> = {
 }
 
 const STATUS_BADGE: Record<PlaybookStatus, string> = {
-  draft: 'bg-white/10 text-white border-white/20',
-  queued: 'bg-white/10 text-white border-white/20',
+  draft: 'bg-white/10 text-white border-[#374151]/60',
+  queued: 'bg-white/10 text-white border-[#374151]/60',
   pending_queue: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
-  researching: 'bg-[#339af0]/15 text-[#339af0] border-[#339af0]/30',
+  researching: 'bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30',
   contact_review: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  writing: 'bg-[#339af0]/15 text-[#339af0] border-[#339af0]/30',
+  writing: 'bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30',
   reviewing: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
   complete: 'bg-green-500/15 text-green-400 border-green-500/30',
   error: 'bg-red-500/15 text-red-400 border-red-500/30',
@@ -135,14 +135,14 @@ const STATUS_BADGE: Record<PlaybookStatus, string> = {
 
 // Event type → display style. Anything unknown falls back to "info".
 const EVENT_STYLE: Record<string, { Icon: React.ElementType; color: string }> = {
-  'playbook.created':     { Icon: Zap,          color: 'text-[#339af0]' },
-  'generation.queued':    { Icon: Clock,        color: 'text-[#a1a1aa]' },
-  'run.started':          { Icon: Activity,     color: 'text-[#339af0]' },
-  'run.prompt_built':     { Icon: PenLine,      color: 'text-[#a1a1aa]' },
+  'playbook.created':     { Icon: Zap,          color: 'text-[#10B981]' },
+  'generation.queued':    { Icon: Clock,        color: 'text-[#9CA3AF]' },
+  'run.started':          { Icon: Activity,     color: 'text-[#10B981]' },
+  'run.prompt_built':     { Icon: PenLine,      color: 'text-[#9CA3AF]' },
   'contacts.discovered':  { Icon: Users,        color: 'text-green-400' },
   'contacts.ready':       { Icon: ShieldCheck,  color: 'text-amber-400' },
   'contacts.approved':    { Icon: CheckCircle2, color: 'text-green-400' },
-  'writing.queued':       { Icon: Clock,        color: 'text-[#a1a1aa]' },
+  'writing.queued':       { Icon: Clock,        color: 'text-[#9CA3AF]' },
   'playbook.complete':    { Icon: CheckCircle2, color: 'text-green-400' },
   'run.failed':           { Icon: AlertCircle,  color: 'text-red-400' },
   'run.stale_cancelled':  { Icon: AlertCircle,  color: 'text-amber-400' },
@@ -177,8 +177,8 @@ function timeAgo(iso: string, nowMs: number): string {
 function AgentStatusBadge({ status }: { status: AgentStatus['status'] }) {
   if (status === 'running') {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#339af0] bg-[#339af0]/10 border border-[#339af0]/25 px-1.5 py-0.5 rounded-full">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#339af0] animate-pulse" />
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/25 px-1.5 py-0.5 rounded-full">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
         Running
       </span>
     )
@@ -200,7 +200,7 @@ function AgentStatusBadge({ status }: { status: AgentStatus['status'] }) {
     )
   }
   return (
-    <span className="inline-flex text-[10px] font-semibold text-[#a1a1aa] bg-white/[0.06] border border-white/10 px-1.5 py-0.5 rounded-full">
+    <span className="inline-flex text-[10px] font-semibold text-[#9CA3AF] bg-white/[0.06] border border-[#374151] px-1.5 py-0.5 rounded-full">
       Pending
     </span>
   )
@@ -213,14 +213,14 @@ function AgentCard({ agentStatus }: { agentStatus: AgentStatus }) {
   return (
     <Card
       className={cn(
-        'bg-[#141419] border p-5 transition-all duration-300',
+        'bg-[#111827] border p-5 transition-all duration-300',
         status === 'running'
-          ? 'border-[#339af0]/30 shadow-[0_0_20px_rgba(51,154,240,0.07)]'
+          ? 'border-[#10B981]/30 shadow-[0_0_20px_rgba(16,185,129,0.07)]'
           : status === 'complete'
             ? 'border-green-500/20'
             : status === 'error'
               ? 'border-red-500/20'
-              : 'border-white/[0.06]',
+              : 'border-[#374151]',
       )}
     >
       <div className="flex items-start gap-3">
@@ -228,24 +228,24 @@ function AgentCard({ agentStatus }: { agentStatus: AgentStatus }) {
           className={cn(
             'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 border',
             status === 'running'
-              ? 'bg-[#1e3a5f] border-[#339af0]/30'
+              ? 'bg-[#0B3D2E] border-[#10B981]/30'
               : status === 'complete'
                 ? 'bg-green-500/10 border-green-500/20'
                 : status === 'error'
                   ? 'bg-red-500/10 border-red-500/20'
-                  : 'bg-white/[0.03] border-white/10',
+                  : 'bg-white/[0.03] border-[#374151]',
           )}
         >
           <Icon
             className={cn(
               'w-4 h-4',
               status === 'running'
-                ? 'text-[#339af0]'
+                ? 'text-[#10B981]'
                 : status === 'complete'
                   ? 'text-green-400'
                   : status === 'error'
                     ? 'text-red-400'
-                    : 'text-[#a1a1aa]',
+                    : 'text-[#9CA3AF]',
             )}
           />
         </div>
@@ -255,10 +255,10 @@ function AgentCard({ agentStatus }: { agentStatus: AgentStatus }) {
             <span className="text-sm font-semibold text-white">{label}</span>
             <AgentStatusBadge status={status} />
           </div>
-          <p className="text-xs text-[#a1a1aa] leading-relaxed">{task}</p>
-          {detail && <p className="text-xs text-[#339af0]/70 mt-1">{detail}</p>}
+          <p className="text-xs text-[#9CA3AF] leading-relaxed">{task}</p>
+          {detail && <p className="text-xs text-[#10B981]/70 mt-1">{detail}</p>}
           {status === 'pending' && (
-            <p className="text-[11px] text-[#a1a1aa]/50 mt-1 italic">{description}</p>
+            <p className="text-[11px] text-[#9CA3AF]/50 mt-1 italic">{description}</p>
           )}
         </div>
       </div>
@@ -278,13 +278,13 @@ function CounterBox({
   hint?: string
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#141419] p-4">
+    <div className="rounded-xl border border-[#374151] bg-[#111827] p-4">
       <div className="flex items-center gap-1.5 mb-1.5">
-        <Icon className="w-3.5 h-3.5 text-[#339af0]" />
-        <span className="text-[10px] text-[#a1a1aa] uppercase tracking-wider">{label}</span>
+        <Icon className="w-3.5 h-3.5 text-[#10B981]" />
+        <span className="text-[10px] text-[#9CA3AF] uppercase tracking-wider">{label}</span>
       </div>
       <p className="text-2xl font-bold text-white tabular-nums">{value}</p>
-      {hint && <p className="text-[10px] text-[#a1a1aa] mt-0.5">{hint}</p>}
+      {hint && <p className="text-[10px] text-[#9CA3AF] mt-0.5">{hint}</p>}
     </div>
   )
 }
@@ -293,8 +293,8 @@ function ActivityFeed({ events, nowMs }: { events: ApiEvent[]; nowMs: number }) 
   if (events.length === 0) {
     return (
       <div className="text-center py-8">
-        <Activity className="w-5 h-5 text-[#a1a1aa]/40 mx-auto mb-2" />
-        <p className="text-xs text-[#a1a1aa]">Waiting for agent activity…</p>
+        <Activity className="w-5 h-5 text-[#9CA3AF]/40 mx-auto mb-2" />
+        <p className="text-xs text-[#9CA3AF]">Waiting for agent activity…</p>
       </div>
     )
   }
@@ -302,16 +302,16 @@ function ActivityFeed({ events, nowMs }: { events: ApiEvent[]; nowMs: number }) 
   return (
     <ol className="space-y-3">
       {events.map((event) => {
-        const style = EVENT_STYLE[event.type] ?? { Icon: Info, color: 'text-[#a1a1aa]' }
+        const style = EVENT_STYLE[event.type] ?? { Icon: Info, color: 'text-[#9CA3AF]' }
         const Icon = style.Icon
         return (
           <li key={event.id} className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-6 h-6 rounded-full bg-white/[0.04] border border-[#374151] flex items-center justify-center flex-shrink-0 mt-0.5">
               <Icon className={cn('w-3 h-3', style.color)} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs text-white leading-snug">{event.message}</p>
-              <p className="text-[10px] text-[#a1a1aa] mt-0.5">{timeAgo(event.created_at, nowMs)}</p>
+              <p className="text-[10px] text-[#9CA3AF] mt-0.5">{timeAgo(event.created_at, nowMs)}</p>
             </div>
           </li>
         )
@@ -425,13 +425,13 @@ export default function ProcessingPage() {
 
   if (pageError) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">⚠️</span>
           </div>
           <p className="text-red-400 mb-4 text-sm">{pageError}</p>
-          <Link href="/dashboard" className="text-[#339af0] text-sm hover:underline">
+          <Link href="/dashboard" className="text-[#10B981] text-sm hover:underline">
             ← Go to dashboard
           </Link>
         </div>
@@ -443,13 +443,13 @@ export default function ProcessingPage() {
   // and we have a valid playbook ID from the URL
   if (!mounted || !id || id === 'undefined') {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 rounded-xl bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center mx-auto mb-5">
-            <Zap className="w-7 h-7 text-[#339af0] animate-pulse" />
+          <div className="w-14 h-14 rounded-xl bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center mx-auto mb-5">
+            <Zap className="w-7 h-7 text-[#10B981] animate-pulse" />
           </div>
           <p className="text-white font-semibold text-lg mb-1">Loading playbook…</p>
-          <p className="text-[#a1a1aa] text-sm">Preparing your research pipeline</p>
+          <p className="text-[#9CA3AF] text-sm">Preparing your research pipeline</p>
         </div>
       </div>
     )
@@ -471,25 +471,25 @@ export default function ProcessingPage() {
   const isErrored = (['error', 'rejected', 'failed', 'cancelled'] as PlaybookStatus[]).includes(currentStatus)
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0B0F13]">
       {/* Navbar */}
-      <div className="border-b border-white/[0.06] bg-[#0a0a0f]/80 backdrop-blur-xl sticky top-0 z-30">
+      <div className="border-b border-[#374151] bg-[#0B0F13]/80 backdrop-blur-xl sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-[#339af0]" />
+            <div className="w-7 h-7 rounded-lg bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 text-[#10B981]" />
             </div>
             <span className="font-heading font-bold text-sm text-white">ABMSignal</span>
           </Link>
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#9CA3AF]">
               <Clock className="w-3.5 h-3.5" />
               <span className="tabular-nums font-medium">{formatElapsed(elapsedSeconds)}</span>
               <span className="text-[10px]">agent time</span>
             </div>
             <Link
               href="/dashboard"
-              className="text-xs text-[#a1a1aa] hover:text-white transition-colors inline-flex items-center gap-1.5"
+              className="text-xs text-[#9CA3AF] hover:text-white transition-colors inline-flex items-center gap-1.5"
             >
               <ArrowLeft className="w-3 h-3" />
               Dashboard
@@ -501,20 +501,20 @@ export default function ProcessingPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* "You can close this tab" banner — only shown while still running */}
         {isActive && (
-          <Card className="bg-gradient-to-br from-[#1e3a5f]/30 via-[#141419] to-[#141419] border-[#339af0]/20 p-4 mb-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-[#339af0]/5 rounded-full blur-3xl pointer-events-none" />
+          <Card className="bg-gradient-to-br from-[#0B3D2E]/30 via-[#111827] to-[#111827] border-[#10B981]/20 p-4 mb-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#10B981]/5 rounded-full blur-3xl pointer-events-none" />
             <div className="relative flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center flex-shrink-0">
-                <Info className="w-4 h-4 text-[#339af0]" />
+              <div className="w-9 h-9 rounded-lg bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-[#10B981]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white">
                   Your playbook is being generated in the background.
                 </p>
-                <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                <p className="text-xs text-[#9CA3AF] mt-1 leading-relaxed">
                   Feel free to close this tab — generation continues on our servers. You can return to
                   your{' '}
-                  <Link href="/dashboard" className="text-[#339af0] hover:underline font-medium">
+                  <Link href="/dashboard" className="text-[#10B981] hover:underline font-medium">
                     dashboard
                   </Link>
                   {' '}anytime to see live progress, or come back later when it&apos;s done.
@@ -538,7 +538,7 @@ export default function ProcessingPage() {
           <h1 className="font-heading text-2xl font-bold text-white mb-2">
             {currentStatus === 'complete' ? 'Playbook Ready' : 'Generating Your ABM Playbook'}
           </h1>
-          <p className="text-sm text-[#a1a1aa] max-w-md mx-auto">
+          <p className="text-sm text-[#9CA3AF] max-w-md mx-auto">
             {currentStatus === 'complete'
               ? 'Your playbook is ready to view.'
               : 'Your AI agent swarm is researching the target account and crafting hyper-personalized outreach.'}
@@ -548,10 +548,10 @@ export default function ProcessingPage() {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#a1a1aa]">Overall Progress</span>
+            <span className="text-xs text-[#9CA3AF]">Overall Progress</span>
             <span className="text-xs font-semibold text-white">{progress}%</span>
           </div>
-          <Progress value={progress} className="h-2 bg-white/[0.06] [&>div]:bg-[#339af0]" />
+          <Progress value={progress} className="h-2 bg-white/[0.06] [&>div]:bg-[#10B981]" />
           <div className="flex items-center justify-between mt-2">
             {STAGES.map((stage, i) => (
               <span
@@ -559,10 +559,10 @@ export default function ProcessingPage() {
                 className={cn(
                   'text-[10px] font-medium transition-colors',
                   i === activeStage
-                    ? 'text-[#339af0]'
+                    ? 'text-[#10B981]'
                     : i < activeStage
                       ? 'text-green-400'
-                      : 'text-[#a1a1aa]/50',
+                      : 'text-[#9CA3AF]/50',
                 )}
               >
                 {stage}
@@ -610,15 +610,15 @@ export default function ProcessingPage() {
           </div>
 
           {/* Live activity feed */}
-          <Card className="lg:col-span-2 bg-[#141419] border-white/[0.06] p-5">
+          <Card className="lg:col-span-2 bg-[#111827] border-[#374151] p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#339af0]" />
+                <Activity className="w-4 h-4 text-[#10B981]" />
                 <h2 className="text-sm font-semibold text-white">Live Activity</h2>
               </div>
               {isActive && (
-                <span className="text-[10px] text-[#a1a1aa] inline-flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#339af0] animate-pulse" />
+                <span className="text-[10px] text-[#9CA3AF] inline-flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
                   Streaming
                 </span>
               )}
@@ -630,14 +630,14 @@ export default function ProcessingPage() {
         </div>
 
         {/* What's happening explainer */}
-        <Card className="bg-[#141419] border-white/[0.06] p-4">
+        <Card className="bg-[#111827] border-[#374151] p-4">
           <div className="flex items-start gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Zap className="w-3.5 h-3.5 text-[#339af0]" />
+            <div className="w-7 h-7 rounded-lg bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Zap className="w-3.5 h-3.5 text-[#10B981]" />
             </div>
             <div>
               <p className="text-sm font-medium text-white mb-0.5">What&apos;s happening?</p>
-              <p className="text-xs text-[#a1a1aa] leading-relaxed">
+              <p className="text-xs text-[#9CA3AF] leading-relaxed">
                 {currentStatus === 'researching' &&
                   'The research agent is running Universal Deep Research loops across public data sources to build a full account intelligence dossier. Once contacts are discovered, you’ll review and verify them before the writer agent begins crafting personalized sequences.'}
                 {currentStatus === 'pending_queue' &&
@@ -673,7 +673,7 @@ export default function ProcessingPage() {
                     ? 'Playbook generation was cancelled'
                     : "Generation didn't finish"}
               </p>
-              <p className="text-xs text-[#a1a1aa]">
+              <p className="text-xs text-[#9CA3AF]">
                 {currentStatus === 'rejected'
                   ? 'We were unable to process this request — this can happen when the product brief is too sparse for the agent to work with. Try adding more detail and regenerating.'
                   : statusData?.failed_reason
@@ -681,7 +681,7 @@ export default function ProcessingPage() {
                     : "Something went wrong while generating your playbook. Your inputs are saved — please retry. If the issue persists, contact our support team and we'll help."}
               </p>
               {(statusData?.product_name || statusData?.target_company) && (
-                <p className="text-[11px] text-[#a1a1aa]/80 mt-2">
+                <p className="text-[11px] text-[#9CA3AF]/80 mt-2">
                   Your product brief & target account are saved — retry reuses them automatically.
                 </p>
               )}
@@ -716,7 +716,7 @@ export default function ProcessingPage() {
                   }
                 }}
                 disabled={retrying}
-                className="bg-[#339af0] hover:bg-[#2b8ad8] text-white font-medium gap-2"
+                className="bg-[#10B981] hover:bg-[#2b8ad8] text-white font-medium gap-2"
               >
                 {retrying ? (
                   <>
@@ -747,15 +747,15 @@ export default function ProcessingPage() {
                 )}`}
                 className={cn(
                   buttonVariants({ variant: 'ghost' }),
-                  'text-[#a1a1aa] hover:text-white hover:bg-white/[0.04] gap-2',
+                  'text-[#9CA3AF] hover:text-white hover:bg-white/[0.04] gap-2',
                 )}
               >
                 <LifeBuoy className="w-4 h-4" />
                 Contact support
               </a>
             </div>
-            <p className="text-[11px] text-[#a1a1aa]/70 mt-3 text-center">
-              Reference ID for support: <span className="font-mono text-[#a1a1aa]">{id}</span>
+            <p className="text-[11px] text-[#9CA3AF]/70 mt-3 text-center">
+              Reference ID for support: <span className="font-mono text-[#9CA3AF]">{id}</span>
             </p>
           </div>
         )}

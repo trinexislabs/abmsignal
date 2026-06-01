@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 const STATUS_CONFIG: Record<PlaybookStatus, { label: string; className: string; dot: string }> = {
   draft: {
     label: 'Draft',
-    className: 'bg-white/10 text-white/60 border-white/20',
+    className: 'bg-white/10 text-white/60 border-[#374151]/60',
     dot: 'bg-white/40',
   },
   researching: {
@@ -47,7 +47,7 @@ const STATUS_CONFIG: Record<PlaybookStatus, { label: string; className: string; 
   },
   queued: {
     label: 'Queued',
-    className: 'bg-white/10 text-white/60 border-white/20',
+    className: 'bg-white/10 text-white/60 border-[#374151]/60',
     dot: 'bg-white/40 animate-pulse',
   },
   pending_queue: {

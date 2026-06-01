@@ -25,7 +25,7 @@ export function TrendChart({
     <div>
       {label && (
         <div className="flex items-baseline justify-between mb-2">
-          <span className="text-xs text-[#a1a1aa]">{label}</span>
+          <span className="text-xs text-[#9CA3AF]">{label}</span>
           <span className="text-xs font-medium text-white">{total} total</span>
         </div>
       )}
@@ -60,7 +60,7 @@ export function DistributionBars({ items }: { items: DistributionItem[] }) {
       {items.map((item) => (
         <div key={item.label}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-[#a1a1aa] capitalize">{item.label}</span>
+            <span className="text-xs text-[#9CA3AF] capitalize">{item.label}</span>
             <span className="text-xs font-medium text-white">{item.value}</span>
           </div>
           <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
