@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ABMSignal — Production Deployment Guide</title>
+<style>
+  :root{
+    --bg:#0B0F13; --panel:#111827; --elev:#1F2937; --border:#374151;
+    --text:#E5E7EB; --heading:#FFFFFF; --muted:#9CA3AF;
+    --emerald:#10B981; --deep:#0B3D2E; --mint:#A7F3D0; --blue:#2563EB;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.7; font-size:16px;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:48px 20px 96px}
+  .hero{
+    background:linear-gradient(135deg,#0B0F13 0%,#0B3D2E 45%,#0B0F13 100%);
+    border:1px solid rgba(16,185,129,.2); border-radius:16px;
+    padding:28px 28px 20px; margin-bottom:40px;
+  }
+  .hero .tag{
+    display:inline-block; font-size:11px; font-weight:700; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--emerald); background:rgba(16,185,129,.1);
+    border:1px solid rgba(16,185,129,.25); padding:4px 10px; border-radius:999px; margin-bottom:12px;
+  }
+  h1,h2,h3,h4{font-family:"Space Grotesk",Inter,system-ui,sans-serif; color:var(--heading); line-height:1.25; font-weight:700}
+  h1{font-size:34px; margin:.2em 0 .3em}
+  h2{font-size:25px; margin:1.8em 0 .6em; padding-top:.6em; border-top:1px solid var(--border)}
+  h3{font-size:19px; margin:1.4em 0 .5em; color:var(--mint)}
+  h4{font-size:16px; margin:1.2em 0 .4em}
+  p{margin:.7em 0}
+  a{color:var(--emerald); text-decoration:none}
+  a:hover{text-decoration:underline}
+  strong{color:#fff}
+  ul,ol{padding-left:1.4em}
+  li{margin:.3em 0}
+  blockquote{
+    margin:1em 0; padding:.6em 1em; border-left:3px solid var(--emerald);
+    background:rgba(16,185,129,.06); border-radius:0 8px 8px 0; color:var(--text);
+  }
+  blockquote p{margin:.3em 0}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.88em;
+    background:var(--elev); color:var(--mint); padding:.15em .4em; border-radius:5px;
+  }
+  pre{
+    background:#0d1117; border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; overflow-x:auto; margin:1em 0;
+  }
+  pre code{background:none; color:#cdd9e5; padding:0; font-size:.85em; line-height:1.6}
+  table{border-collapse:collapse; width:100%; margin:1.2em 0; font-size:.92em; display:block; overflow-x:auto}
+  th,td{border:1px solid var(--border); padding:9px 12px; text-align:left; vertical-align:top}
+  th{background:var(--deep); color:#fff; font-weight:600}
+  tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+  hr{border:none; border-top:1px solid var(--border); margin:2.4em 0}
+  input[type=checkbox]{accent-color:var(--emerald); margin-right:.4em}
+  ::selection{background:rgba(16,185,129,.3)}
+  @media (max-width:640px){ body{font-size:15px} h1{font-size:27px} .wrap{padding:28px 14px 64px} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <span class="tag">DevOps Runbook</span>
+      <h1 style="margin:0">ABMSignal — Production Deployment Guide</h1>
+      <p style="color:var(--muted); margin:.4em 0 0">Dockerize → GitHub → DigitalOcean. Generated from <code>docs/DEPLOYMENT_GUIDE.md</code>.</p>
+    </div>
+    <h1>ABMSignal — Production Deployment Guide</h1>
+<p>A complete, step‑by‑step DevOps runbook for shipping ABMSignal to production:
+<strong>Dockerize every component → push to GitHub → deploy on DigitalOcean</strong>, plus the
+production‑only services you must wire up (payments, email, OAuth, TLS, backups).</p>
+<blockquote>
+<p><strong>Audience:</strong> the engineer doing the deploy. Commands assume a Linux/macOS shell
+locally and an Ubuntu 24.04 droplet on DigitalOcean.</p>
+</blockquote>
+<hr>
+<h2>0. Architecture at a glance</h2>
+<p>ABMSignal is a frontend + API layer plus an async generation pipeline. The AI agent
+swarm (OpenClaw) is a <strong>separate, external deployment</strong> and is <em>not</em> dockerized here —
+you point at it via environment variables.</p>
+<pre><code>                          ┌─────────────────────────── DigitalOcean Droplet ───────────────────────────┐
+   Internet  ──HTTPS──▶   │  caddy (80/443, auto‑TLS)                                                   │
+                          │      │ reverse_proxy                                                         │
+                          │      ▼                                                                       │
+                          │   web  ── Next.js app (API routes, SSR, dashboard)  ──┐                      │
+                          │      │                                                 │ enqueue jobs        │
+                          │      ▼                                                 ▼                      │
+                          │   redis  ◀── BullMQ queue ──▶  worker (tsx worker-process)                   │
+                          │      ▲                                 │ calls out                            │
+                          │      │                                 ▼                                      │
+                          │   appdata volume (libsql/SQLite DB, shared by web + worker)                  │
+                          └──────────────────────────────────────┼───────────────────────────────────┘
+                                                                  │ HTTPS
+                                                                  ▼
+                                          External OpenClaw / engine‑runner cluster (AWS)
+                                          (Orchestrator · Researcher · Writer · Reviewer)
+</code></pre>
+<p><strong>Components you run (all dockerized):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Image / command</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>caddy</code></td>
+<td><code>caddy:2-alpine</code></td>
+<td>TLS termination + reverse proxy, auto Let&#39;s Encrypt certs</td>
+</tr>
+<tr>
+<td><code>web</code></td>
+<td><code>abmsignal:latest</code> → <code>npm run start</code></td>
+<td>Next.js 15 server (UI + API routes)</td>
+</tr>
+<tr>
+<td><code>worker</code></td>
+<td><code>abmsignal:latest</code> → <code>tsx worker-process.ts</code></td>
+<td>BullMQ consumer that runs the generation pipeline</td>
+</tr>
+<tr>
+<td><code>redis</code></td>
+<td><code>redis:7-alpine</code></td>
+<td>Job queue broker (BullMQ)</td>
+</tr>
+<tr>
+<td><code>migrate</code></td>
+<td><code>abmsignal:latest</code> → <code>prisma migrate deploy</code></td>
+<td>One‑shot DB migration before web/worker boot</td>
+</tr>
+</tbody></table>
+<p><strong>External dependencies (managed services / SaaS):</strong> Stripe, Resend, Google OAuth,
+your OpenClaw engine cluster, and your DNS provider.</p>
+<p>The repository already ships these deploy assets (created for this guide):
+<code>Dockerfile</code>, <code>.dockerignore</code>, <code>docker-compose.yml</code>, <code>Caddyfile</code>, <code>.env.production.example</code>.</p>
+<hr>
+<h2>1. Prerequisites</h2>
+<p><strong>Local machine</strong></p>
+<ul>
+<li>Docker + Docker Compose v2 (<code>docker compose version</code>)</li>
+<li>Git, and push access to <code>github.com/trinexislabs/abmsignal</code></li>
+<li>The repo cloned locally</li>
+</ul>
+<p><strong>Accounts / services</strong> (set these up in §2 before deploying)</p>
+<ul>
+<li>A <strong>DigitalOcean</strong> account</li>
+<li>A <strong>registered domain</strong> (e.g. <code>abmsignal.com</code>) with DNS you control</li>
+<li><strong>Stripe</strong> account (live mode)</li>
+<li><strong>Resend</strong> account (for transactional email / magic links)</li>
+<li><strong>Google Cloud</strong> project (for Google sign‑in)</li>
+<li>Access to your <strong>OpenClaw / engine‑runner</strong> endpoint + API token</li>
+</ul>
+<hr>
+<h2>2. Production services to set up (do this first)</h2>
+<p>These are the &quot;production‑only&quot; pieces that don&#39;t exist in local dev. Gather every
+value into a scratch file — you&#39;ll paste them into <code>.env.production</code> in §5.</p>
+<h3>2.1 Domain &amp; DNS</h3>
+<p>Decide the app hostname, e.g. <code>app.abmsignal.com</code>. You&#39;ll create an <strong>A record</strong>
+pointing it at the droplet&#39;s IP in §6 (after the droplet exists).</p>
+<h3>2.2 Stripe (payments) ⚠️ requires code work</h3>
+<blockquote>
+<p><strong>Important:</strong> the current build ships a <strong>mock</strong> payment flow
+(<code>src/app/api/payment/mock</code>). There is <strong>no live Stripe checkout or webhook route yet</strong>.
+Before you can charge real cards you must implement the live integration. This is a
+required production task, not just configuration.</p>
+</blockquote>
+<p>What exists today:</p>
+<ul>
+<li><code>src/lib/stripe/client.ts</code> — server Stripe client + browser loader + a <code>PLANS</code> map
+that reads <code>STRIPE_*_PRICE_ID</code> env vars.</li>
+<li>A post‑generation paywall UI (<code>playbook-paywall.tsx</code>) that currently calls the mock route.</li>
+</ul>
+<p>What you must add for production:</p>
+<ol>
+<li><strong>Create products &amp; prices</strong> in the Stripe dashboard (live mode) for the one‑off
+($29) and Growth ($229/mo) plans. Copy each <strong>Price ID</strong> into <code>STRIPE_*_PRICE_ID</code>.</li>
+<li><strong>Add a Checkout route</strong> — e.g. <code>src/app/api/payment/checkout/route.ts</code> that creates
+a <code>stripe.checkout.sessions.create({...})</code> (mode <code>payment</code> for one‑off, <code>subscription</code>
+for Growth) and returns the redirect URL. Point the paywall at it instead of <code>/api/payment/mock</code>.</li>
+<li><strong>Add a webhook route</strong> — <code>src/app/api/stripe/webhook/route.ts</code> that verifies the
+signature with <code>STRIPE_WEBHOOK_SECRET</code> and, on <code>checkout.session.completed</code> /
+<code>invoice.paid</code>, unlocks the playbook / grants credits (mirror the logic in the mock route).<ul>
+<li>Next.js note: read the <strong>raw body</strong> (<code>await req.text()</code>) for signature verification,
+and do not let a body parser touch it.</li>
+</ul>
+</li>
+<li><strong>Register the webhook endpoint</strong> in Stripe → Developers → Webhooks:
+<code>https://app.abmsignal.com/api/stripe/webhook</code>, then copy the <strong>Signing secret</strong> into
+<code>STRIPE_WEBHOOK_SECRET</code>.</li>
+<li>(Optional) Enable the <strong>Stripe Customer Portal</strong> for self‑serve subscription management.</li>
+</ol>
+<p>Values to collect: <code>STRIPE_SECRET_KEY</code>, <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code>,
+<code>STRIPE_WEBHOOK_SECRET</code>, and the <code>STRIPE_*_PRICE_ID</code>s.</p>
+<blockquote>
+<p>If you want to launch with the existing mock flow to validate the funnel, you can —
+just be explicit that no money moves until the live integration above is in place.</p>
+</blockquote>
+<h3>2.3 Resend (email)</h3>
+<p>Magic‑link / email sign‑in is wired in <code>src/auth.ts</code> via the Resend provider.</p>
+<ol>
+<li>In Resend, <strong>add and verify your sending domain</strong> (<code>abmsignal.com</code>): add the
+<strong>SPF</strong>, <strong>DKIM</strong>, and (recommended) <strong>DMARC</strong> DNS records Resend gives you.</li>
+<li>Create an <strong>API key</strong> → <code>RESEND_API_KEY</code>.</li>
+<li>Set <code>EMAIL_FROM</code> to a verified address, e.g. <code>ABMSignal &lt;noreply@abmsignal.com&gt;</code>.</li>
+</ol>
+<h3>2.4 Google OAuth</h3>
+<ol>
+<li>Google Cloud Console → <strong>APIs &amp; Services → Credentials → OAuth client ID</strong> (Web).</li>
+<li><strong>Authorized redirect URI:</strong> <code>https://app.abmsignal.com/api/auth/callback/google</code></li>
+<li>Configure the <strong>OAuth consent screen</strong> and publish it (move out of &quot;Testing&quot; so any
+user can sign in).</li>
+<li>Collect <code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>.</li>
+</ol>
+<h3>2.5 Auth secret</h3>
+<p>Generate a strong secret for session/JWT signing:</p>
+<pre><code class="language-bash">openssl rand -base64 32        # → AUTH_SECRET
+</code></pre>
+<p>Set <code>AUTH_URL=https://app.abmsignal.com</code> and <code>AUTH_TRUST_HOST=true</code> (required when running
+behind the Caddy reverse proxy).</p>
+<h3>2.6 AI engine endpoint</h3>
+<p>From your OpenClaw deployment, collect <code>ENGINE_RUNNER_URL</code>, <code>ENGINE_RUNNER_API_KEY</code>,
+<code>OPENCLAW_ABMSIGNAL_URL</code>, <code>OPENCLAW_ABMSIGNAL_TOKEN</code>, and confirm <code>AGENT_TIMEOUT_MS</code>
+(default <code>1800000</code> = 30 min). The worker calls this cluster to generate playbooks.</p>
+<hr>
+<h2>3. Prepare the repo &amp; push to GitHub</h2>
+<p>The deploy assets are already in the repo root. Review the placeholders, then commit.</p>
+<ol>
+<li><strong>Set your real domain in <code>Caddyfile</code></strong> (replace <code>app.abmsignal.com</code>).</li>
+<li>Confirm <code>.gitignore</code> keeps secrets out — <code>.env*</code> is already ignored, so
+<code>.env.production</code> will never be committed. ✅</li>
+<li>Commit and push on a branch, then merge to <code>main</code>:</li>
+</ol>
+<pre><code class="language-bash">git checkout -b chore/dockerize-deploy
+git add Dockerfile .dockerignore docker-compose.yml Caddyfile .env.production.example docs/
+git commit -m &quot;Add production Docker stack + deployment guide&quot;
+git push -u origin chore/dockerize-deploy
+# open a PR, review, merge to main (or push straight to main if you own the repo)
+</code></pre>
+<blockquote>
+<p>The container build pulls source from your local checkout/CI, not from a baked‑in
+copy — so any branch you deploy from must contain these files.</p>
+</blockquote>
+<h3>3.1 (Optional) Build &amp; smoke‑test the image locally first</h3>
+<pre><code class="language-bash">cp .env.production.example .env.production   # fill in at least DB/REDIS/AUTH for a local run
+docker compose build
+docker compose up -d
+docker compose logs -f web
+# visit http://localhost  (Caddy will try to get a cert for the Caddyfile domain;
+# for pure local testing, temporarily set the Caddyfile site to `:80`)
+docker compose down
+</code></pre>
+<hr>
+<h2>4. Provision the DigitalOcean droplet</h2>
+<h3>4.1 Create the droplet</h3>
+<ul>
+<li><strong>Type:</strong> Basic / Regular or Premium Intel/AMD.</li>
+<li><strong>Size:</strong> start at <strong>2 vCPU / 4 GB RAM</strong> (Next build + worker + redis comfortably).
+4 GB is the practical floor for building the image on‑box; 2 GB works only if you
+build elsewhere (CI / registry). Bump to 8 GB if you run high <code>WORKER_CONCURRENCY</code>.</li>
+<li><strong>Image:</strong> Ubuntu 24.04 LTS.</li>
+<li><strong>Auth:</strong> add your <strong>SSH key</strong> (not password).</li>
+<li><strong>Region:</strong> closest to your users / your engine cluster.</li>
+</ul>
+<h3>4.2 First login &amp; base hardening</h3>
+<pre><code class="language-bash">ssh root@YOUR_DROPLET_IP
+
+# Create a non-root sudo user
+adduser deploy
+usermod -aG sudo deploy
+rsync --archive --chown=deploy:deploy ~/.ssh /home/deploy
+
+# Firewall: allow SSH + HTTP + HTTPS only
+ufw allow OpenSSH
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw --force enable
+
+# Add swap (protects builds on smaller droplets)
+fallocate -l 2G /swapfile &amp;&amp; chmod 600 /swapfile &amp;&amp; mkswap /swapfile &amp;&amp; swapon /swapfile
+echo &#39;/swapfile none swap sw 0 0&#39; &gt;&gt; /etc/fstab
+
+# Automatic security updates (recommended)
+apt-get update &amp;&amp; apt-get install -y unattended-upgrades
+</code></pre>
+<p>Reconnect as the <code>deploy</code> user for the rest:</p>
+<pre><code class="language-bash">ssh deploy@YOUR_DROPLET_IP
+</code></pre>
+<h3>4.3 Install Docker Engine + Compose plugin</h3>
+<pre><code class="language-bash">curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER
+newgrp docker            # apply group without re-login
+docker compose version   # verify Compose v2 is present
+</code></pre>
+<hr>
+<h2>5. Deploy the application</h2>
+<h3>5.1 Get the code onto the droplet</h3>
+<pre><code class="language-bash">cd ~
+git clone https://github.com/trinexislabs/abmsignal.git
+cd abmsignal
+git checkout main
+</code></pre>
+<blockquote>
+<p>For a private repo, use a <strong>GitHub deploy key</strong> (read‑only SSH key added to the repo&#39;s
+Deploy Keys) or a fine‑grained PAT. Avoid putting personal credentials on the server.</p>
+</blockquote>
+<h3>5.2 Create the production env file</h3>
+<pre><code class="language-bash">cp .env.production.example .env.production
+nano .env.production         # paste every value gathered in §2
+chmod 600 .env.production    # lock down permissions
+</code></pre>
+<p>Minimum required to boot: <code>DATABASE_URL</code>, <code>REDIS_PASSWORD</code>, <code>REDIS_URL</code>, <code>AUTH_SECRET</code>,
+<code>AUTH_URL</code>, <code>NEXT_PUBLIC_APP_URL</code>. Sign‑in/payments/email need their respective keys.</p>
+<blockquote>
+<p>Make sure <code>REDIS_PASSWORD</code> matches the password embedded in <code>REDIS_URL</code>
+(<code>redis://:THE_PASSWORD@redis:6379</code>).</p>
+</blockquote>
+<h3>5.3 Build and start the stack</h3>
+<p>Compose reads <code>.env.production</code> for the <code>NEXT_PUBLIC_*</code> <strong>build args</strong> automatically when
+you pass it via <code>--env-file</code>:</p>
+<pre><code class="language-bash">docker compose --env-file .env.production build
+docker compose --env-file .env.production up -d
+</code></pre>
+<p>Boot order is enforced by <code>depends_on</code>: <code>redis</code> (healthy) → <code>migrate</code> (runs
+<code>prisma migrate deploy</code>, exits 0) → <code>web</code> + <code>worker</code> start.</p>
+<h3>5.4 Verify</h3>
+<pre><code class="language-bash">docker compose ps                 # all services Up; migrate = Exited (0)
+docker compose logs -f migrate    # &quot;All migrations have been applied&quot;
+docker compose logs -f worker     # &quot;ABMSignal playbook worker started (concurrency: 3)&quot;
+docker compose logs -f web        # Next.js &quot;Ready&quot;
+</code></pre>
+<hr>
+<h2>6. DNS + TLS</h2>
+<ol>
+<li>At your DNS provider, create an <strong>A record</strong>:
+<code>app  →  YOUR_DROPLET_IP</code> (and optionally <code>www</code>/apex as needed).</li>
+<li>Wait for propagation (<code>dig app.abmsignal.com +short</code> should return the droplet IP).</li>
+<li>Caddy (already running) will automatically obtain and renew a Let&#39;s Encrypt
+certificate for the hostname in your <code>Caddyfile</code>. Watch it succeed:<pre><code class="language-bash">docker compose logs -f caddy   # look for &quot;certificate obtained successfully&quot;
+</code></pre>
+</li>
+<li>Visit <code>https://app.abmsignal.com</code> — you should get the landing page over HTTPS.</li>
+</ol>
+<blockquote>
+<p>TLS will only succeed once the A record resolves to this droplet and ports 80/443 are
+open (they are, via <code>ufw</code> in §4.2). HTTP‑01 challenges need port 80 reachable.</p>
+</blockquote>
+<hr>
+<h2>7. Post‑deploy setup</h2>
+<h3>7.1 Create an admin user</h3>
+<p>There&#39;s a script for this:</p>
+<pre><code class="language-bash">docker compose exec web npx tsx scripts/create-admin.ts
+# follow prompts (email/password) — grants the `admin` role used by /admin
+</code></pre>
+<p>Then sign in at <code>https://app.abmsignal.com/admin/login</code>.</p>
+<h3>7.2 Register the Stripe webhook</h3>
+<p>Once §2.2 code is deployed, add the endpoint in Stripe
+(<code>https://app.abmsignal.com/api/stripe/webhook</code>), copy the signing secret into
+<code>STRIPE_WEBHOOK_SECRET</code>, then <code>docker compose up -d web worker</code> to reload env.</p>
+<h3>7.3 Smoke test the full funnel</h3>
+<ul>
+<li>Sign up (email magic link <strong>and</strong> Google) → confirm emails arrive (check Resend logs).</li>
+<li>Start a playbook → confirm a job appears (<code>docker compose logs -f worker</code>) and the
+external engine is reached.</li>
+<li>Reach the paywall → complete a (test or live) payment → confirm the playbook unlocks.</li>
+<li>Export PDF, run the contact review gate, view the admin portal.</li>
+</ul>
+<hr>
+<h2>8. Day‑2 operations</h2>
+<h3>8.1 Deploying updates (redeploy)</h3>
+<pre><code class="language-bash">cd ~/abmsignal
+git pull origin main
+docker compose --env-file .env.production build
+docker compose --env-file .env.production up -d   # recreates only changed services
+docker image prune -f                             # reclaim old layers
+</code></pre>
+<p><code>migrate</code> re‑runs on each <code>up</code> and applies any new migrations before web/worker restart.</p>
+<blockquote>
+<p><strong>Zero‑downtime tip:</strong> for true rolling deploys, build images in CI, push to a registry
+(DigitalOcean Container Registry / GHCR), and pull tagged images on the droplet instead
+of building on‑box. See §8.5.</p>
+</blockquote>
+<h3>8.2 Database backups</h3>
+<p>The DB is the <code>appdata</code> volume (<code>/data/prod.db</code>). Back it up with a safe online copy:</p>
+<pre><code class="language-bash"># Consistent backup of a live SQLite/libsql file:
+docker compose exec web sh -c \
+  &#39;npx --yes @libsql/client &gt;/dev/null 2&gt;&amp;1; sqlite3 /data/prod.db &quot;.backup /data/backup.db&quot;&#39; \
+  || docker compose exec web sh -c &#39;cp /data/prod.db /data/backup-$(date +%F).db&#39;
+
+# Pull it off the droplet:
+docker compose cp web:/data/backup.db ./backup-$(date +%F).db
+</code></pre>
+<p>Automate with a daily cron on the droplet that copies the volume file to DigitalOcean
+Spaces (S3‑compatible). Also enable <strong>DigitalOcean weekly droplet backups</strong> as a safety net.</p>
+<blockquote>
+<p>If you migrate to <strong>Turso</strong> (§8.4), use Turso&#39;s managed backups instead.</p>
+</blockquote>
+<h3>8.3 Logs &amp; monitoring</h3>
+<pre><code class="language-bash">docker compose logs -f --tail=200 web worker
+</code></pre>
+<p>Recommended additions for production:</p>
+<ul>
+<li><strong>Error tracking:</strong> add Sentry (<code>@sentry/nextjs</code>) to capture web + worker exceptions.
+The codebase already records failures (<code>recordPlaybookFailure</code>) — wire those into Sentry.</li>
+<li><strong>Uptime:</strong> an external monitor (UptimeRobot / DO Uptime) hitting <code>https://app.../</code>.</li>
+<li><strong>Log shipping:</strong> point Docker&#39;s logging driver at a hosted log service, or run
+Grafana Loki / Promtail if you want it self‑hosted.</li>
+<li><strong>Resource alerts:</strong> enable DigitalOcean Monitoring + alert policies (CPU/RAM/disk).</li>
+</ul>
+<h3>8.4 Scaling</h3>
+<p><strong>Scale workers</strong> (more concurrent generations):</p>
+<pre><code class="language-bash">docker compose --env-file .env.production up -d --scale worker=3
+</code></pre>
+<p>…and/or raise <code>WORKER_CONCURRENCY</code>. BullMQ distributes jobs across all worker replicas.</p>
+<p><strong>Scale the database / go multi‑node:</strong> the default shared SQLite file is fine for a
+single droplet, but it serializes writes and can&#39;t be shared across hosts. To scale out:</p>
+<ol>
+<li>Create a database on <strong>Turso</strong> (managed libsql) and copy its <code>libsql://…?authToken=…</code> URL.</li>
+<li>Set <code>DATABASE_URL</code> to that URL and remove the <code>appdata:/data</code> mounts from web/worker/migrate.</li>
+<li>Apply migrations against it (Turso shell or <code>prisma migrate diff</code> → apply the generated SQL).
+This lets you run web/worker on multiple droplets or DigitalOcean App Platform.</li>
+</ol>
+<p><strong>Managed Redis:</strong> swap the <code>redis</code> service for a <strong>DigitalOcean Managed Redis</strong> instance
+and point <code>REDIS_URL</code> at its <code>rediss://</code> connection string (the queue code already handles
+TLS for <code>rediss://</code>).</p>
+<h3>8.5 Build in CI instead of on‑box (optional, recommended at scale)</h3>
+<p>Add a GitHub Action that, on push to <code>main</code>, builds the image (passing the <code>NEXT_PUBLIC_*</code>
+build args), pushes it to GHCR/DOCR, and SSHes to the droplet to <code>docker compose pull &amp;&amp; up -d</code>.
+This removes build load from the production box and gives you immutable, rollback‑able tags.</p>
+<hr>
+<h2>9. Security checklist</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <code>.env.production</code> is <code>chmod 600</code> and never committed (it&#39;s git‑ignored).</li>
+<li><input disabled="" type="checkbox"> <code>AUTH_SECRET</code> is a fresh 32‑byte random value; <code>AUTH_TRUST_HOST=true</code> behind Caddy.</li>
+<li><input disabled="" type="checkbox"> <code>ufw</code> allows only 22/80/443; root SSH login disabled / key‑only auth.</li>
+<li><input disabled="" type="checkbox"> Redis is password‑protected (<code>requirepass</code>) and <strong>not</strong> published to the host
+(compose <code>expose</code>s it on the internal network only — no <code>ports:</code>). ✅</li>
+<li><input disabled="" type="checkbox"> Stripe <strong>live</strong> keys + verified webhook signing secret; raw‑body signature check.</li>
+<li><input disabled="" type="checkbox"> Resend domain verified (SPF/DKIM/DMARC) to avoid spam folders.</li>
+<li><input disabled="" type="checkbox"> HSTS + <code>X-Content-Type-Options</code> headers served (Caddyfile + <code>next.config.ts</code>). ✅</li>
+<li><input disabled="" type="checkbox"> Automatic OS security updates enabled; Docker images periodically rebuilt for CVEs.</li>
+<li><input disabled="" type="checkbox"> Database backups running and <strong>restore‑tested</strong>.</li>
+</ul>
+<hr>
+<h2>10. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Likely cause / fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Build OOM‑killed</td>
+<td>Small droplet. Add swap (§4.2), use ≥4 GB, or build in CI (§8.5).</td>
+</tr>
+<tr>
+<td><code>web</code> up but Stripe publishable key undefined in browser</td>
+<td><code>NEXT_PUBLIC_*</code> weren&#39;t passed as <strong>build args</strong>. Rebuild with <code>--env-file .env.production</code> so compose injects <code>build.args</code>.</td>
+</tr>
+<tr>
+<td><code>migrate</code> exits non‑zero</td>
+<td>Check <code>DATABASE_URL</code>. For <code>file:</code> it must be writable on the <code>appdata</code> volume; logs show the Prisma error.</td>
+</tr>
+<tr>
+<td>Worker logs &quot;Redis … ECONNREFUSED&quot; / falls back</td>
+<td><code>REDIS_URL</code> password mismatch with <code>REDIS_PASSWORD</code>, or redis not healthy yet.</td>
+</tr>
+<tr>
+<td>Google sign‑in <code>redirect_uri_mismatch</code></td>
+<td>Redirect URI in Google Console must be exactly <code>https://&lt;domain&gt;/api/auth/callback/google</code>.</td>
+</tr>
+<tr>
+<td>Magic‑link emails not arriving</td>
+<td>Resend domain not verified, or <code>EMAIL_FROM</code> not on a verified domain. Check Resend dashboard logs.</td>
+</tr>
+<tr>
+<td>TLS cert not issued</td>
+<td>A record not pointing at the droplet yet, or port 80 blocked. Confirm <code>dig</code> + <code>ufw</code>.</td>
+</tr>
+<tr>
+<td>Sessions drop / CSRF errors</td>
+<td>Missing <code>AUTH_URL</code> / <code>AUTH_TRUST_HOST=true</code> behind the proxy.</td>
+</tr>
+<tr>
+<td>Live progress (SSE) stalls</td>
+<td>Ensure the Caddy <code>flush_interval -1</code> block matches your streaming routes.</td>
+</tr>
+</tbody></table>
+<p>Useful commands:</p>
+<pre><code class="language-bash">docker compose ps
+docker compose logs -f &lt;service&gt;
+docker compose exec web sh          # shell into the web container
+docker compose restart web worker   # reload after editing .env.production
+docker compose down                 # stop everything (volumes persist)
+</code></pre>
+<hr>
+<h2>11. Production readiness checklist (TL;DR)</h2>
+<ol>
+<li><input disabled="" type="checkbox"> §2 services provisioned; all values collected.</li>
+<li><input disabled="" type="checkbox"> <strong>Live Stripe checkout + webhook routes implemented</strong> (replaces the mock flow).</li>
+<li><input disabled="" type="checkbox"> Resend domain verified; Google OAuth redirect + consent published.</li>
+<li><input disabled="" type="checkbox"> Deploy assets committed and pushed to <code>main</code>.</li>
+<li><input disabled="" type="checkbox"> Droplet hardened (non‑root user, <code>ufw</code>, swap, Docker installed).</li>
+<li><input disabled="" type="checkbox"> <code>.env.production</code> filled in and <code>chmod 600</code>.</li>
+<li><input disabled="" type="checkbox"> <code>docker compose build &amp;&amp; up -d</code>; <code>migrate</code> exited 0; web + worker healthy.</li>
+<li><input disabled="" type="checkbox"> DNS A record set; HTTPS cert issued by Caddy.</li>
+<li><input disabled="" type="checkbox"> Admin user created; full funnel smoke‑tested (auth → generate → pay → view).</li>
+<li><input disabled="" type="checkbox"> Backups scheduled; monitoring + error tracking enabled.</li>
+</ol>
+<hr>
+<h2>Appendix A — Environment variable reference</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Used by</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>NODE_ENV</code></td>
+<td>all</td>
+<td><code>production</code></td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_APP_URL</code></td>
+<td>web (build+run)</td>
+<td>Public base URL; <strong>build‑time</strong> inlined</td>
+</tr>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>web, worker, migrate</td>
+<td><code>file:/data/prod.db</code> (default) or <code>libsql://…</code> (Turso)</td>
+</tr>
+<tr>
+<td><code>REDIS_URL</code></td>
+<td>web, worker</td>
+<td><code>redis://:PASS@redis:6379</code> (or <code>rediss://</code> for TLS)</td>
+</tr>
+<tr>
+<td><code>REDIS_PASSWORD</code></td>
+<td>redis</td>
+<td>Must match the password in <code>REDIS_URL</code></td>
+</tr>
+<tr>
+<td><code>WORKER_CONCURRENCY</code></td>
+<td>worker</td>
+<td>Concurrent jobs per worker (default 3)</td>
+</tr>
+<tr>
+<td><code>AUTH_SECRET</code></td>
+<td>web</td>
+<td><code>openssl rand -base64 32</code></td>
+</tr>
+<tr>
+<td><code>AUTH_URL</code></td>
+<td>web</td>
+<td><code>https://&lt;domain&gt;</code></td>
+</tr>
+<tr>
+<td><code>AUTH_TRUST_HOST</code></td>
+<td>web</td>
+<td><code>true</code> behind reverse proxy</td>
+</tr>
+<tr>
+<td><code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code></td>
+<td>web</td>
+<td>Google OAuth</td>
+</tr>
+<tr>
+<td><code>RESEND_API_KEY</code></td>
+<td>web</td>
+<td>Email / magic links</td>
+</tr>
+<tr>
+<td><code>EMAIL_FROM</code></td>
+<td>web</td>
+<td>Verified sender address</td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code></td>
+<td>web (build+run)</td>
+<td><strong>Build‑time</strong> inlined</td>
+</tr>
+<tr>
+<td><code>STRIPE_SECRET_KEY</code></td>
+<td>web</td>
+<td>Server Stripe client</td>
+</tr>
+<tr>
+<td><code>STRIPE_WEBHOOK_SECRET</code></td>
+<td>web</td>
+<td>Webhook signature verification</td>
+</tr>
+<tr>
+<td><code>STRIPE_*_PRICE_ID</code></td>
+<td>web</td>
+<td>Plan price IDs (<code>PLANS</code> map)</td>
+</tr>
+<tr>
+<td><code>ENGINE_RUNNER_URL</code> / <code>ENGINE_RUNNER_API_KEY</code></td>
+<td>worker</td>
+<td>External AI engine</td>
+</tr>
+<tr>
+<td><code>OPENCLAW_ABMSIGNAL_URL</code> / <code>OPENCLAW_ABMSIGNAL_TOKEN</code></td>
+<td>worker</td>
+<td>OpenClaw endpoint</td>
+</tr>
+<tr>
+<td><code>AGENT_TIMEOUT_MS</code></td>
+<td>worker</td>
+<td>Per‑agent timeout (default 1800000)</td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_SUPABASE_*</code> / <code>SUPABASE_SERVICE_ROLE_KEY</code></td>
+<td>web</td>
+<td>Optional/legacy — only if using Supabase storage</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Appendix B — Files added for deployment</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Dockerfile</code></td>
+<td>Multi‑stage build; one image reused for web/worker/migrate</td>
+</tr>
+<tr>
+<td><code>.dockerignore</code></td>
+<td>Keeps secrets, <code>node_modules</code>, build artifacts out of the build context</td>
+</tr>
+<tr>
+<td><code>docker-compose.yml</code></td>
+<td>The full stack (caddy, web, worker, redis, migrate)</td>
+</tr>
+<tr>
+<td><code>Caddyfile</code></td>
+<td>Reverse proxy + automatic HTTPS (edit the domain!)</td>
+</tr>
+<tr>
+<td><code>.env.production.example</code></td>
+<td>Template for <code>.env.production</code> (never commit the real file)</td>
+</tr>
+<tr>
+<td><code>docs/DEPLOYMENT_GUIDE.md</code></td>
+<td>This guide</td>
+</tr>
+<tr>
+<td><code>docs/DEPLOYMENT_GUIDE.html</code></td>
+<td>Rendered HTML version of this guide</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>Generated for the ABMSignal platform. Keep this guide updated as the architecture
+evolves (especially once the live Stripe integration lands).</em></p>
+
+  </div>
+</body>
+</html>

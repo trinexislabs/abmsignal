@@ -4,6 +4,22 @@ export type PlanId = 'free' | 'one_off' | 'growth'
 export const ONE_OFF_PRICE_USD = 29
 export const GROWTH_PRICE_USD = 229
 
+// How many of a user's most recent playbooks we retain on our servers (and
+// surface on the dashboard). Once a new playbook pushes the count past this,
+// the oldest *terminal* playbooks beyond the window are permanently purged
+// (in-flight work and drafts are never touched). Growth keeps a deeper history;
+// pay-per-playbook tiers keep a short recent window.
+export const PLAYBOOK_RETENTION_LIMITS = {
+  free: 5,
+  one_off: 5,
+  growth: 20,
+} as const satisfies Record<PlanId, number>
+
+export function playbookRetentionLimit(plan: string | null | undefined): number {
+  const p = (plan ?? 'free') as PlanId
+  return PLAYBOOK_RETENTION_LIMITS[p] ?? PLAYBOOK_RETENTION_LIMITS.free
+}
+
 export const MVP_PLANS = [
   {
     id: 'one_off' as const,

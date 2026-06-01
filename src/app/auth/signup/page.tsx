@@ -1,15 +1,14 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { toast } from 'sonner'
-import { Zap, Mail, Lock, User, ArrowRight, Loader2, Check } from 'lucide-react'
+import { Zap, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { GROWTH_PRICE_USD, ONE_OFF_PRICE_USD } from '@/lib/pricing'
 
 function GoogleIcon() {
   return (
@@ -22,90 +21,12 @@ function GoogleIcon() {
   )
 }
 
-const PLAN_OPTIONS = [
-  {
-    id: 'one_off',
-    name: 'One Off',
-    price: `$${ONE_OFF_PRICE_USD}`,
-    period: 'one-time',
-    sub: 'Per playbook · no subscription',
-    highlight: false,
-    features: ['Full playbook generation', 'PDF export', 'Email support'],
-  },
-  {
-    id: 'growth',
-    name: 'Growth',
-    price: `$${GROWTH_PRICE_USD}`,
-    period: '/mo',
-    sub: '10 playbooks / month',
-    highlight: true,
-    features: ['Everything in One Off', '10 playbooks / month', 'Full dashboard & history'],
-  },
-]
-
-function PlanCard({
-  plan,
-  selected,
-  onSelect,
-}: {
-  plan: (typeof PLAN_OPTIONS)[number]
-  selected: boolean
-  onSelect: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`relative p-4 rounded-xl border text-left transition-all w-full ${
-        selected
-          ? 'border-[#339af0]/60 bg-[#1e3a5f]/30 shadow-[0_0_12px_rgba(51,154,240,0.15)]'
-          : 'border-white/[0.08] bg-[#0d0d15] hover:border-white/20'
-      }`}
-    >
-      {plan.highlight && (
-        <span className="absolute -top-2.5 left-3 text-[9px] font-bold bg-[#339af0] text-white px-2 py-0.5 rounded-full uppercase tracking-wide">
-          Most Popular
-        </span>
-      )}
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <div className="text-sm font-semibold text-white mb-0.5">{plan.name}</div>
-          <div className="flex items-baseline gap-0.5">
-            <span className="text-base font-bold text-[#339af0]">{plan.price}</span>
-            <span className="text-[11px] text-[#a1a1aa]">{plan.period}</span>
-          </div>
-          <div className="text-[11px] text-[#a1a1aa] mt-0.5">{plan.sub}</div>
-        </div>
-        <div
-          className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-            selected ? 'border-[#339af0] bg-[#339af0]' : 'border-white/20'
-          }`}
-        >
-          {selected && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
-        </div>
-      </div>
-      <ul className="mt-2.5 space-y-1">
-        {plan.features.map((f) => (
-          <li key={f} className="text-[11px] text-[#a1a1aa] flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-[#339af0]/60 flex-shrink-0" />
-            {f}
-          </li>
-        ))}
-      </ul>
-    </button>
-  )
-}
-
 function SignUpForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const preselectedPlan = searchParams.get('plan') ?? 'growth'
-  const initialPlan = ['one_off', 'growth'].includes(preselectedPlan) ? preselectedPlan : 'growth'
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [selectedPlan, setSelectedPlan] = useState(initialPlan)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
@@ -119,7 +40,7 @@ function SignUpForm() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, plan: selectedPlan }),
+        body: JSON.stringify({ name, email, password }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -132,14 +53,9 @@ function SignUpForm() {
         router.push('/auth/signin')
         return
       }
-      // Growth users must pay the $299/month subscription before reaching the
-      // dashboard. one_off users land on /dashboard and only see the $49 gate
-      // when they click "Generate Playbook".
-      if (selectedPlan === 'growth') {
-        router.push(`/payment/mock?purpose=plan&plan=growth&amount=${GROWTH_PRICE_USD}`)
-      } else {
-        router.push('/dashboard')
-      }
+      // No plan selection at sign-up — go straight to the dashboard. Payment is
+      // collected from the paywall after the first playbook is generated.
+      router.push('/dashboard')
     } finally {
       setLoading(false)
     }
@@ -147,32 +63,33 @@ function SignUpForm() {
 
   async function handleGoogle() {
     setGoogleLoading(true)
-    // OAuth users land on /onboarding/plan to pick their plan
-    await signIn('google', { callbackUrl: '/onboarding/plan' })
+    await signIn('google', { callbackUrl: '/dashboard' })
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4 py-16">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#1e3a5f]/15 rounded-full blur-[100px] pointer-events-none" />
+    <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center px-4 py-16">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#0B3D2E]/15 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2.5 group mb-6">
-            <div className="w-10 h-10 rounded-xl bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center group-hover:border-[#339af0]/60 transition-colors">
-              <Zap className="w-5 h-5 text-[#339af0]" />
+            <div className="w-10 h-10 rounded-xl bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center group-hover:border-[#10B981]/60 transition-colors">
+              <Zap className="w-5 h-5 text-[#10B981]" />
             </div>
             <span className="font-heading font-bold text-xl text-white">ABMSignal</span>
           </Link>
           <h1 className="font-heading text-3xl font-bold text-white text-center">Create your account</h1>
-          <p className="text-[#a1a1aa] text-sm mt-2 text-center">Choose your plan to get started.</p>
+          <p className="text-[#9CA3AF] text-sm mt-2 text-center">
+            Start free — generate your first playbook, then choose how to pay.
+          </p>
         </div>
 
-        <div className="bg-[#141419] border border-white/[0.08] rounded-2xl p-8 space-y-5">
+        <div className="bg-[#111827] border border-[#374151] rounded-2xl p-8 space-y-5">
           <Button
             onClick={handleGoogle}
             disabled={googleLoading}
             variant="outline"
-            className="w-full h-11 bg-white/5 border-white/[0.08] text-white hover:bg-white/10 hover:border-white/20 rounded-xl gap-2.5 font-medium"
+            className="w-full h-11 bg-white/5 border-[#374151] text-white hover:bg-white/10 hover:border-[#374151]/60 rounded-xl gap-2.5 font-medium"
           >
             {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GoogleIcon />}
             Continue with Google
@@ -180,7 +97,7 @@ function SignUpForm() {
 
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-white/[0.06]" />
-            <span className="text-[11px] text-[#a1a1aa] uppercase tracking-wider">or</span>
+            <span className="text-[11px] text-[#9CA3AF] uppercase tracking-wider">or</span>
             <div className="flex-1 h-px bg-white/[0.06]" />
           </div>
 
@@ -188,7 +105,7 @@ function SignUpForm() {
             <div className="space-y-2">
               <Label htmlFor="full-name" className="text-white text-sm font-medium">Full name</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa] pointer-events-none" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
                 <Input
                   id="full-name"
                   type="text"
@@ -197,7 +114,7 @@ function SignUpForm() {
                   onChange={(e) => setName(e.target.value)}
                   required
                   autoComplete="name"
-                  className="pl-10 h-11 bg-[#0d0d15] border-white/[0.08] text-white placeholder:text-[#a1a1aa] focus-visible:border-[#339af0]/50 focus-visible:ring-[#339af0]/20 rounded-xl"
+                  className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-[#10B981]/50 focus-visible:ring-[#10B981]/20 rounded-xl"
                 />
               </div>
             </div>
@@ -205,7 +122,7 @@ function SignUpForm() {
             <div className="space-y-2">
               <Label htmlFor="signup-email" className="text-white text-sm font-medium">Work email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa] pointer-events-none" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
                 <Input
                   id="signup-email"
                   type="email"
@@ -214,7 +131,7 @@ function SignUpForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="pl-10 h-11 bg-[#0d0d15] border-white/[0.08] text-white placeholder:text-[#a1a1aa] focus-visible:border-[#339af0]/50 focus-visible:ring-[#339af0]/20 rounded-xl"
+                  className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-[#10B981]/50 focus-visible:ring-[#10B981]/20 rounded-xl"
                 />
               </div>
             </div>
@@ -222,7 +139,7 @@ function SignUpForm() {
             <div className="space-y-2">
               <Label htmlFor="signup-password" className="text-white text-sm font-medium">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa] pointer-events-none" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
                 <Input
                   id="signup-password"
                   type="password"
@@ -232,7 +149,7 @@ function SignUpForm() {
                   required
                   minLength={8}
                   autoComplete="new-password"
-                  className="pl-10 h-11 bg-[#0d0d15] border-white/[0.08] text-white placeholder:text-[#a1a1aa] focus-visible:border-[#339af0]/50 focus-visible:ring-[#339af0]/20 rounded-xl"
+                  className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-[#10B981]/50 focus-visible:ring-[#10B981]/20 rounded-xl"
                 />
               </div>
               {password.length > 0 && password.length < 8 && (
@@ -240,29 +157,15 @@ function SignUpForm() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-white text-sm font-medium">Choose your plan</Label>
-              <div className="grid grid-cols-2 gap-3">
-                {PLAN_OPTIONS.map((plan) => (
-                  <PlanCard
-                    key={plan.id}
-                    plan={plan}
-                    selected={selectedPlan === plan.id}
-                    onSelect={() => setSelectedPlan(plan.id)}
-                  />
-                ))}
-              </div>
-              <p className="text-[11px] text-[#a1a1aa]">
-                {selectedPlan === 'growth'
-                  ? `You'll be charged $${GROWTH_PRICE_USD}/month right after sign-up — 10 playbooks per 30-day cycle.`
-                  : `No charge today — pay $${ONE_OFF_PRICE_USD} per playbook when you generate one.`}
-              </p>
-            </div>
+            <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
+              No card required to sign up. After your first playbook is generated you can
+              unlock it for a one-off fee or subscribe to Growth.
+            </p>
 
             <Button
               type="submit"
               disabled={loading || !isValid}
-              className="w-full h-11 bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold rounded-xl"
+              className="w-full h-11 bg-[#10B981] hover:bg-[#059669] text-white font-semibold rounded-xl"
             >
               {loading ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating account...</>
@@ -271,18 +174,18 @@ function SignUpForm() {
               )}
             </Button>
 
-            <p className="text-[11px] text-[#a1a1aa] text-center leading-relaxed">
+            <p className="text-[11px] text-[#9CA3AF] text-center leading-relaxed">
               By creating an account you agree to our{' '}
-              <a href="/terms" className="text-[#339af0] hover:underline">Terms</a>{' '}
+              <a href="/terms" className="text-[#10B981] hover:underline">Terms</a>{' '}
               and{' '}
-              <a href="/privacy" className="text-[#339af0] hover:underline">Privacy Policy</a>.
+              <a href="/privacy" className="text-[#10B981] hover:underline">Privacy Policy</a>.
             </p>
           </form>
         </div>
 
-        <p className="text-center text-sm text-[#a1a1aa] mt-6">
+        <p className="text-center text-sm text-[#9CA3AF] mt-6">
           Already have an account?{' '}
-          <Link href="/auth/signin" className="text-[#339af0] hover:text-[#339af0]/80 font-medium">
+          <Link href="/auth/signin" className="text-[#10B981] hover:text-[#10B981]/80 font-medium">
             Sign in →
           </Link>
         </p>
@@ -292,9 +195,5 @@ function SignUpForm() {
 }
 
 export default function SignUpPage() {
-  return (
-    <Suspense>
-      <SignUpForm />
-    </Suspense>
-  )
+  return <SignUpForm />
 }

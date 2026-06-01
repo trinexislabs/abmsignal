@@ -2,9 +2,10 @@ import type { PlanId } from '@/lib/pricing'
 
 // Maps each feature to the plans that can access it
 const PLAN_FEATURES = {
-  playbook_generate: ['one_off', 'growth'],
+  playbook_generate: ['free', 'one_off', 'growth'],
   dashboard_stats: ['growth'],
-  dashboard_recent: ['one_off', 'growth'],
+  // free (pay-per-playbook) users must see their playbooks to open + unlock them.
+  dashboard_recent: ['free', 'one_off', 'growth'],
   playbook_history: ['growth'],
 } as const satisfies Record<string, readonly PlanId[]>
 

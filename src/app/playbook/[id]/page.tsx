@@ -3,10 +3,12 @@
 import { use, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { marked } from 'marked'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppSidebar, MobileSidebar } from '@/components/app-sidebar'
 import { PlaybookStatusBadge } from '@/components/playbook-status-badge'
+import { PlaybookPaywall } from '@/components/playbook/playbook-paywall'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ONE_OFF_PRICE_USD, GROWTH_PRICE_USD } from '@/lib/pricing'
 import { SECTION_META, type SectionType, type SourceReference, type SourceConfidence, type SourceVerificationStatus } from '@/types'
 import {
   FileText,
@@ -29,6 +31,7 @@ import {
   Share2,
   ChevronRight,
   Bot,
+  Lock,
   Loader2,
   ExternalLink,
   AlertTriangle,
@@ -124,6 +127,19 @@ interface PlaybookData {
   status: string
   sections: ApiSection[]
   contacts: unknown[]
+  // Present when the completed playbook is locked behind the post-generation
+  // paywall — the API has stripped section bodies + contact PII from this payload.
+  locked?: boolean
+  payment_status?: 'pending' | 'paid'
+  payment?: {
+    status: 'pending' | 'paid'
+    price_one_off: number
+    growth_price: number
+    contacts_count: number
+    sections_count: number
+    is_growth_subscriber?: boolean
+    cycle_resets_at?: string
+  }
 }
 
 // Parse (source: URL) patterns from content and return index positions
@@ -199,36 +215,36 @@ function SourceBadge({ refNumber, entry }: SourceBadgeProps) {
       )}
       <button
         onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
-        className="relative z-50 text-[10px] font-bold text-[#339af0] bg-[#339af0]/15 border border-[#339af0]/30 rounded px-1 py-0 leading-tight hover:bg-[#339af0]/25 transition-colors ml-0.5"
+        className="relative z-50 text-[10px] font-bold text-[#10B981] bg-[#10B981]/15 border border-[#10B981]/30 rounded px-1 py-0 leading-tight hover:bg-[#10B981]/25 transition-colors ml-0.5"
         aria-label={`Source ${refNumber}`}
       >
         {refNumber}
       </button>
       {open && (
         <span
-          className="absolute z-50 left-0 top-5 w-72 bg-[#141419] border border-white/10 rounded-lg shadow-xl p-3 text-left"
+          className="absolute z-50 left-0 top-5 w-72 bg-[#111827] border border-[#374151] rounded-lg shadow-xl p-3 text-left"
           style={{ minWidth: '240px' }}
           onClick={e => e.stopPropagation()}
         >
           <button
             onClick={() => setOpen(false)}
-            className="absolute top-2 right-2 text-[#a1a1aa] hover:text-white"
+            className="absolute top-2 right-2 text-[#9CA3AF] hover:text-white"
             aria-label="Close"
           >
             <X className="w-3 h-3" />
           </button>
-          <p className="text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-wider mb-2">Source {refNumber}</p>
+          <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-2">Source {refNumber}</p>
           <a
             href={entry.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#339af0] hover:underline break-all flex items-start gap-1 mb-2"
+            className="text-xs text-[#10B981] hover:underline break-all flex items-start gap-1 mb-2"
           >
             <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5" />
             {entry.url}
           </a>
           {(entry.confidence || entry.verificationStatus) && (
-            <div className="flex items-center gap-1.5 pt-2 border-t border-white/[0.06]">
+            <div className="flex items-center gap-1.5 pt-2 border-t border-[#374151]">
               {entry.confidence && (
                 <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium capitalize ${CONFIDENCE_COLORS[entry.confidence]}`}>
                   {entry.confidence}
@@ -295,19 +311,19 @@ function renderMarkdown(content: string, urlMap: UrlMapEntry[]): React.ReactNode
       )
     } else if (line.startsWith('- ') || line.startsWith('• ')) {
       elements.push(
-        <li key={i} className="text-[#a1a1aa] text-sm ml-4 mb-1 list-none flex gap-2">
-          <span className="text-[#339af0] mt-1.5 flex-shrink-0">•</span>
+        <li key={i} className="text-[#9CA3AF] text-sm ml-4 mb-1 list-none flex gap-2">
+          <span className="text-[#10B981] mt-1.5 flex-shrink-0">•</span>
           <span>{renderLineWithSources(line.slice(2), urlMap)}</span>
         </li>
       )
     } else if (line.startsWith('> ')) {
       elements.push(
-        <blockquote key={i} className="border-l-2 border-[#339af0]/40 pl-4 my-2 text-[#a1a1aa] text-sm italic">
+        <blockquote key={i} className="border-l-2 border-[#10B981]/40 pl-4 my-2 text-[#9CA3AF] text-sm italic">
           {renderLineWithSources(line.slice(2), urlMap)}
         </blockquote>
       )
     } else if (line.startsWith('---')) {
-      elements.push(<hr key={i} className="border-white/10 my-4" />)
+      elements.push(<hr key={i} className="border-[#374151] my-4" />)
     } else if (line.startsWith('|') && line.includes('|')) {
       const tableLines: string[] = []
       while (i < lines.length && lines[i].startsWith('|')) {
@@ -322,7 +338,7 @@ function renderMarkdown(content: string, urlMap: UrlMapEntry[]): React.ReactNode
             <thead>
               <tr>
                 {headers.map((h, hi) => (
-                  <th key={hi} className="text-left px-3 py-2 bg-white/5 text-white/70 font-medium border border-white/10 text-xs uppercase tracking-wide">
+                  <th key={hi} className="text-left px-3 py-2 bg-white/5 text-white/70 font-medium border border-[#374151] text-xs uppercase tracking-wide">
                     {h}
                   </th>
                 ))}
@@ -334,7 +350,7 @@ function renderMarkdown(content: string, urlMap: UrlMapEntry[]): React.ReactNode
                 return (
                   <tr key={ri} className="hover:bg-white/[0.02]">
                     {cells.map((cell, ci) => (
-                      <td key={ci} className="px-3 py-2 text-[#a1a1aa] border border-white/10">
+                      <td key={ci} className="px-3 py-2 text-[#9CA3AF] border border-[#374151]">
                         {renderLineWithSources(cell, urlMap)}
                       </td>
                     ))}
@@ -350,7 +366,7 @@ function renderMarkdown(content: string, urlMap: UrlMapEntry[]): React.ReactNode
       // skip empty lines
     } else {
       elements.push(
-        <p key={i} className="text-[#a1a1aa] text-sm leading-relaxed mb-2">
+        <p key={i} className="text-[#9CA3AF] text-sm leading-relaxed mb-2">
           {renderLineWithSources(line, urlMap)}
         </p>
       )
@@ -402,16 +418,16 @@ function SourceRow({ source, sectionId, sectionTitle, playbookId, onUpdate }: So
   }
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start gap-3 p-4 border-b border-white/[0.04] last:border-b-0">
+    <div className="flex flex-col sm:flex-row sm:items-start gap-3 p-4 border-b border-[#1F2937] last:border-b-0">
       <div className="flex-1 min-w-0">
         <p className="text-sm text-white/80 mb-1">{source.claim}</p>
         <div className="flex flex-wrap items-center gap-2 mt-1">
-          <span className="text-[10px] text-[#a1a1aa]">{sectionTitle}</span>
+          <span className="text-[10px] text-[#9CA3AF]">{sectionTitle}</span>
           <a
             href={source.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-[#339af0] hover:underline truncate max-w-xs"
+            className="inline-flex items-center gap-1 text-xs text-[#10B981] hover:underline truncate max-w-xs"
           >
             <ExternalLink className="w-3 h-3 flex-shrink-0" />
             <span className="truncate">{source.source_url}</span>
@@ -431,7 +447,7 @@ function SourceRow({ source, sectionId, sectionTitle, playbookId, onUpdate }: So
             onClick={() => setStatus('verified')}
             disabled={saving || source.verification_status === 'verified'}
             title="Mark verified"
-            className={`p-1 rounded transition-colors text-xs ${source.verification_status === 'verified' ? 'text-green-400 bg-green-500/10 cursor-default' : 'text-[#a1a1aa] hover:text-green-400 hover:bg-green-500/10'}`}
+            className={`p-1 rounded transition-colors text-xs ${source.verification_status === 'verified' ? 'text-green-400 bg-green-500/10 cursor-default' : 'text-[#9CA3AF] hover:text-green-400 hover:bg-green-500/10'}`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
           </button>
@@ -439,7 +455,7 @@ function SourceRow({ source, sectionId, sectionTitle, playbookId, onUpdate }: So
             onClick={() => setStatus('needs_review')}
             disabled={saving || source.verification_status === 'needs_review'}
             title="Needs review"
-            className={`p-1 rounded transition-colors ${source.verification_status === 'needs_review' ? 'text-amber-400 bg-amber-500/10 cursor-default' : 'text-[#a1a1aa] hover:text-amber-400 hover:bg-amber-500/10'}`}
+            className={`p-1 rounded transition-colors ${source.verification_status === 'needs_review' ? 'text-amber-400 bg-amber-500/10 cursor-default' : 'text-[#9CA3AF] hover:text-amber-400 hover:bg-amber-500/10'}`}
           >
             <AlertTriangle className="w-3.5 h-3.5" />
           </button>
@@ -447,7 +463,7 @@ function SourceRow({ source, sectionId, sectionTitle, playbookId, onUpdate }: So
             onClick={() => setStatus('unverified')}
             disabled={saving || source.verification_status === 'unverified'}
             title="Mark unverified"
-            className={`p-1 rounded transition-colors ${source.verification_status === 'unverified' ? 'text-red-400 bg-red-500/10 cursor-default' : 'text-[#a1a1aa] hover:text-red-400 hover:bg-red-500/10'}`}
+            className={`p-1 rounded transition-colors ${source.verification_status === 'unverified' ? 'text-red-400 bg-red-500/10 cursor-default' : 'text-[#9CA3AF] hover:text-red-400 hover:bg-red-500/10'}`}
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -472,23 +488,24 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => { setMounted(true) }, [])
 
+  const fetchPlaybook = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/playbooks/${id}`, { cache: 'no-store' })
+      if (res.ok) {
+        const json = await res.json()
+        setPlaybook(json.data)
+      }
+    } catch (err) {
+      console.error('[playbook] Failed to fetch:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [id])
+
   useEffect(() => {
     if (!id || !mounted) return
-    async function fetchPlaybook() {
-      try {
-        const res = await fetch(`/api/playbooks/${id}`)
-        if (res.ok) {
-          const json = await res.json()
-          setPlaybook(json.data)
-        }
-      } catch (err) {
-        console.error('[playbook] Failed to fetch:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchPlaybook()
-  }, [id, mounted])
+  }, [id, mounted, fetchPlaybook])
 
   const handleSourceUpdate = useCallback((sectionId: string, sourceId: string, status: SourceVerificationStatus) => {
     setSourceStatuses(prev => ({
@@ -499,22 +516,26 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
 
   if (!mounted || loading) {
     return (
-      <div className="flex h-screen bg-[#0a0a0f] items-center justify-center">
-        <Loader2 className="w-6 h-6 text-[#339af0] animate-spin" />
+      <div className="flex h-screen bg-[#0B0F13] items-center justify-center">
+        <Loader2 className="w-6 h-6 text-[#10B981] animate-spin" />
       </div>
     )
   }
 
   if (!playbook) {
     return (
-      <div className="flex h-screen bg-[#0a0a0f] items-center justify-center">
+      <div className="flex h-screen bg-[#0B0F13] items-center justify-center">
         <div className="text-center">
           <p className="text-white/60 text-sm">Playbook not found</p>
-          <Link href="/dashboard" className="text-[#339af0] text-sm mt-2 inline-block hover:underline">Back to Dashboard</Link>
+          <Link href="/dashboard" className="text-[#10B981] text-sm mt-2 inline-block hover:underline">Back to Dashboard</Link>
         </div>
       </div>
     )
   }
+
+  // Completed-but-unpaid playbook: the API has stripped real content from this
+  // payload. We render a blurred skeleton + paywall over the normal chrome.
+  const locked = !!playbook.locked
 
   const sectionsByType = new Map<SectionType, ApiSection>()
   for (const s of playbook.sections) {
@@ -577,6 +598,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
 
   function handleExportPdf() {
     if (!playbook) return
+    // Defense-in-depth: a locked playbook has no real content in the DOM anyway,
+    // but never attempt an export until it's unlocked.
+    if (playbook.locked) return
     const win = window.open('', '_blank')
     if (!win) return
 
@@ -638,9 +662,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #1e3a5f;
+    --navy: #0B3D2E;
     --navy-deep: #14283f;
-    --accent: #339af0;
+    --accent: #10B981;
     --ink: #1a1a1a;
     --body: #2b2b32;
     --muted: #6b7280;
@@ -720,7 +744,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
     break-after: page;
     height: 297mm;
     padding: 28mm 22mm;
-    background: linear-gradient(160deg, #0a1628 0%, #14283f 50%, #1e3a5f 100%);
+    background: linear-gradient(160deg, #0a1628 0%, #14283f 50%, #0B3D2E 100%);
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -736,7 +760,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
     width: 260mm;
     height: 260mm;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(51,154,240,0.18) 0%, rgba(51,154,240,0) 60%);
+    background: radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0) 60%);
     pointer-events: none;
   }
   .cover-brand {
@@ -814,8 +838,8 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
   }
   .cover-badge {
     display: inline-block;
-    background: rgba(51,154,240,0.18);
-    border: 1px solid rgba(51,154,240,0.4);
+    background: rgba(16,185,129,0.18);
+    border: 1px solid rgba(16,185,129,0.4);
     color: var(--accent);
     padding: 4px 12px;
     border-radius: 20px;
@@ -1017,7 +1041,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
   .section-body a {
     color: var(--accent);
     text-decoration: none;
-    border-bottom: 1px solid rgba(51,154,240,0.3);
+    border-bottom: 1px solid rgba(16,185,129,0.3);
     word-break: break-all;
     overflow-wrap: break-word;
   }
@@ -1026,9 +1050,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
   .cite {
     display: inline-block;
     font-family: 'Space Grotesk', sans-serif;
-    background: rgba(51,154,240,0.12);
+    background: rgba(16,185,129,0.12);
     color: var(--accent);
-    border: 1px solid rgba(51,154,240,0.35);
+    border: 1px solid rgba(16,185,129,0.35);
     border-radius: 3px;
     padding: 0 4px;
     font-size: 7pt;
@@ -1141,44 +1165,108 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0a0f] overflow-hidden">
+    <div className="flex h-screen bg-[#0B0F13] overflow-hidden">
       <AppSidebar />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <header className="flex items-center justify-between h-14 px-6 border-b border-white/[0.06] bg-[#0d0d15] flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-[#a1a1aa] hover:text-white transition-colors">
+        <header className="flex items-center justify-between gap-3 h-14 px-4 sm:px-6 border-b border-[#374151] bg-[#0B0F13] flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <MobileSidebar />
+            <Link href="/dashboard" className="text-[#9CA3AF] hover:text-white transition-colors flex-shrink-0">
               <ChevronRight className="w-4 h-4 rotate-180" />
             </Link>
-            <div className="flex items-center gap-3">
-              <h1 className="font-heading font-semibold text-white text-base">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <h1 className="font-heading font-semibold text-white text-sm sm:text-base truncate">
                 {playbook.product_name} → {playbook.target_company}
               </h1>
-              <PlaybookStatusBadge status={playbook.status as 'draft' | 'researching' | 'contact_review' | 'writing' | 'reviewing' | 'complete' | 'error' | 'rejected'} />
+              <span className="flex-shrink-0 hidden sm:inline-flex">
+                <PlaybookStatusBadge status={playbook.status as 'draft' | 'researching' | 'contact_review' | 'writing' | 'reviewing' | 'complete' | 'error' | 'rejected'} />
+              </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-[#a1a1aa] hover:text-white hover:bg-white/5 gap-1.5">
-              <Share2 className="w-3.5 h-3.5" />
-              Share
-            </Button>
-            <Link href={`/playbook/${id}/review`}>
-              <Button variant="outline" size="sm" className="border-white/10 bg-white/5 text-white hover:bg-white/10 gap-1.5">
-                <Star className="w-3.5 h-3.5" />
-                Quality Review
-              </Button>
-            </Link>
-            <Button size="sm" onClick={handleExportPdf} className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
-              <Download className="w-3.5 h-3.5" />
-              Export PDF
-            </Button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {locked ? (
+              // Locked: no Share / Quality Review / Export until unlocked.
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full">
+                <Lock className="w-3 h-3" />
+                Locked
+              </span>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="text-[#9CA3AF] hover:text-white hover:bg-white/5 gap-1.5 hidden sm:inline-flex">
+                  <Share2 className="w-3.5 h-3.5" />
+                  Share
+                </Button>
+                <Link href={`/playbook/${id}/review`}>
+                  <Button variant="outline" size="sm" className="border-[#374151] bg-white/5 text-white hover:bg-white/10 gap-1.5">
+                    <Star className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Quality Review</span>
+                  </Button>
+                </Link>
+                <Button size="sm" onClick={handleExportPdf} className="bg-[#10B981] hover:bg-[#10B981]/90 text-white gap-1.5">
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Export PDF</span>
+                </Button>
+              </>
+            )}
           </div>
         </header>
 
+        {/* Mobile section selector — the desktop nav aside is hidden below lg,
+            so expose section switching as a horizontally-scrollable pill bar. */}
+        {!locked && (
+          <div className="lg:hidden flex-shrink-0 border-b border-[#374151] bg-[#0B0F13] overflow-x-auto scrollbar-thin">
+            <div className="flex items-center gap-1.5 px-4 py-2 w-max">
+              {orderedSectionTypes.map((sectionType) => {
+                const meta = SECTION_META[sectionType]
+                const Icon = SECTION_ICONS[sectionType]
+                const isActive = activeSectionType === sectionType && !showSources
+                return (
+                  <button
+                    key={sectionType}
+                    onClick={() => {
+                      setActiveSectionType(sectionType)
+                      setEditingSection(null)
+                      setShowSources(false)
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                      isActive
+                        ? 'bg-[#0B3D2E] border border-[#10B981]/20 text-white'
+                        : 'text-[#9CA3AF] hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#10B981]' : ''}`} />
+                    {meta.title}
+                  </button>
+                )
+              })}
+              {allSources.length > 0 && (
+                <button
+                  onClick={() => {
+                    setShowSources(true)
+                    setEditingSection(null)
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                    showSources
+                      ? 'bg-[#0B3D2E] border border-[#10B981]/20 text-white'
+                      : 'text-[#9CA3AF] hover:text-white hover:bg-white/5 border border-transparent'
+                  }`}
+                >
+                  <ShieldCheck className={`w-3.5 h-3.5 ${showSources ? 'text-[#10B981]' : ''}`} />
+                  Sources
+                  <span className="text-[10px] bg-[#10B981]/20 text-[#10B981] rounded px-1 font-semibold">
+                    {allSources.length}
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-1 min-h-0 overflow-hidden">
-          <aside className="w-60 flex-shrink-0 border-r border-white/[0.06] bg-[#0d0d15] overflow-y-auto">
+          <aside className="hidden lg:block w-60 flex-shrink-0 border-r border-[#374151] bg-[#0B0F13] overflow-y-auto">
             <div className="px-3 py-4">
-              <p className="text-[10px] font-medium text-[#a1a1aa] uppercase tracking-widest px-3 mb-3">
+              <p className="text-[10px] font-medium text-[#9CA3AF] uppercase tracking-widest px-3 mb-3">
                 Sections
               </p>
               <nav className="space-y-0.5">
@@ -1187,7 +1275,9 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                   const Icon = SECTION_ICONS[sectionType]
                   const section = sectionsByType.get(sectionType)
                   const isActive = activeSectionType === sectionType
-                  const hasSection = !!section?.content?.trim()
+                  // When locked, the body is withheld but the playbook is complete —
+                  // show every section as generated so the structure reads as full.
+                  const hasSection = locked ? !!section : !!section?.content?.trim()
 
                   return (
                     <button
@@ -1199,11 +1289,11 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                       }}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all duration-150 group ${
                         isActive && !showSources
-                          ? 'bg-[#1e3a5f] border border-[#339af0]/20 text-white'
-                          : 'text-[#a1a1aa] hover:text-white hover:bg-white/5'
+                          ? 'bg-[#0B3D2E] border border-[#10B981]/20 text-white'
+                          : 'text-[#9CA3AF] hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive && !showSources ? 'text-[#339af0]' : 'text-[#a1a1aa] group-hover:text-white/70'}`} />
+                      <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive && !showSources ? 'text-[#10B981]' : 'text-[#9CA3AF] group-hover:text-white/70'}`} />
                       <span className="text-xs font-medium flex-1 truncate leading-tight">
                         {meta.title}
                       </span>
@@ -1225,15 +1315,15 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                     }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all duration-150 group mt-2 ${
                       showSources
-                        ? 'bg-[#1e3a5f] border border-[#339af0]/20 text-white'
-                        : 'text-[#a1a1aa] hover:text-white hover:bg-white/5'
+                        ? 'bg-[#0B3D2E] border border-[#10B981]/20 text-white'
+                        : 'text-[#9CA3AF] hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${showSources ? 'text-[#339af0]' : 'text-[#a1a1aa] group-hover:text-white/70'}`} />
+                    <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${showSources ? 'text-[#10B981]' : 'text-[#9CA3AF] group-hover:text-white/70'}`} />
                     <span className="text-xs font-medium flex-1 truncate leading-tight">
                       Sources & Verification
                     </span>
-                    <span className="text-[10px] bg-[#339af0]/20 text-[#339af0] rounded px-1 font-semibold">
+                    <span className="text-[10px] bg-[#10B981]/20 text-[#10B981] rounded px-1 font-semibold">
                       {allSources.length}
                     </span>
                   </button>
@@ -1242,13 +1332,51 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </aside>
 
-          <main className="flex-1 overflow-y-auto bg-[#0a0a0f]">
-            {showSources ? (
-              <div className="max-w-4xl mx-auto px-8 py-8">
+          <main className="flex-1 overflow-y-auto bg-[#0B0F13] relative">
+            {locked ? (
+              <>
+                {/* Blurred skeleton stand-in — no real content is present in the
+                    DOM (the API stripped it); this just communicates that a full,
+                    dense playbook exists behind the paywall. */}
+                <div
+                  aria-hidden="true"
+                  className="max-w-4xl mx-auto px-4 sm:px-8 py-8 blur-[6px] select-none pointer-events-none"
+                >
+                  <div className="mb-6">
+                    <div className="h-3 w-40 rounded bg-white/10 mb-3" />
+                    <div className="h-7 w-2/3 rounded bg-white/15" />
+                  </div>
+                  <div className="rounded-xl border border-[#374151] bg-[#111827] p-6 space-y-3">
+                    {[
+                      '92%', '88%', '95%', '70%', '84%', '60%',
+                      '90%', '76%', '93%', '67%', '81%', '58%',
+                      '89%', '72%', '85%',
+                    ].map((w, i) => (
+                      <div
+                        key={i}
+                        className={`h-3.5 rounded bg-white/10 ${i % 6 === 5 ? 'mb-4' : ''}`}
+                        style={{ width: w }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <PlaybookPaywall
+                  playbookId={id}
+                  oneOffPrice={playbook.payment?.price_one_off ?? ONE_OFF_PRICE_USD}
+                  growthPrice={playbook.payment?.growth_price ?? GROWTH_PRICE_USD}
+                  sectionsCount={playbook.payment?.sections_count ?? playbook.sections.length}
+                  contactsCount={playbook.payment?.contacts_count ?? 0}
+                  isGrowthSubscriber={playbook.payment?.is_growth_subscriber ?? false}
+                  cycleResetsAt={playbook.payment?.cycle_resets_at}
+                  onUnlocked={fetchPlaybook}
+                />
+              </>
+            ) : showSources ? (
+              <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8">
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <h2 className="font-heading text-2xl font-bold text-white mb-1">Sources & Verification</h2>
-                    <p className="text-sm text-[#a1a1aa]">
+                    <p className="text-sm text-[#9CA3AF]">
                       Review and verify every claim the AI agents made in this playbook.
                     </p>
                   </div>
@@ -1279,12 +1407,12 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-white/[0.06] bg-[#141419] overflow-hidden">
+                <div className="rounded-xl border border-[#374151] bg-[#111827] overflow-hidden">
                   {allSources.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
-                      <ShieldCheck className="w-10 h-10 text-[#a1a1aa] mb-3" />
+                      <ShieldCheck className="w-10 h-10 text-[#9CA3AF] mb-3" />
                       <p className="text-white/60 text-sm">No sources attached to this playbook yet.</p>
-                      <p className="text-[#a1a1aa] text-xs mt-1">Sources will appear here when the AI agents add them to sections.</p>
+                      <p className="text-[#9CA3AF] text-xs mt-1">Sources will appear here when the AI agents add them to sections.</p>
                     </div>
                   ) : (
                     allSources.map(({ source, sectionId, sectionTitle }) => (
@@ -1302,13 +1430,13 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
 
                 {/* Inline URL sources note */}
                 {inlineUrlMap.length > 0 && (
-                  <div className="mt-4 p-3 rounded-lg border border-white/[0.06] bg-[#141419]">
-                    <p className="text-xs text-[#a1a1aa] mb-2">Inline source references found in content:</p>
+                  <div className="mt-4 p-3 rounded-lg border border-[#374151] bg-[#111827]">
+                    <p className="text-xs text-[#9CA3AF] mb-2">Inline source references found in content:</p>
                     <ol className="space-y-1">
                       {inlineUrlMap.map((entry, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs">
-                          <span className="text-[#339af0] font-bold">[{i + 1}]</span>
-                          <a href={entry.url} target="_blank" rel="noopener noreferrer" className="text-[#339af0] hover:underline break-all">
+                          <span className="text-[#10B981] font-bold">[{i + 1}]</span>
+                          <a href={entry.url} target="_blank" rel="noopener noreferrer" className="text-[#10B981] hover:underline break-all">
                             {entry.url}
                           </a>
                         </li>
@@ -1318,11 +1446,11 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                 )}
               </div>
             ) : (
-              <div className="max-w-4xl mx-auto px-8 py-8">
+              <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-medium text-[#a1a1aa] uppercase tracking-widest">
+                      <span className="text-[10px] font-medium text-[#9CA3AF] uppercase tracking-widest">
                         Section {SECTION_META[activeSectionType].order} of 18
                       </span>
                       <Badge
@@ -1330,7 +1458,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                         className={`text-[10px] px-2 py-0 ${
                           hasContent
                             ? 'border-green-500/30 text-green-400 bg-green-500/10'
-                            : 'border-white/20 text-[#a1a1aa]'
+                            : 'border-[#374151]/60 text-[#9CA3AF]'
                         }`}
                       >
                         {hasContent ? 'Complete' : 'Pending'}
@@ -1338,7 +1466,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                       {activeSection?.sources && activeSection.sources.length > 0 && (
                         <button
                           onClick={() => setShowSources(true)}
-                          className="inline-flex items-center gap-1 text-[10px] text-[#339af0] bg-[#339af0]/10 border border-[#339af0]/20 rounded px-2 py-0.5 hover:bg-[#339af0]/20 transition-colors"
+                          className="inline-flex items-center gap-1 text-[10px] text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded px-2 py-0.5 hover:bg-[#10B981]/20 transition-colors"
                         >
                           <ShieldCheck className="w-2.5 h-2.5" />
                           {activeSection.sources.length} source{activeSection.sources.length !== 1 ? 's' : ''}
@@ -1354,7 +1482,7 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                       variant="outline"
                       size="sm"
                       onClick={startEdit}
-                      className="border-white/10 bg-white/5 text-white hover:bg-white/10 gap-1.5 flex-shrink-0 ml-4"
+                      className="border-[#374151] bg-white/5 text-white hover:bg-white/10 gap-1.5 flex-shrink-0 ml-4"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                       Edit
@@ -1362,21 +1490,21 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                   )}
                 </div>
 
-                <div className="rounded-xl border border-white/[0.06] bg-[#141419] p-6">
+                <div className="rounded-xl border border-[#374151] bg-[#111827] p-4 sm:p-6">
                   {editingSection === activeSection?.id ? (
                     <div className="space-y-4">
                       <textarea
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
-                        className="w-full h-96 bg-[#0a0a0f] border border-white/10 rounded-lg p-4 text-sm text-[#a1a1aa] font-mono resize-none focus:outline-none focus:border-[#339af0]/40 leading-relaxed"
+                        className="w-full h-96 bg-[#0B0F13] border border-[#374151] rounded-lg p-4 text-sm text-[#9CA3AF] font-mono resize-none focus:outline-none focus:border-[#10B981]/40 leading-relaxed"
                         placeholder="Section content (Markdown supported)..."
                       />
                       <div className="flex items-center gap-2">
-                        <Button size="sm" onClick={saveEdit} className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5">
+                        <Button size="sm" onClick={saveEdit} className="bg-[#10B981] hover:bg-[#10B981]/90 text-white gap-1.5">
                           <Save className="w-3.5 h-3.5" />
                           Save Changes
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={cancelEdit} className="text-[#a1a1aa] hover:text-white gap-1.5">
+                        <Button variant="ghost" size="sm" onClick={cancelEdit} className="text-[#9CA3AF] hover:text-white gap-1.5">
                           <X className="w-3.5 h-3.5" />
                           Cancel
                         </Button>
@@ -1389,28 +1517,28 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
                   ) : (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                       <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                        <Clock className="w-5 h-5 text-[#a1a1aa]" />
+                        <Clock className="w-5 h-5 text-[#9CA3AF]" />
                       </div>
                       <p className="text-white/60 text-sm font-medium">Section not yet generated</p>
-                      <p className="text-[#a1a1aa] text-xs mt-1">This section will appear once the AI agents complete it</p>
+                      <p className="text-[#9CA3AF] text-xs mt-1">This section will appear once the AI agents complete it</p>
                     </div>
                   )}
                 </div>
 
                 {activeSection?.created_at && (
-                  <div className="flex items-center gap-4 mt-4 px-1">
-                    <div className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+                  <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-4 px-1">
+                    <div className="flex items-center gap-1.5 text-xs text-[#9CA3AF]">
                       <Bot className="w-3.5 h-3.5" />
                       <span>Generated by Writer Agent</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+                    <div className="flex items-center gap-1.5 text-xs text-[#9CA3AF]">
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-500/70" />
                       <span>Reviewed by Quality Agent</span>
                     </div>
                     {inlineUrls.length > 0 && (
                       <button
                         onClick={() => setShowSources(true)}
-                        className="flex items-center gap-1.5 text-xs text-[#339af0] hover:underline"
+                        className="flex items-center gap-1.5 text-xs text-[#10B981] hover:underline"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         {inlineUrls.length} inline reference{inlineUrls.length !== 1 ? 's' : ''}

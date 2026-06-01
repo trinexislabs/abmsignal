@@ -1,4 +1,5 @@
 export type PlaybookStatus = 'draft' | 'queued' | 'pending_queue' | 'researching' | 'contact_review' | 'writing' | 'reviewing' | 'complete' | 'error' | 'rejected' | 'failed' | 'cancelled'
+export type PaymentStatus = 'pending' | 'paid'
 export type SectionStatus = 'pending' | 'generating' | 'complete' | 'reviewed'
 export type ContactVerificationStatus = 'pending' | 'confirmed' | 'needs_review' | 'removed'
 export type ContactConfidence = 'high' | 'medium' | 'low'

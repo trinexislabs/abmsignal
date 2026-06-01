@@ -5,6 +5,7 @@ import { runWritingWorker } from '../jobs/workers/playbook-writing-worker'
 import { prisma } from '../db'
 import { recordPlaybookFailure } from './failure'
 import { refundGrowthCreditForErroredPlaybook } from '../users/user-repository'
+import { playbookRetentionLimit } from '@/lib/pricing'
 import type {
   ApiActivePlaybook,
   ApiContact,
@@ -18,6 +19,22 @@ import type { PlaybookRun } from '../runs/run-types'
 // logged for it in this many ms. Real generations log progress events every
 // few minutes, so an hour of silence means the worker process is dead.
 const STALE_RUN_IDLE_MS = 60 * 60 * 1000
+
+// Statuses that retention must NEVER purge: a draft the user is still editing,
+// or anything mid-generation (queued / researching / contact-review / writing /
+// reviewing). These are protected regardless of age so a slow generation is
+// never yanked out from under the user or an in-flight worker. Everything else
+// (complete / error / failed / cancelled / rejected) is a terminal artifact and
+// eligible for purge once it falls outside the plan's keep-window.
+const RETENTION_PROTECTED_STATUSES = new Set([
+  'draft',
+  'pending_queue',
+  'queued',
+  'researching',
+  'contact_review',
+  'writing',
+  'reviewing',
+])
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _queue: any = null
@@ -283,6 +300,51 @@ export const playbookService = {
     }
 
     return { deleted: true, creditRefunded }
+  },
+
+  // Enforce the per-plan retention window: we keep only the user's most recent
+  // N playbooks (N = playbookRetentionLimit(plan)). Anything older than that is
+  // permanently purged — EXCEPT drafts and in-flight playbooks, which are always
+  // protected (see RETENTION_PROTECTED_STATUSES). Call this right after a new
+  // playbook is created, i.e. the moment the count can grow past the limit.
+  //
+  // Unlike deletePlaybook this never refunds a credit: purged playbooks are old
+  // terminal artifacts (typically already paid/unlocked), not user-initiated
+  // deletes of a failed run. Ordering is by createdAt (stable) so "most recent"
+  // means most-recently-created.
+  async enforcePlaybookRetention(
+    userId: string,
+    plan: string | null | undefined,
+  ): Promise<{ purged: number }> {
+    const limit = playbookRetentionLimit(plan)
+
+    const all = await prisma.playbook.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, status: true },
+    })
+    if (all.length <= limit) return { purged: 0 }
+
+    // Retain the newest `limit`; everything beyond is a purge candidate, but we
+    // only ever remove terminal playbooks — protected statuses are left in place
+    // even if that temporarily leaves the user slightly above the window.
+    const overflow = all.slice(limit)
+    let purged = 0
+    for (const pb of overflow) {
+      if (RETENTION_PROTECTED_STATUSES.has(pb.status)) continue
+      try {
+        await playbookRepository.deleteCascade(pb.id)
+        purged++
+      } catch (err) {
+        console.warn(`[playbook-service] retention purge skipped for ${pb.id}:`, err)
+      }
+    }
+    if (purged > 0) {
+      console.info(
+        `[playbook-service] purged ${purged} playbook(s) past retention limit ${limit} for user ${userId}`,
+      )
+    }
+    return { purged }
   },
 }
 

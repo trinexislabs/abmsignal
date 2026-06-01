@@ -14,7 +14,7 @@ import type {
   SectionInput,
   SourceInput,
 } from './playbook-types'
-import type { AgentStatus, PlaybookStatus } from '@/types'
+import type { AgentStatus, PaymentStatus, PlaybookStatus } from '@/types'
 
 const TOTAL_SECTIONS = 18
 const ACTIVE_STATUSES = ['pending_queue', 'queued', 'researching', 'writing', 'reviewing', 'contact_review'] as const
@@ -166,6 +166,8 @@ export const playbookRepository = {
       agent_status: parseJson<AgentStatus[]>(pb.agentStatus, []),
       failed_reason: pb.failedReason ?? undefined,
       openclaw_session_id: pb.openclawSessionId ?? undefined,
+      payment_status: (pb.paymentStatus === 'paid' ? 'paid' : 'pending') as PaymentStatus,
+      paid_at: pb.paidAt?.toISOString(),
       sections: pb.sections.map(toApiSection),
       contacts: pb.contacts.map(toApiContact),
       created_at: pb.createdAt.toISOString(),
@@ -197,6 +199,8 @@ export const playbookRepository = {
       agent_status: parseJson<AgentStatus[]>(pb.agentStatus, []),
       failed_reason: pb.failedReason ?? undefined,
       openclaw_session_id: pb.openclawSessionId ?? undefined,
+      payment_status: (pb.paymentStatus === 'paid' ? 'paid' : 'pending') as PaymentStatus,
+      paid_at: pb.paidAt?.toISOString(),
       sections: pb.sections.map(toApiSection),
       contacts: pb.contacts.map(toApiContact),
       created_at: pb.createdAt.toISOString(),
@@ -229,6 +233,8 @@ export const playbookRepository = {
       agent_status: parseJson<AgentStatus[]>(pb.agentStatus, []),
       failed_reason: pb.failedReason ?? undefined,
       openclaw_session_id: pb.openclawSessionId ?? undefined,
+      payment_status: (pb.paymentStatus === 'paid' ? 'paid' : 'pending') as PaymentStatus,
+      paid_at: pb.paidAt?.toISOString(),
       sections: pb.sections.map(toApiSection),
       contacts: pb.contacts.map(toApiContact),
       created_at: pb.createdAt.toISOString(),

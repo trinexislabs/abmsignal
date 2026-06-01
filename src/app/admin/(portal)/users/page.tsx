@@ -14,8 +14,8 @@ const PLAN_OPTIONS = [
 ]
 
 const PLAN_BADGE: Record<string, string> = {
-  free: 'bg-white/10 text-[#a1a1aa] border-white/15',
-  one_off: 'bg-[#339af0]/15 text-[#339af0] border-[#339af0]/25',
+  free: 'bg-white/10 text-[#9CA3AF] border-white/15',
+  one_off: 'bg-[#10B981]/15 text-[#10B981] border-[#10B981]/25',
   growth: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
 }
 
@@ -35,7 +35,7 @@ export default async function AdminUsersPage({
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-2xl font-bold text-white">Users</h1>
-        <p className="text-sm text-[#a1a1aa] mt-0.5">All customers, their plan, usage, and credits.</p>
+        <p className="text-sm text-[#9CA3AF] mt-0.5">All customers, their plan, usage, and credits.</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -43,8 +43,8 @@ export default async function AdminUsersPage({
         <FilterSelect param="plan" options={PLAN_OPTIONS} />
       </div>
 
-      <Card className="bg-[#141419] border-white/[0.06] overflow-hidden">
-        <div className="hidden md:grid grid-cols-[1fr_110px_110px_90px_90px_120px] gap-4 px-5 py-3 border-b border-white/[0.06] text-[11px] font-medium text-[#a1a1aa] uppercase tracking-wider">
+      <Card className="bg-[#111827] border-[#374151] overflow-hidden">
+        <div className="hidden md:grid grid-cols-[1fr_110px_110px_90px_90px_120px] gap-4 px-5 py-3 border-b border-[#374151] text-[11px] font-medium text-[#9CA3AF] uppercase tracking-wider">
           <span>User</span>
           <span>Plan</span>
           <span>Status</span>
@@ -54,7 +54,7 @@ export default async function AdminUsersPage({
         </div>
 
         {result.rows.length === 0 ? (
-          <p className="text-sm text-[#a1a1aa] px-5 py-12 text-center">No users match your filters.</p>
+          <p className="text-sm text-[#9CA3AF] px-5 py-12 text-center">No users match your filters.</p>
         ) : (
           <div className="divide-y divide-white/[0.04]">
             {result.rows.map((u) => (
@@ -66,7 +66,7 @@ export default async function AdminUsersPage({
                 <div className="flex items-center gap-3 min-w-0">
                   <Avatar className="w-8 h-8 flex-shrink-0">
                     {u.image && <AvatarImage src={u.image} alt={u.name ?? ''} />}
-                    <AvatarFallback className="bg-[#1e3a5f] text-[#339af0] font-bold text-[10px]">
+                    <AvatarFallback className="bg-[#0B3D2E] text-[#10B981] font-bold text-[10px]">
                       {getUserInitials(u.name)}
                     </AvatarFallback>
                   </Avatar>
@@ -77,7 +77,7 @@ export default async function AdminUsersPage({
                         <span className="text-[9px] font-bold text-amber-400 bg-amber-500/15 border border-amber-500/25 rounded px-1 uppercase">Admin</span>
                       )}
                     </p>
-                    <p className="text-[11px] text-[#a1a1aa] truncate">{u.email}</p>
+                    <p className="text-[11px] text-[#9CA3AF] truncate">{u.email}</p>
                   </div>
                 </div>
                 <div className="md:block">
@@ -85,10 +85,10 @@ export default async function AdminUsersPage({
                     {u.plan.replace(/_/g, ' ')}
                   </span>
                 </div>
-                <div className="text-xs text-[#a1a1aa] capitalize">{u.status}</div>
+                <div className="text-xs text-[#9CA3AF] capitalize">{u.status}</div>
                 <div className="text-sm text-white md:text-right">{u.playbookCount}</div>
                 <div className="text-sm text-white md:text-right">{u.credits}</div>
-                <div className="text-[11px] text-[#a1a1aa] md:text-right">
+                <div className="text-[11px] text-[#9CA3AF] md:text-right">
                   {u.lastActivity ? formatDistanceToNow(u.lastActivity, { addSuffix: true }) : '—'}
                 </div>
               </Link>

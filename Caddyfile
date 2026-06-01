@@ -1,0 +1,18 @@
+# Replace app.abmsignal.com with your real domain.
+# Caddy automatically provisions and renews a Let's Encrypt TLS certificate.
+app.abmsignal.com {
+	encode gzip zstd
+	reverse_proxy web:3000
+
+	# Long-lived Server-Sent Events / streaming progress endpoints must not be buffered.
+	@sse path /api/playbooks/*/flow /api/playbooks/*/status
+	reverse_proxy @sse web:3000 {
+		flush_interval -1
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}

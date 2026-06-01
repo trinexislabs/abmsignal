@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark">
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}
-        style={{ background: '#0a0a0f', color: '#ffffff', minHeight: '100vh' }}
+        style={{ background: '#0B0F13', color: '#ffffff', minHeight: '100vh' }}
         suppressHydrationWarning
       >
         <SessionProvider>

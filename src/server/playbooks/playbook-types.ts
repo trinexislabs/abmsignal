@@ -1,4 +1,4 @@
-import type { AgentStatus, PlaybookStatus } from '@/types'
+import type { AgentStatus, PaymentStatus, PlaybookStatus } from '@/types'
 
 // ─── DB-level model mirrors (what Prisma returns) ───────────────────────────
 
@@ -17,6 +17,9 @@ export interface DbPlaybook {
   progressPct: number
   agentStatus: string       // JSON string
   failedReason: string | null
+  paymentStatus: string     // "pending" | "paid"
+  paidAt: Date | null
+  paymentReference: string | null
   completedAt: Date | null
   openclawSessionId: string | null
   createdAt: Date
@@ -88,6 +91,23 @@ export interface ApiPlaybook {
   agent_status: AgentStatus[]
   failed_reason?: string
   openclaw_session_id?: string
+  payment_status: PaymentStatus
+  paid_at?: string
+  // Set true by read endpoints when the viewer may NOT see real content — the
+  // section bodies and contact PII have been stripped from this response.
+  locked?: boolean
+  // Pricing surfaced to the paywall so the UI doesn't hardcode amounts.
+  payment?: {
+    status: PaymentStatus
+    price_one_off: number
+    growth_price: number
+    contacts_count: number
+    sections_count: number
+    // True when the viewer already holds an active Growth subscription (so this
+    // paywall is an over-quota overage, not a first-time subscribe decision).
+    is_growth_subscriber?: boolean
+    cycle_resets_at?: string
+  }
   sections: ApiSection[]
   contacts: ApiContact[]
   created_at: string

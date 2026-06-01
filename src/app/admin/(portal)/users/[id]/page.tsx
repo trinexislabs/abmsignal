@@ -24,7 +24,7 @@ export default async function AdminUserDetailPage({
 
   return (
     <div className="space-y-6">
-      <Link href="/admin/users" className="inline-flex items-center gap-1.5 text-xs text-[#a1a1aa] hover:text-white">
+      <Link href="/admin/users" className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-white">
         <ChevronLeft className="w-3.5 h-3.5" /> Back to users
       </Link>
 
@@ -32,7 +32,7 @@ export default async function AdminUserDetailPage({
       <div className="flex items-start gap-4">
         <Avatar className="w-14 h-14">
           {user.image && <AvatarImage src={user.image} alt={user.name ?? ''} />}
-          <AvatarFallback className="bg-[#1e3a5f] text-[#339af0] font-bold">
+          <AvatarFallback className="bg-[#0B3D2E] text-[#10B981] font-bold">
             {getUserInitials(user.name)}
           </AvatarFallback>
         </Avatar>
@@ -45,7 +45,7 @@ export default async function AdminUserDetailPage({
               </span>
             )}
           </h1>
-          <div className="flex flex-wrap items-center gap-4 mt-1.5 text-xs text-[#a1a1aa]">
+          <div className="flex flex-wrap items-center gap-4 mt-1.5 text-xs text-[#9CA3AF]">
             <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" />{user.email}</span>
             <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Joined {format(user.createdAt, 'MMM d, yyyy')}</span>
             {authMethods.length > 0 && <span className="capitalize">via {authMethods.join(', ')}</span>}
@@ -55,23 +55,23 @@ export default async function AdminUserDetailPage({
 
       {/* Subscription + credits summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="bg-[#141419] border-white/[0.06] p-5">
-          <div className="flex items-center gap-2 text-xs text-[#a1a1aa] mb-2"><CreditCard className="w-3.5 h-3.5" />Plan</div>
+        <Card className="bg-[#111827] border-[#374151] p-5">
+          <div className="flex items-center gap-2 text-xs text-[#9CA3AF] mb-2"><CreditCard className="w-3.5 h-3.5" />Plan</div>
           <p className="text-lg font-bold text-white capitalize">{sub?.plan?.replace(/_/g, ' ') ?? 'free'}</p>
-          <p className="text-xs text-[#a1a1aa] mt-0.5 capitalize">{sub?.status ?? 'active'}</p>
+          <p className="text-xs text-[#9CA3AF] mt-0.5 capitalize">{sub?.status ?? 'active'}</p>
           {sub?.currentPeriodEnd && (
-            <p className="text-[11px] text-[#a1a1aa] mt-1">Renews {format(sub.currentPeriodEnd, 'MMM d, yyyy')}</p>
+            <p className="text-[11px] text-[#9CA3AF] mt-1">Renews {format(sub.currentPeriodEnd, 'MMM d, yyyy')}</p>
           )}
         </Card>
-        <Card className="bg-[#141419] border-white/[0.06] p-5">
-          <div className="flex items-center gap-2 text-xs text-[#a1a1aa] mb-2"><CreditCard className="w-3.5 h-3.5" />Credit balance</div>
+        <Card className="bg-[#111827] border-[#374151] p-5">
+          <div className="flex items-center gap-2 text-xs text-[#9CA3AF] mb-2"><CreditCard className="w-3.5 h-3.5" />Credit balance</div>
           <p className="text-lg font-bold text-white">{user.creditBalance}</p>
-          <p className="text-xs text-[#a1a1aa] mt-0.5">{user.credits.length} ledger entries</p>
+          <p className="text-xs text-[#9CA3AF] mt-0.5">{user.credits.length} ledger entries</p>
         </Card>
-        <Card className="bg-[#141419] border-white/[0.06] p-5">
-          <div className="flex items-center gap-2 text-xs text-[#a1a1aa] mb-2"><FileText className="w-3.5 h-3.5" />Playbooks</div>
+        <Card className="bg-[#111827] border-[#374151] p-5">
+          <div className="flex items-center gap-2 text-xs text-[#9CA3AF] mb-2"><FileText className="w-3.5 h-3.5" />Playbooks</div>
           <p className="text-lg font-bold text-white">{user.playbooks.length}</p>
-          <p className="text-xs text-[#a1a1aa] mt-0.5">
+          <p className="text-xs text-[#9CA3AF] mt-0.5">
             {user.playbooks.filter((p) => p.status === 'complete').length} complete
           </p>
         </Card>
@@ -80,16 +80,16 @@ export default async function AdminUserDetailPage({
       {/* Playbooks */}
       <div>
         <h2 className="font-heading text-sm font-semibold text-white mb-3">Playbooks</h2>
-        <Card className="bg-[#141419] border-white/[0.06] overflow-hidden">
+        <Card className="bg-[#111827] border-[#374151] overflow-hidden">
           {user.playbooks.length === 0 ? (
-            <p className="text-sm text-[#a1a1aa] px-5 py-8 text-center">No playbooks yet.</p>
+            <p className="text-sm text-[#9CA3AF] px-5 py-8 text-center">No playbooks yet.</p>
           ) : (
             <div className="divide-y divide-white/[0.04]">
               {user.playbooks.map((p) => (
                 <Link key={p.id} href={`/admin/playbooks/${p.id}`} className="flex items-center justify-between gap-3 px-5 py-3 hover:bg-white/[0.02] transition-colors">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-white truncate">{p.targetCompany}</p>
-                    <p className="text-[11px] text-[#a1a1aa] truncate">
+                    <p className="text-[11px] text-[#9CA3AF] truncate">
                       {p.productName} · {formatDistanceToNow(p.updatedAt, { addSuffix: true })}
                       {p.failedReason ? ` · ${p.failedReason}` : ''}
                     </p>
@@ -105,16 +105,16 @@ export default async function AdminUserDetailPage({
       {/* Credit ledger */}
       <div>
         <h2 className="font-heading text-sm font-semibold text-white mb-3">Credit Ledger</h2>
-        <Card className="bg-[#141419] border-white/[0.06] overflow-hidden">
+        <Card className="bg-[#111827] border-[#374151] overflow-hidden">
           {user.credits.length === 0 ? (
-            <p className="text-sm text-[#a1a1aa] px-5 py-8 text-center">No credit activity.</p>
+            <p className="text-sm text-[#9CA3AF] px-5 py-8 text-center">No credit activity.</p>
           ) : (
             <div className="divide-y divide-white/[0.04]">
               {user.credits.map((c) => (
                 <div key={c.id} className="flex items-center justify-between gap-3 px-5 py-2.5">
                   <div className="min-w-0">
                     <p className="text-xs text-white capitalize">{c.reason.replace(/_/g, ' ')}</p>
-                    <p className="text-[10px] text-[#a1a1aa]">{format(c.createdAt, 'MMM d, yyyy · h:mm a')}</p>
+                    <p className="text-[10px] text-[#9CA3AF]">{format(c.createdAt, 'MMM d, yyyy · h:mm a')}</p>
                   </div>
                   <span className={`text-sm font-semibold tabular-nums ${c.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {c.amount >= 0 ? '+' : ''}{c.amount}

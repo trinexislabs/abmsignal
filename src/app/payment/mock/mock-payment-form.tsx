@@ -97,39 +97,39 @@ export function MockPaymentForm({ purpose, plan, amount, returnTo }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4 py-12">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-[#1e3a5f]/15 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center px-4 py-12">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-[#0B3D2E]/15 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative w-full max-w-md">
-        <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs text-[#a1a1aa] hover:text-white mb-4">
+        <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs text-[#9CA3AF] hover:text-white mb-4">
           <ArrowLeft className="w-3.5 h-3.5" />
           Cancel and return to dashboard
         </Link>
 
-        <Card className="bg-[#141419] border-white/[0.08] p-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#339af0]/5 rounded-full blur-3xl pointer-events-none" />
+        <Card className="bg-[#111827] border-[#374151] p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[#10B981]/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center">
-                <CreditCard className="w-4 h-4 text-[#339af0]" />
+              <div className="w-8 h-8 rounded-lg bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center">
+                <CreditCard className="w-4 h-4 text-[#10B981]" />
               </div>
               <span className="text-[10px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Mock Gateway
               </span>
             </div>
             <h1 className="font-heading text-xl font-bold text-white mt-3">{copy.title}</h1>
-            <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">{copy.subtitle}</p>
+            <p className="text-xs text-[#9CA3AF] mt-1 leading-relaxed">{copy.subtitle}</p>
 
             {/* Line item */}
-            <div className="mt-5 rounded-xl border border-white/[0.06] bg-[#0a0a0f] p-4 flex items-center justify-between">
+            <div className="mt-5 rounded-xl border border-[#374151] bg-[#0B0F13] p-4 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-md bg-[#1e3a5f]/60 border border-[#339af0]/20 flex items-center justify-center">
-                  <Zap className="w-3.5 h-3.5 text-[#339af0]" />
+                <div className="w-7 h-7 rounded-md bg-[#0B3D2E]/60 border border-[#10B981]/20 flex items-center justify-center">
+                  <Zap className="w-3.5 h-3.5 text-[#10B981]" />
                 </div>
                 <div>
                   <p className="text-xs font-medium text-white">{lineItemLabel}</p>
-                  <p className="text-[10px] text-[#a1a1aa]">{lineItemSubtitle}</p>
+                  <p className="text-[10px] text-[#9CA3AF]">{lineItemSubtitle}</p>
                 </div>
               </div>
               <p className="font-heading font-bold text-white text-lg">${amount}</p>
@@ -143,7 +143,7 @@ export function MockPaymentForm({ purpose, plan, amount, returnTo }: Props) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Jane Smith"
-                  className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/40 focus:border-[#339af0]/50 h-10 text-sm"
+                  className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/40 focus:border-[#10B981]/50 h-10 text-sm"
                 />
               </div>
               <div>
@@ -153,7 +153,7 @@ export function MockPaymentForm({ purpose, plan, amount, returnTo }: Props) {
                   onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                   placeholder="4242 4242 4242 4242"
                   inputMode="numeric"
-                  className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/40 focus:border-[#339af0]/50 h-10 text-sm tabular-nums"
+                  className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/40 focus:border-[#10B981]/50 h-10 text-sm tabular-nums"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -164,7 +164,7 @@ export function MockPaymentForm({ purpose, plan, amount, returnTo }: Props) {
                     onChange={(e) => setExpiry(formatExpiry(e.target.value))}
                     placeholder="MM/YY"
                     inputMode="numeric"
-                    className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/40 focus:border-[#339af0]/50 h-10 text-sm tabular-nums"
+                    className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/40 focus:border-[#10B981]/50 h-10 text-sm tabular-nums"
                   />
                 </div>
                 <div>
@@ -174,7 +174,7 @@ export function MockPaymentForm({ purpose, plan, amount, returnTo }: Props) {
                     onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
                     placeholder="123"
                     inputMode="numeric"
-                    className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/40 focus:border-[#339af0]/50 h-10 text-sm tabular-nums"
+                    className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/40 focus:border-[#10B981]/50 h-10 text-sm tabular-nums"
                   />
                 </div>
               </div>
@@ -185,7 +185,7 @@ export function MockPaymentForm({ purpose, plan, amount, returnTo }: Props) {
               onClick={handleSubmit}
               disabled={!formValid || submitting || success}
               size="lg"
-              className="w-full mt-6 bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold h-11 rounded-xl shadow-[0_0_20px_rgba(51,154,240,0.25)]"
+              className="w-full mt-6 bg-[#10B981] hover:bg-[#10B981]/90 text-white font-semibold h-11 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.25)]"
             >
               {success ? (
                 <><CheckCircle2 className="w-4 h-4 mr-2" />Payment confirmed</>
@@ -196,7 +196,7 @@ export function MockPaymentForm({ purpose, plan, amount, returnTo }: Props) {
               )}
             </Button>
 
-            <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-[#a1a1aa]">
+            <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-[#9CA3AF]">
               <ShieldCheck className="w-3 h-3" />
               <span>Mock gateway — no real charge. Replace with Stripe before launch.</span>
             </div>

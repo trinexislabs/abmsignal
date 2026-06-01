@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { use } from 'react'
 import Link from 'next/link'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppSidebar, MobileSidebar } from '@/components/app-sidebar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Contact, ContactVerificationStatus, ContactConfidence, PersonalizationSignal, DirectQuote } from '@/types'
@@ -44,7 +44,7 @@ const CONFIDENCE_CONFIG: Record<ContactConfidence, { label: string; className: s
 }
 
 const STATUS_CONFIG: Record<ContactVerificationStatus, { label: string; className: string }> = {
-  pending: { label: 'Pending', className: 'bg-white/10 text-[#a1a1aa] border-white/20' },
+  pending: { label: 'Pending', className: 'bg-white/10 text-[#9CA3AF] border-[#374151]/60' },
   confirmed: { label: 'Confirmed', className: 'bg-green-500/15 text-green-400 border-green-500/30' },
   needs_review: { label: 'Needs Review', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
   removed: { label: 'Removed', className: 'bg-red-500/15 text-red-400 border-red-500/30' },
@@ -142,8 +142,8 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-[#a1a1aa] text-sm">Loading contacts...</div>
+      <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center">
+        <div className="text-[#9CA3AF] text-sm">Loading contacts...</div>
       </div>
     )
   }
@@ -151,9 +151,9 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
   // Show empty state if no contacts
   if (contacts.length === 0) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B0F13] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-[#a1a1aa] text-sm mb-2">No contacts found yet</div>
+          <div className="text-[#9CA3AF] text-sm mb-2">No contacts found yet</div>
           <div className="text-[#71717a] text-xs">The AI agents are still researching. Please wait...</div>
         </div>
       </div>
@@ -192,35 +192,36 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0a0f] overflow-hidden">
+    <div className="flex h-screen bg-[#0B0F13] overflow-hidden">
       <AppSidebar />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="flex items-center justify-between h-14 px-6 border-b border-white/[0.06] bg-[#0d0d15] flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <Link href={`/playbook/${id}`} className="text-[#a1a1aa] hover:text-white transition-colors">
+        <header className="flex items-center justify-between gap-3 h-14 px-4 sm:px-6 border-b border-[#374151] bg-[#0B0F13] flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <MobileSidebar />
+            <Link href={`/playbook/${id}`} className="text-[#9CA3AF] hover:text-white transition-colors flex-shrink-0">
               <ChevronRight className="w-4 h-4 rotate-180" />
             </Link>
-            <h1 className="font-heading font-semibold text-white text-base">
+            <h1 className="font-heading font-semibold text-white text-sm sm:text-base truncate">
               Contact Review
             </h1>
-            <Badge variant="outline" className="border-amber-500/30 text-amber-400 bg-amber-500/10 text-[10px]">
+            <Badge variant="outline" className="border-amber-500/30 text-amber-400 bg-amber-500/10 text-[10px] flex-shrink-0 hidden sm:inline-flex">
               Checkpoint Required
             </Badge>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#a1a1aa] hover:text-white gap-1.5"
+            className="text-[#9CA3AF] hover:text-white gap-1.5 flex-shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
-            Export for Verification
+            <span className="hidden sm:inline">Export for Verification</span>
           </Button>
         </header>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-6 py-6 pb-32">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-40 sm:pb-32">
 
             {/* Warning banner */}
             <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 mb-6">
@@ -234,17 +235,17 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
             </div>
 
             {/* Progress + quick actions */}
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="font-heading text-xl font-bold text-white">Contact Review</h2>
-                <p className="text-sm text-[#a1a1aa] mt-0.5">
+                <p className="text-sm text-[#9CA3AF] mt-0.5">
                   {reviewed} of {total} contacts reviewed
                 </p>
               </div>
               <Button
                 onClick={approveAllHighConfidence}
                 size="sm"
-                className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5"
+                className="bg-[#10B981] hover:bg-[#10B981]/90 text-white gap-1.5 w-full sm:w-auto"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Approve All High Confidence
@@ -252,15 +253,15 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
             </div>
 
             {/* Filters */}
-            <div className="flex items-center gap-1 mb-5 p-1 bg-[#141419] rounded-lg border border-white/[0.06] w-fit">
+            <div className="flex items-center gap-1 mb-5 p-1 bg-[#111827] rounded-lg border border-[#374151] w-full sm:w-fit overflow-x-auto scrollbar-thin">
               {(['all', 'pending', 'confirmed', 'needs_review', 'removed'] as const).map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                     filter === f
-                      ? 'bg-[#1e3a5f] text-white border border-[#339af0]/20'
-                      : 'text-[#a1a1aa] hover:text-white'
+                      ? 'bg-[#0B3D2E] text-white border border-[#10B981]/20'
+                      : 'text-[#9CA3AF] hover:text-white'
                   }`}
                 >
                   {f === 'all' ? 'All' : f === 'needs_review' ? 'Needs Review' : f.charAt(0).toUpperCase() + f.slice(1)}
@@ -272,17 +273,17 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
             </div>
 
             {/* Contact table */}
-            <div className="rounded-xl border border-white/[0.06] bg-[#141419] overflow-hidden mb-5">
-              <table className="w-full">
+            <div className="rounded-xl border border-[#374151] bg-[#111827] overflow-x-auto mb-5">
+              <table className="w-full min-w-[720px]">
                 <thead>
-                  <tr className="border-b border-white/[0.06]">
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-widest">Name</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-widest">Title</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-widest">Department</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-widest">Confidence</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-widest">Source</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-widest">Status</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#a1a1aa] uppercase tracking-widest">Actions</th>
+                  <tr className="border-b border-[#374151]">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">Name</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">Title</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">Department</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">Confidence</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">Source</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">Status</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -293,7 +294,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                       <>
                         <tr
                           key={contact.id}
-                          className={`border-b border-white/[0.04] transition-colors hover:bg-white/[0.02] ${
+                          className={`border-b border-[#1F2937] transition-colors hover:bg-white/[0.02] ${
                             contact.status === 'removed' ? 'opacity-50' : ''
                           } ${idx === filteredContacts.length - 1 && !isExpanded ? 'border-b-0' : ''}`}
                         >
@@ -304,14 +305,14 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                                 href={contact.linkedinUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#339af0] hover:text-[#339af0]/80 transition-colors"
+                                className="text-[#10B981] hover:text-[#10B981]/80 transition-colors"
                               >
                                 <ExternalLink className="w-3 h-3" />
                               </a>
                               {hasDetails && (
                                 <button
                                   onClick={() => setExpandedContact(isExpanded ? null : contact.id)}
-                                  className="text-[#a1a1aa] hover:text-white transition-colors"
+                                  className="text-[#9CA3AF] hover:text-white transition-colors"
                                   title={isExpanded ? 'Hide details' : 'Show signals & quotes'}
                                 >
                                   {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -319,8 +320,8 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                               )}
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-[#a1a1aa]">{contact.title}</td>
-                          <td className="px-4 py-3 text-sm text-[#a1a1aa]">{contact.department}</td>
+                          <td className="px-4 py-3 text-sm text-[#9CA3AF]">{contact.title}</td>
+                          <td className="px-4 py-3 text-sm text-[#9CA3AF]">{contact.department}</td>
                           <td className="px-4 py-3">
                             <Badge
                               variant="outline"
@@ -329,7 +330,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                               {CONFIDENCE_CONFIG[contact.confidence].label}
                             </Badge>
                           </td>
-                          <td className="px-4 py-3 text-xs text-[#a1a1aa]">{contact.source}</td>
+                          <td className="px-4 py-3 text-xs text-[#9CA3AF]">{contact.source}</td>
                           <td className="px-4 py-3">
                             <Badge
                               variant="outline"
@@ -347,7 +348,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                                 className={`p-1.5 rounded-md transition-colors ${
                                   contact.status === 'confirmed'
                                     ? 'text-green-400 bg-green-500/10 cursor-default'
-                                    : 'text-[#a1a1aa] hover:text-green-400 hover:bg-green-500/10'
+                                    : 'text-[#9CA3AF] hover:text-green-400 hover:bg-green-500/10'
                                 }`}
                               >
                                 <Check className="w-3.5 h-3.5" />
@@ -359,7 +360,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                                 className={`p-1.5 rounded-md transition-colors ${
                                   contact.status === 'needs_review'
                                     ? 'text-amber-400 bg-amber-500/10 cursor-default'
-                                    : 'text-[#a1a1aa] hover:text-amber-400 hover:bg-amber-500/10'
+                                    : 'text-[#9CA3AF] hover:text-amber-400 hover:bg-amber-500/10'
                                 }`}
                               >
                                 <Flag className="w-3.5 h-3.5" />
@@ -371,7 +372,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                                 className={`p-1.5 rounded-md transition-colors ${
                                   contact.status === 'removed'
                                     ? 'text-red-400 bg-red-500/10 cursor-default'
-                                    : 'text-[#a1a1aa] hover:text-red-400 hover:bg-red-500/10'
+                                    : 'text-[#9CA3AF] hover:text-red-400 hover:bg-red-500/10'
                                 }`}
                               >
                                 <X className="w-3.5 h-3.5" />
@@ -380,27 +381,27 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                           </td>
                         </tr>
                         {isExpanded && hasDetails && (
-                          <tr key={`${contact.id}-detail`} className="border-b border-white/[0.04] bg-white/[0.01]">
+                          <tr key={`${contact.id}-detail`} className="border-b border-[#1F2937] bg-white/[0.01]">
                             <td colSpan={7} className="px-4 py-4">
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 {contact.personalization_signals && contact.personalization_signals.length > 0 && (
                                   <div>
                                     <div className="flex items-center gap-1.5 mb-2">
-                                      <Zap className="w-3.5 h-3.5 text-[#339af0]" />
+                                      <Zap className="w-3.5 h-3.5 text-[#10B981]" />
                                       <span className="text-xs font-semibold text-white">Personalization Signals</span>
                                     </div>
                                     <ul className="space-y-1.5">
                                       {contact.personalization_signals.map((sig, si) => (
                                         <li key={si} className="flex items-start gap-2">
-                                          <span className="text-[#339af0] mt-1 text-xs">•</span>
+                                          <span className="text-[#10B981] mt-1 text-xs">•</span>
                                           <div>
-                                            <span className="text-xs text-[#a1a1aa]">{sig.signal}</span>
+                                            <span className="text-xs text-[#9CA3AF]">{sig.signal}</span>
                                             {sig.source_url && (
                                               <a
                                                 href={sig.source_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-[#339af0] hover:underline"
+                                                className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-[#10B981] hover:underline"
                                               >
                                                 <ExternalLink className="w-2.5 h-2.5" />
                                                 source
@@ -415,21 +416,21 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                                 {contact.direct_quotes && contact.direct_quotes.length > 0 && (
                                   <div>
                                     <div className="flex items-center gap-1.5 mb-2">
-                                      <Quote className="w-3.5 h-3.5 text-[#339af0]" />
+                                      <Quote className="w-3.5 h-3.5 text-[#10B981]" />
                                       <span className="text-xs font-semibold text-white">Direct Quotes</span>
                                     </div>
                                     <ul className="space-y-2">
                                       {contact.direct_quotes.map((dq, di) => (
-                                        <li key={di} className="border-l-2 border-[#339af0]/30 pl-3">
+                                        <li key={di} className="border-l-2 border-[#10B981]/30 pl-3">
                                           <p className="text-xs text-white/80 italic">&ldquo;{dq.quote}&rdquo;</p>
                                           <div className="flex items-center gap-1.5 mt-0.5">
-                                            <span className="text-[10px] text-[#a1a1aa]">{dq.context}</span>
+                                            <span className="text-[10px] text-[#9CA3AF]">{dq.context}</span>
                                             {dq.source_url && (
                                               <a
                                                 href={dq.source_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-0.5 text-[10px] text-[#339af0] hover:underline"
+                                                className="inline-flex items-center gap-0.5 text-[10px] text-[#10B981] hover:underline"
                                               >
                                                 <ExternalLink className="w-2.5 h-2.5" />
                                                 verify
@@ -453,70 +454,70 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
             </div>
 
             {/* Add Contact form */}
-            <div className="rounded-xl border border-white/[0.06] bg-[#141419] overflow-hidden">
+            <div className="rounded-xl border border-[#374151] bg-[#111827] overflow-hidden">
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
                 className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.02] transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <UserPlus className="w-4 h-4 text-[#339af0]" />
+                  <UserPlus className="w-4 h-4 text-[#10B981]" />
                   <span className="text-sm font-medium text-white">Add Contact Manually</span>
                 </div>
                 {showAddForm
-                  ? <ChevronUp className="w-4 h-4 text-[#a1a1aa]" />
-                  : <ChevronDown className="w-4 h-4 text-[#a1a1aa]" />
+                  ? <ChevronUp className="w-4 h-4 text-[#9CA3AF]" />
+                  : <ChevronDown className="w-4 h-4 text-[#9CA3AF]" />
                 }
               </button>
 
               {showAddForm && (
-                <div className="px-5 pb-5 border-t border-white/[0.06]">
-                  <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="px-5 pb-5 border-t border-[#374151]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     <div>
-                      <label className="block text-xs font-medium text-[#a1a1aa] mb-1.5">Full Name *</label>
+                      <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Full Name *</label>
                       <input
                         type="text"
                         value={newContact.name}
                         onChange={e => setNewContact(p => ({ ...p, name: e.target.value }))}
-                        className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#339af0]/40"
+                        className="w-full bg-[#0B0F13] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#10B981]/40"
                         placeholder="Sophie Vanderberg"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#a1a1aa] mb-1.5">Title *</label>
+                      <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Title *</label>
                       <input
                         type="text"
                         value={newContact.title}
                         onChange={e => setNewContact(p => ({ ...p, title: e.target.value }))}
-                        className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#339af0]/40"
+                        className="w-full bg-[#0B0F13] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#10B981]/40"
                         placeholder="Head of Payments Technology"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#a1a1aa] mb-1.5">LinkedIn URL</label>
+                      <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">LinkedIn URL</label>
                       <input
                         type="url"
                         value={newContact.linkedinUrl}
                         onChange={e => setNewContact(p => ({ ...p, linkedinUrl: e.target.value }))}
-                        className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#339af0]/40"
+                        className="w-full bg-[#0B0F13] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#10B981]/40"
                         placeholder="https://linkedin.com/in/..."
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#a1a1aa] mb-1.5">Email</label>
+                      <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Email</label>
                       <input
                         type="email"
                         value={newContact.email}
                         onChange={e => setNewContact(p => ({ ...p, email: e.target.value }))}
-                        className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#339af0]/40"
+                        className="w-full bg-[#0B0F13] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#10B981]/40"
                         placeholder="s.vanderberg@belfius.be"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#a1a1aa] mb-1.5">Confidence Level</label>
+                      <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Confidence Level</label>
                       <select
                         value={newContact.confidence}
                         onChange={e => setNewContact(p => ({ ...p, confidence: e.target.value as ContactConfidence }))}
-                        className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#339af0]/40"
+                        className="w-full bg-[#0B0F13] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#10B981]/40"
                       >
                         <option value="high">High</option>
                         <option value="medium">Medium</option>
@@ -524,12 +525,12 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#a1a1aa] mb-1.5">Source Note</label>
+                      <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Source Note</label>
                       <input
                         type="text"
                         value={newContact.source}
                         onChange={e => setNewContact(p => ({ ...p, source: e.target.value }))}
-                        className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#339af0]/40"
+                        className="w-full bg-[#0B0F13] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#10B981]/40"
                         placeholder="LinkedIn, Web, Manual research..."
                       />
                     </div>
@@ -538,7 +539,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                     <Button
                       onClick={addContact}
                       size="sm"
-                      className="bg-[#339af0] hover:bg-[#339af0]/90 text-white gap-1.5"
+                      className="bg-[#10B981] hover:bg-[#10B981]/90 text-white gap-1.5"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
                       Add Contact
@@ -551,43 +552,43 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
         </div>
 
         {/* Sticky bottom bar */}
-        <div className="flex-shrink-0 border-t border-white/[0.06] bg-[#0d0d15] px-6 py-4">
+        <div className="flex-shrink-0 border-t border-[#374151] bg-[#0B0F13] px-4 sm:px-6 py-4">
           <div className="max-w-6xl mx-auto">
             {/* Progress bar */}
             <div className="mb-3">
               <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#339af0] rounded-full transition-all duration-500"
+                  className="h-full bg-[#10B981] rounded-full transition-all duration-500"
                   style={{ width: `${total > 0 ? (reviewed / total) * 100 : 0}%` }}
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center flex-wrap gap-x-4 gap-y-1.5 text-sm">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-[#a1a1aa]">{confirmed} confirmed</span>
+                  <span className="text-[#9CA3AF]">{confirmed} confirmed</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-white/30" />
-                  <span className="text-[#a1a1aa]">{pending} pending</span>
+                  <span className="text-[#9CA3AF]">{pending} pending</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-500" />
-                  <span className="text-[#a1a1aa]">{flagged} flagged</span>
+                  <span className="text-[#9CA3AF]">{flagged} flagged</span>
                 </span>
                 {removed > 0 && (
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-red-500" />
-                    <span className="text-[#a1a1aa]">{removed} removed</span>
+                    <span className="text-[#9CA3AF]">{removed} removed</span>
                   </span>
                 )}
               </div>
 
               <div className="flex items-center gap-3">
                 {!allActioned && (
-                  <p className="text-xs text-[#a1a1aa]">
+                  <p className="text-xs text-[#9CA3AF]">
                     {pending} contact{pending !== 1 ? 's' : ''} still pending review
                   </p>
                 )}
@@ -602,7 +603,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
                   disabled={!allActioned || submitting}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     allActioned && !submitting
-                      ? 'bg-[#339af0] hover:bg-[#339af0]/90 text-white cursor-pointer'
+                      ? 'bg-[#10B981] hover:bg-[#10B981]/90 text-white cursor-pointer'
                       : 'bg-white/10 text-white/40 cursor-not-allowed'
                   }`}
                 >

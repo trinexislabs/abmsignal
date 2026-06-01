@@ -29,19 +29,19 @@ function FormSelect({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          'w-full h-10 rounded-xl bg-[#0a0a0f] border border-white/10 px-3 pr-8 text-sm appearance-none cursor-pointer',
-          'focus:outline-none focus:border-[#339af0]/50',
-          value ? 'text-white' : 'text-[#a1a1aa]/60'
+          'w-full h-10 rounded-xl bg-[#0B0F13] border border-[#374151] px-3 pr-8 text-sm appearance-none cursor-pointer',
+          'focus:outline-none focus:border-[#10B981]/50',
+          value ? 'text-white' : 'text-[#9CA3AF]/60'
         )}
       >
         <option value="" disabled>{placeholder}</option>
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value} className="bg-[#141419] text-white">
+          <option key={opt.value} value={opt.value} className="bg-[#111827] text-white">
             {opt.label}
           </option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a1a1aa]" />
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
     </div>
   )
 }
@@ -69,8 +69,8 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
                   isDone
                     ? 'bg-green-500/20 border-green-500/40 text-green-400'
                     : isActive
-                    ? 'bg-[#339af0]/20 border-[#339af0]/60 text-[#339af0]'
-                    : 'bg-white/5 border-white/15 text-[#a1a1aa]'
+                    ? 'bg-[#10B981]/20 border-[#10B981]/60 text-[#10B981]'
+                    : 'bg-white/5 border-white/15 text-[#9CA3AF]'
                 )}
               >
                 {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : step.number}
@@ -78,7 +78,7 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
               <span
                 className={cn(
                   'text-sm font-medium',
-                  isActive ? 'text-white' : 'text-[#a1a1aa]'
+                  isActive ? 'text-white' : 'text-[#9CA3AF]'
                 )}
               >
                 {step.label}
@@ -88,7 +88,7 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
               <div
                 className={cn(
                   'h-px w-12 transition-colors',
-                  isDone ? 'bg-[#339af0]/40' : 'bg-white/10'
+                  isDone ? 'bg-[#10B981]/40' : 'bg-white/10'
                 )}
               />
             )}
@@ -231,13 +231,13 @@ export default function TargetAccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0B0F13]">
       {/* Top nav */}
-      <div className="border-b border-white/[0.06] bg-[#0a0a0f]/80 backdrop-blur-xl sticky top-0 z-30">
+      <div className="border-b border-[#374151] bg-[#0B0F13]/80 backdrop-blur-xl sticky top-0 z-30">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded-lg bg-[#1e3a5f] border border-[#339af0]/30 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-[#339af0]" />
+            <div className="w-7 h-7 rounded-lg bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 text-[#10B981]" />
             </div>
             <span className="font-heading font-bold text-sm text-white">ABMSignal</span>
           </Link>
@@ -252,22 +252,22 @@ export default function TargetAccountPage() {
           <h1 className="font-heading text-2xl font-bold text-white mb-1">
             Step 2: Target Account
           </h1>
-          <p className="text-sm text-[#a1a1aa]">
+          <p className="text-sm text-[#9CA3AF]">
             Tell us about the company you're targeting. The more detail, the better the playbook.
           </p>
         </div>
 
-        <Card className="bg-[#141419] border-white/[0.06] p-6 space-y-6">
+        <Card className="bg-[#111827] border-[#374151] p-6 space-y-6">
           {/* Company Name */}
           <div>
             <Label className="text-sm font-medium text-white mb-1.5 block">
-              Company Name <span className="text-[#339af0]">*</span>
+              Company Name <span className="text-[#10B981]">*</span>
             </Label>
             <Input
               value={form.company_name}
               onChange={(e) => set('company_name', e.target.value)}
               placeholder="e.g. Meridian Financial Group"
-              className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-10"
+              className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 h-10"
             />
           </div>
 
@@ -281,7 +281,7 @@ export default function TargetAccountPage() {
               value={form.company_website}
               onChange={(e) => set('company_website', e.target.value)}
               placeholder="https://example.com"
-              className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 h-10"
+              className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 h-10"
             />
           </div>
 
@@ -289,7 +289,7 @@ export default function TargetAccountPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label className="text-sm font-medium text-white mb-1.5 block">
-                Industry / Vertical <span className="text-[#339af0]">*</span>
+                Industry / Vertical <span className="text-[#10B981]">*</span>
               </Label>
               <FormSelect
                 value={form.industry}
@@ -301,7 +301,7 @@ export default function TargetAccountPage() {
 
             <div>
               <Label className="text-sm font-medium text-white mb-1.5 block">
-                Geography <span className="text-[#339af0]">*</span>
+                Geography <span className="text-[#10B981]">*</span>
               </Label>
               <FormSelect
                 value={form.geography}
@@ -315,7 +315,7 @@ export default function TargetAccountPage() {
           {/* Priority Tier */}
           <div>
             <Label className="text-sm font-medium text-white mb-3 block">
-              Priority Tier <span className="text-[#339af0]">*</span>
+              Priority Tier <span className="text-[#10B981]">*</span>
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {TIER_OPTIONS.map((tier) => {
@@ -329,12 +329,12 @@ export default function TargetAccountPage() {
                     className={cn(
                       'relative text-left p-4 rounded-xl border transition-all duration-150',
                       selected
-                        ? 'bg-[#1e3a5f]/50 border-[#339af0]/40 shadow-[0_0_0_1px_rgba(51,154,240,0.15)]'
-                        : 'bg-[#0a0a0f] border-white/10 hover:border-white/20'
+                        ? 'bg-[#0B3D2E]/50 border-[#10B981]/40 shadow-[0_0_0_1px_rgba(16,185,129,0.15)]'
+                        : 'bg-[#0B0F13] border-[#374151] hover:border-[#374151]/60'
                     )}
                   >
                     {tier.recommended && (
-                      <span className="absolute top-3 right-3 text-[10px] font-semibold text-[#339af0] bg-[#339af0]/10 border border-[#339af0]/25 px-1.5 py-0.5 rounded-full">
+                      <span className="absolute top-3 right-3 text-[10px] font-semibold text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/25 px-1.5 py-0.5 rounded-full">
                         Recommended
                       </span>
                     )}
@@ -343,7 +343,7 @@ export default function TargetAccountPage() {
                         className={cn(
                           'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
                           selected
-                            ? 'border-[#339af0] bg-[#339af0]'
+                            ? 'border-[#10B981] bg-[#10B981]'
                             : 'border-white/30 bg-transparent'
                         )}
                       >
@@ -352,19 +352,19 @@ export default function TargetAccountPage() {
                       <Icon
                         className={cn(
                           'w-4 h-4',
-                          selected ? 'text-[#339af0]' : 'text-[#a1a1aa]'
+                          selected ? 'text-[#10B981]' : 'text-[#9CA3AF]'
                         )}
                       />
                       <span
                         className={cn(
                           'text-sm font-semibold',
-                          selected ? 'text-white' : 'text-[#a1a1aa]'
+                          selected ? 'text-white' : 'text-[#9CA3AF]'
                         )}
                       >
                         {tier.label}
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#a1a1aa] leading-relaxed pl-7">
+                    <p className="text-[11px] text-[#9CA3AF] leading-relaxed pl-7">
                       {tier.description}
                     </p>
                   </button>
@@ -377,14 +377,14 @@ export default function TargetAccountPage() {
           <div>
             <Label className="text-sm font-medium text-white mb-1.5 block">
               Known Contacts{' '}
-              <span className="text-[#a1a1aa] font-normal">(optional)</span>
+              <span className="text-[#9CA3AF] font-normal">(optional)</span>
             </Label>
             <Textarea
               value={form.known_contacts}
               onChange={(e) => set('known_contacts', e.target.value)}
               placeholder="Paste any known contact names, titles, or LinkedIn URLs to seed the research..."
               rows={3}
-              className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 resize-none text-sm"
+              className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 resize-none text-sm"
             />
           </div>
 
@@ -392,14 +392,14 @@ export default function TargetAccountPage() {
           <div>
             <Label className="text-sm font-medium text-white mb-1.5 block">
               Additional Notes{' '}
-              <span className="text-[#a1a1aa] font-normal">(optional)</span>
+              <span className="text-[#9CA3AF] font-normal">(optional)</span>
             </Label>
             <Textarea
               value={form.additional_notes}
               onChange={(e) => set('additional_notes', e.target.value)}
               placeholder="Any specific intel, focus areas, or constraints the AI should know about..."
               rows={2}
-              className="bg-[#0a0a0f] border-white/10 text-white placeholder:text-[#a1a1aa]/50 focus:border-[#339af0]/50 resize-none text-sm"
+              className="bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF]/50 focus:border-[#10B981]/50 resize-none text-sm"
             />
           </div>
         </Card>
@@ -409,7 +409,7 @@ export default function TargetAccountPage() {
           <Link href="/playbook/new/product">
             <Button
               variant="ghost"
-              className="text-[#a1a1aa] hover:text-white gap-2"
+              className="text-[#9CA3AF] hover:text-white gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -419,7 +419,7 @@ export default function TargetAccountPage() {
             onClick={handleStartResearch}
             disabled={!isValid || submitting}
             size="lg"
-            className="bg-[#339af0] hover:bg-[#339af0]/90 text-white font-semibold gap-2 px-8 shadow-[0_0_20px_rgba(51,154,240,0.25)] hover:shadow-[0_0_30px_rgba(51,154,240,0.35)] transition-shadow disabled:opacity-50"
+            className="bg-[#10B981] hover:bg-[#059669] text-white font-semibold gap-2 px-8 shadow-[0_0_20px_rgba(16,185,129,0.25)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)] transition-shadow disabled:opacity-50"
           >
             {submitting ? (
               <>

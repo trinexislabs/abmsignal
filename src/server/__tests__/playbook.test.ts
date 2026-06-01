@@ -412,6 +412,152 @@ async function test13_priorCycleConsumptionNotRefunded() {
   assert(!r.refunded, 'No refund for a consumption from an already-reset prior cycle')
 }
 
+// ─── Growth cycle quota: strict 10/cycle under concurrent completions ───────
+
+// Make a growth user whose credit balance is exactly `remaining` (out of the
+// 10/cycle grant) by consuming (10 - remaining) credits for throwaway ids.
+async function makeGrowthUserWithRemaining(remaining: number): Promise<string> {
+  const userId = await makeGrowthUser()
+  const toConsume = 10 - remaining
+  for (let i = 0; i < toConsume; i++) {
+    await prisma.userCredit.create({
+      data: { userId, amount: -1, reason: `playbook_consumed:warmup_${crypto.randomUUID()}` },
+    })
+  }
+  return userId
+}
+
+async function test16_concurrentCompletionsRespectQuota() {
+  console.log('\n[16] Concurrent completions never overshoot the 10/cycle quota (regression)')
+  const { tryGrowthAutoUnlock } = await import('../playbooks/playbook-access')
+
+  // The reported bug: 2 credits left, queue 3 playbooks that finish together.
+  // Exactly 2 must auto-unlock; the 3rd must stay locked for the $29 overage.
+  const userId = await makeGrowthUserWithRemaining(2)
+  assert((await balance(userId)) === 2, 'Starts with 2 cycle credits remaining')
+
+  const ids = await Promise.all([makeUserPlaybook(userId), makeUserPlaybook(userId), makeUserPlaybook(userId)])
+  for (const id of ids) await playbookRepository.setComplete(id)
+
+  // Fire all three completions at once to exercise the race window.
+  const results = await Promise.all(ids.map(id => tryGrowthAutoUnlock(id, userId)))
+  const unlocked = results.filter(r => r.unlocked).length
+
+  assert(unlocked === 2, `Exactly 2 of 3 concurrent completions unlocked (got ${unlocked})`)
+  assert((await balance(userId)) === 0, 'Balance lands at exactly 0 — never negative')
+
+  // The single locked playbook is the one left for the overage paywall.
+  const paidStates = await Promise.all(
+    ids.map(async id => (await prisma.playbook.findUnique({ where: { id }, select: { paymentStatus: true } }))?.paymentStatus),
+  )
+  assert(paidStates.filter(s => s === 'paid').length === 2, 'Exactly 2 playbooks marked paid')
+  assert(paidStates.filter(s => s !== 'paid').length === 1, 'Exactly 1 playbook left pending for the $29 overage')
+}
+
+async function test17_autoUnlockIsIdempotent() {
+  console.log('\n[17] Re-running auto-unlock for the same playbook never double-spends')
+  const { tryGrowthAutoUnlock } = await import('../playbooks/playbook-access')
+  const userId = await makeGrowthUserWithRemaining(5)
+  const pbId = await makeUserPlaybook(userId)
+  await playbookRepository.setComplete(pbId)
+
+  const first = await tryGrowthAutoUnlock(pbId, userId)
+  assert(first.unlocked, 'First call unlocks the playbook')
+  // Second call short-circuits on the already-paid playbook — no unlock, no spend.
+  const second = await tryGrowthAutoUnlock(pbId, userId)
+  assert(!second.unlocked, 'Second call is a no-op (already paid)')
+  assert((await balance(userId)) === 4, 'Only one credit spent across repeated calls')
+  assert(
+    (await prisma.userCredit.count({ where: { userId, reason: `playbook_consumed:${pbId}` } })) === 1,
+    'Exactly one consumption row for the playbook',
+  )
+
+  // Partial-run idempotency: a consumption row exists but the playbook was never
+  // flipped to paid. The next call must re-assert paid WITHOUT spending again.
+  const partialId = await makeUserPlaybook(userId)
+  await playbookRepository.setComplete(partialId)
+  await prisma.userCredit.create({
+    data: { userId, amount: -1, reason: `playbook_consumed:${partialId}` },
+  })
+  const balanceBefore = await balance(userId)
+  const recovered = await tryGrowthAutoUnlock(partialId, userId)
+  assert(recovered.unlocked, 'Partial-run playbook is recovered to unlocked')
+  assert((await balance(userId)) === balanceBefore, 'No extra credit spent on recovery')
+  const recoveredPb = await prisma.playbook.findUnique({ where: { id: partialId }, select: { paymentStatus: true } })
+  assert(recoveredPb?.paymentStatus === 'paid', 'Partial-run playbook now marked paid')
+}
+
+// ─── Per-plan playbook retention (purge beyond the keep-window) ─────────────
+
+// Create `n` playbooks for a user, oldest first, each with the given status and
+// a createdAt spaced 1 minute apart so ordering is deterministic. Returns ids
+// in creation order (index 0 = oldest).
+async function makeAgedPlaybooks(userId: string, n: number, status = 'complete'): Promise<string[]> {
+  const ids: string[] = []
+  for (let i = 0; i < n; i++) {
+    const pbId = await makeUserPlaybook(userId)
+    await prisma.playbook.update({
+      where: { id: pbId },
+      data: { status, createdAt: new Date(Date.now() - (n - i) * 60_000) },
+    })
+    ids.push(pbId)
+  }
+  return ids
+}
+
+async function test18_growthRetentionKeeps20() {
+  console.log('\n[18] Growth retention purges terminal playbooks beyond the 20 most recent')
+  const { playbookService } = await import('../playbooks/playbook-service')
+  const userId = await makeGrowthUser()
+  const ids = await makeAgedPlaybooks(userId, 23) // 3 over the growth limit
+
+  const { purged } = await playbookService.enforcePlaybookRetention(userId, 'growth')
+  assert(purged === 3, `Purged the 3 oldest beyond 20 (got ${purged})`)
+
+  const remaining = await prisma.playbook.count({ where: { userId } })
+  assert(remaining === 20, 'Exactly 20 playbooks retained')
+  // The 3 oldest are gone; the 20 newest survive.
+  const oldestGone = await prisma.playbook.count({ where: { id: { in: ids.slice(0, 3) } } })
+  assert(oldestGone === 0, 'The 3 oldest playbooks were deleted')
+  const newestKept = await prisma.playbook.count({ where: { id: { in: ids.slice(3) } } })
+  assert(newestKept === 20, 'The 20 newest playbooks were kept')
+}
+
+async function test19_oneOffRetentionKeeps5() {
+  console.log('\n[19] One-off / free retention keeps only the 5 most recent')
+  const { playbookService } = await import('../playbooks/playbook-service')
+  const user = await prisma.user.create({ data: { email: `ret_test_${crypto.randomUUID()}@example.com` } })
+  createdUserIds.push(user.id)
+  await prisma.userSubscription.create({ data: { userId: user.id, plan: 'one_off', status: 'active' } })
+  await makeAgedPlaybooks(user.id, 8)
+
+  const { purged } = await playbookService.enforcePlaybookRetention(user.id, 'one_off')
+  assert(purged === 3, `Purged 3 beyond the 5-keep window (got ${purged})`)
+  assert((await prisma.playbook.count({ where: { userId: user.id } })) === 5, 'Exactly 5 retained for one_off')
+}
+
+async function test20_retentionNeverPurgesInFlightOrDrafts() {
+  console.log('\n[20] Retention never purges drafts or in-flight playbooks, even when old')
+  const { playbookService } = await import('../playbooks/playbook-service')
+  const user = await prisma.user.create({ data: { email: `ret_test_${crypto.randomUUID()}@example.com` } })
+  createdUserIds.push(user.id)
+  await prisma.userSubscription.create({ data: { userId: user.id, plan: 'one_off', status: 'active' } })
+
+  // 5 fresh complete playbooks fill the keep-window; 2 OLD protected playbooks
+  // (a draft + an in-flight 'writing') sit beyond it and must survive.
+  await makeAgedPlaybooks(user.id, 5, 'complete')
+  const [draftId] = await makeAgedPlaybooks(user.id, 1, 'draft')
+  const [writingId] = await makeAgedPlaybooks(user.id, 1, 'writing')
+  // Re-age the two protected ones to be the OLDEST so they fall outside the window.
+  await prisma.playbook.update({ where: { id: draftId }, data: { createdAt: new Date(Date.now() - 100 * 60_000) } })
+  await prisma.playbook.update({ where: { id: writingId }, data: { createdAt: new Date(Date.now() - 99 * 60_000) } })
+
+  const { purged } = await playbookService.enforcePlaybookRetention(user.id, 'one_off')
+  assert(purged === 0, 'Nothing purged — the only over-limit playbooks are protected')
+  assert((await prisma.playbook.count({ where: { id: draftId } })) === 1, 'Old draft survives')
+  assert((await prisma.playbook.count({ where: { id: writingId } })) === 1, 'Old in-flight playbook survives')
+}
+
 async function cleanupUsers(ids: string[]) {
   for (const id of ids) {
     await prisma.userCredit.deleteMany({ where: { userId: id } })
@@ -440,6 +586,11 @@ async function main() {
     await test11_oneOffErroredDeleteDoesNotRefund()
     await test12_refundIsIdempotentAndConsumptionRequired()
     await test13_priorCycleConsumptionNotRefunded()
+    await test16_concurrentCompletionsRespectQuota()
+    await test17_autoUnlockIsIdempotent()
+    await test18_growthRetentionKeeps20()
+    await test19_oneOffRetentionKeeps5()
+    await test20_retentionNeverPurgesInFlightOrDrafts()
   } finally {
     console.log('\n[cleanup] Removing test data...')
     await cleanup(createdIds)
