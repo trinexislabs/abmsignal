@@ -412,6 +412,81 @@ async function test13_priorCycleConsumptionNotRefunded() {
   assert(!r.refunded, 'No refund for a consumption from an already-reset prior cycle')
 }
 
+// ─── Growth cycle quota: strict 10/cycle under concurrent completions ───────
+
+// Make a growth user whose credit balance is exactly `remaining` (out of the
+// 10/cycle grant) by consuming (10 - remaining) credits for throwaway ids.
+async function makeGrowthUserWithRemaining(remaining: number): Promise<string> {
+  const userId = await makeGrowthUser()
+  const toConsume = 10 - remaining
+  for (let i = 0; i < toConsume; i++) {
+    await prisma.userCredit.create({
+      data: { userId, amount: -1, reason: `playbook_consumed:warmup_${crypto.randomUUID()}` },
+    })
+  }
+  return userId
+}
+
+async function test16_concurrentCompletionsRespectQuota() {
+  console.log('\n[16] Concurrent completions never overshoot the 10/cycle quota (regression)')
+  const { tryGrowthAutoUnlock } = await import('../playbooks/playbook-access')
+
+  // The reported bug: 2 credits left, queue 3 playbooks that finish together.
+  // Exactly 2 must auto-unlock; the 3rd must stay locked for the $29 overage.
+  const userId = await makeGrowthUserWithRemaining(2)
+  assert((await balance(userId)) === 2, 'Starts with 2 cycle credits remaining')
+
+  const ids = await Promise.all([makeUserPlaybook(userId), makeUserPlaybook(userId), makeUserPlaybook(userId)])
+  for (const id of ids) await playbookRepository.setComplete(id)
+
+  // Fire all three completions at once to exercise the race window.
+  const results = await Promise.all(ids.map(id => tryGrowthAutoUnlock(id, userId)))
+  const unlocked = results.filter(r => r.unlocked).length
+
+  assert(unlocked === 2, `Exactly 2 of 3 concurrent completions unlocked (got ${unlocked})`)
+  assert((await balance(userId)) === 0, 'Balance lands at exactly 0 — never negative')
+
+  // The single locked playbook is the one left for the overage paywall.
+  const paidStates = await Promise.all(
+    ids.map(async id => (await prisma.playbook.findUnique({ where: { id }, select: { paymentStatus: true } }))?.paymentStatus),
+  )
+  assert(paidStates.filter(s => s === 'paid').length === 2, 'Exactly 2 playbooks marked paid')
+  assert(paidStates.filter(s => s !== 'paid').length === 1, 'Exactly 1 playbook left pending for the $29 overage')
+}
+
+async function test17_autoUnlockIsIdempotent() {
+  console.log('\n[17] Re-running auto-unlock for the same playbook never double-spends')
+  const { tryGrowthAutoUnlock } = await import('../playbooks/playbook-access')
+  const userId = await makeGrowthUserWithRemaining(5)
+  const pbId = await makeUserPlaybook(userId)
+  await playbookRepository.setComplete(pbId)
+
+  const first = await tryGrowthAutoUnlock(pbId, userId)
+  assert(first.unlocked, 'First call unlocks the playbook')
+  // Second call short-circuits on the already-paid playbook — no unlock, no spend.
+  const second = await tryGrowthAutoUnlock(pbId, userId)
+  assert(!second.unlocked, 'Second call is a no-op (already paid)')
+  assert((await balance(userId)) === 4, 'Only one credit spent across repeated calls')
+  assert(
+    (await prisma.userCredit.count({ where: { userId, reason: `playbook_consumed:${pbId}` } })) === 1,
+    'Exactly one consumption row for the playbook',
+  )
+
+  // Partial-run idempotency: a consumption row exists but the playbook was never
+  // flipped to paid. The next call must re-assert paid WITHOUT spending again.
+  const partialId = await makeUserPlaybook(userId)
+  await playbookRepository.setComplete(partialId)
+  await prisma.userCredit.create({
+    data: { userId, amount: -1, reason: `playbook_consumed:${partialId}` },
+  })
+  const balanceBefore = await balance(userId)
+  const recovered = await tryGrowthAutoUnlock(partialId, userId)
+  assert(recovered.unlocked, 'Partial-run playbook is recovered to unlocked')
+  assert((await balance(userId)) === balanceBefore, 'No extra credit spent on recovery')
+  const recoveredPb = await prisma.playbook.findUnique({ where: { id: partialId }, select: { paymentStatus: true } })
+  assert(recoveredPb?.paymentStatus === 'paid', 'Partial-run playbook now marked paid')
+}
+
 async function cleanupUsers(ids: string[]) {
   for (const id of ids) {
     await prisma.userCredit.deleteMany({ where: { userId: id } })
@@ -440,6 +515,8 @@ async function main() {
     await test11_oneOffErroredDeleteDoesNotRefund()
     await test12_refundIsIdempotentAndConsumptionRequired()
     await test13_priorCycleConsumptionNotRefunded()
+    await test16_concurrentCompletionsRespectQuota()
+    await test17_autoUnlockIsIdempotent()
   } finally {
     console.log('\n[cleanup] Removing test data...')
     await cleanup(createdIds)

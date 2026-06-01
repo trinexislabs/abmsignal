@@ -1,7 +1,6 @@
 import { prisma } from '../db'
 import {
   getUserSubscription,
-  getUserCreditBalance,
   playbookConsumedReason,
 } from '../users/user-repository'
 import { GROWTH_PRICE_USD, ONE_OFF_PRICE_USD } from '@/lib/pricing'
@@ -113,6 +112,19 @@ export async function projectPlaybookForViewer(
 //     triggered the subscribe.
 // Over-quota (0 credits) → returns { unlocked: false }; the review-page paywall
 // then offers the $29 overage. Idempotent per playbook via the consumption row.
+//
+// CONCURRENCY: completions can race. The worker runs with WORKER_CONCURRENCY > 1
+// and the per-user runtime slot is released at the contact-review checkpoint, so
+// a Growth user can have several playbooks finish their writing phase at the same
+// instant. The quota check and the credit consumption MUST therefore be atomic:
+// a plain "read balance, then consume" lets N concurrent completions all read the
+// same pre-spend balance and every one of them unlock, overshooting the cap. We
+// instead insert the consumption row FIRST (taking the write lock) and recompute
+// the balance INSIDE the same transaction, rolling back if it overdrew. Serialized
+// completions then each observe every prior committed spend, so the (n+1)th sees a
+// negative balance and falls through to the paywall.
+class QuotaExceeded extends Error {}
+
 export async function tryGrowthAutoUnlock(
   playbookId: string,
   userId: string | null | undefined,
@@ -129,33 +141,39 @@ export async function tryGrowthAutoUnlock(
   if (!pb || pb.userId !== userId) return { unlocked: false }
   if (pb.paymentStatus === 'paid') return { unlocked: false }
 
-  // Idempotency: if a consumption row already exists for this playbook but the
-  // status wasn't flipped (e.g. a prior partial run), just mark it paid — don't
-  // consume a second credit.
-  const alreadyConsumed = await prisma.userCredit.findFirst({
-    where: { userId, reason: playbookConsumedReason(playbookId) },
-    select: { id: true },
-  })
-  if (alreadyConsumed) {
-    await prisma.playbook.update({
-      where: { id: playbookId },
-      data: { paymentStatus: 'paid', paidAt: new Date(), paymentReference: 'growth_quota' },
+  const markPaid = { paymentStatus: 'paid', paidAt: new Date(), paymentReference: 'growth_quota' }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Idempotency: if a consumption row already exists for this playbook (e.g. a
+      // prior partial run), just (re)assert paid — don't spend a second credit.
+      const alreadyConsumed = await tx.userCredit.findFirst({
+        where: { userId, reason: playbookConsumedReason(playbookId) },
+        select: { id: true },
+      })
+      if (alreadyConsumed) {
+        await tx.playbook.update({ where: { id: playbookId }, data: markPaid })
+        return
+      }
+
+      // Tentatively consume a credit, then verify we didn't overdraw. The insert
+      // runs before the balance read so this transaction holds the write lock
+      // while it checks — concurrent completions serialize behind it and each one
+      // sees the others' committed spends.
+      await tx.userCredit.create({
+        data: { userId, amount: -1, reason: playbookConsumedReason(playbookId) },
+      })
+      const agg = await tx.userCredit.aggregate({ where: { userId }, _sum: { amount: true } })
+      if ((agg._sum.amount ?? 0) < 0) {
+        // Over quota — roll back the tentative spend and leave the playbook pending
+        // so the $29 overage paywall shows on the review page.
+        throw new QuotaExceeded()
+      }
+      await tx.playbook.update({ where: { id: playbookId }, data: markPaid })
     })
-    return { unlocked: true }
+  } catch (err) {
+    if (err instanceof QuotaExceeded) return { unlocked: false }
+    throw err
   }
-
-  // Quota check: no cycle credits left → leave pending so the overage paywall shows.
-  const balance = await getUserCreditBalance(userId)
-  if (balance < 1) return { unlocked: false }
-
-  await prisma.$transaction([
-    prisma.userCredit.create({
-      data: { userId, amount: -1, reason: playbookConsumedReason(playbookId) },
-    }),
-    prisma.playbook.update({
-      where: { id: playbookId },
-      data: { paymentStatus: 'paid', paidAt: new Date(), paymentReference: 'growth_quota' },
-    }),
-  ])
   return { unlocked: true }
 }
