@@ -18,6 +18,7 @@ import { ActivePlaybooks } from '@/components/dashboard/active-playbooks'
 import { FailedPlaybookActions } from '@/components/dashboard/failed-playbook-actions'
 import { requireAuth } from '@/lib/auth/session'
 import { canAccess } from '@/lib/plan-features'
+import { playbookRetentionLimit } from '@/lib/pricing'
 import {
   GROWTH_CYCLE_CREDITS,
   getUserPlaybookStats,
@@ -103,16 +104,16 @@ export default async function DashboardPage() {
   const session = await requireAuth()
   const userId = session.user?.id as string
 
-  // For one_off plan, only surface playbooks created in the last 7 days;
-  // longer history is a growth-tier feature.
+  // We retain (and list) the user's most recent N playbooks: 20 on growth, 5 on
+  // pay-per-playbook tiers. Older terminal playbooks beyond this are purged on
+  // creation (see /api/playbooks). The list limit mirrors that retention window.
   const subscription = await getUserSubscription(userId)
   const plan = subscription?.plan ?? 'free'
-  const recentCutoff =
-    plan === 'one_off' ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) : undefined
+  const retentionLimit = playbookRetentionLimit(plan)
 
   const [stats, recentPlaybooks, credits] = await Promise.all([
     getUserPlaybookStats(userId),
-    getUserRecentPlaybooks(userId, 5, recentCutoff),
+    getUserRecentPlaybooks(userId, retentionLimit),
     getUserCreditBalance(userId),
   ])
 
@@ -123,6 +124,12 @@ export default async function DashboardPage() {
   const showRecent = canAccess(plan, 'dashboard_recent')
 
   const firstName = session.user?.name?.split(' ')[0] ?? 'there'
+
+  // Make the retention policy explicit so users know older playbooks roll off.
+  const retentionNotice =
+    plan === 'growth'
+      ? `We keep your ${retentionLimit} most recent playbooks. Older completed playbooks are automatically removed from our servers.`
+      : `We keep your ${retentionLimit} most recent playbooks. Older completed playbooks are automatically removed — upgrade to Growth to keep 20.`
 
   // Cycle wording differs by plan: growth has "X of 10 this cycle · resets <date>",
   // one_off has "X playbooks remaining" (top-up purchased per playbook).
@@ -254,9 +261,10 @@ export default async function DashboardPage() {
       {/* Recent Playbooks — growth plan only */}
       {showRecent && (
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-1">
             <h2 className="font-heading text-lg font-semibold text-white">Recent Playbooks</h2>
           </div>
+          <p className="text-xs text-[#a1a1aa]/80 mb-4">{retentionNotice}</p>
 
           <Card className="bg-[#141419] border-white/[0.06] overflow-hidden">
             {recentPlaybooks.length === 0 ? (

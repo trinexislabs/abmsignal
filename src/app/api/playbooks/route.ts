@@ -47,8 +47,10 @@ export async function POST(request: Request) {
   // the agent runtime: Growth subscribers may have up to 4 non-terminal at once;
   // everyone else (free / pay-per-playbook) processes one at a time.
   let markPendingQueue = false
+  let plan: string | undefined
   if (userId) {
     const sub = await getUserSubscription(userId)
+    plan = sub?.plan
     const inFlight = await playbookRepository.countInFlightForUser(userId)
 
     if (sub?.plan === 'growth') {
@@ -119,6 +121,15 @@ export async function POST(request: Request) {
 
   // No credit is consumed at creation under the post-generation paywall —
   // monetization happens at unlock time on the review page.
+
+  // Enforce the per-plan retention window now that a new playbook exists: purge
+  // the user's oldest terminal playbooks beyond their plan's keep-limit (20 for
+  // growth, 5 otherwise). Best-effort — never fail the create on a purge hiccup.
+  if (userId) {
+    await playbookService
+      .enforcePlaybookRetention(userId, plan ?? 'free')
+      .catch(err => console.warn('[api/playbooks] retention enforcement skipped:', err))
+  }
 
   return NextResponse.json(
     {
