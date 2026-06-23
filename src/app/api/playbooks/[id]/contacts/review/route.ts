@@ -33,6 +33,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     name: c.name,
     title: c.title,
     linkedin_url: c.linkedin_url,
+    email: c.email,
     confidence: c.confidence,
     source: c.source,
     verification_status: c.verification_status,

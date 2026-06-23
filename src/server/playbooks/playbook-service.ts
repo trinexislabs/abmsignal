@@ -173,18 +173,41 @@ export const playbookService = {
     playbookId: string,
     contacts: ApiContact[],
   ): Promise<{ runId: string }> {
-    // Update contact verification statuses from the human review
+    // Partition the reviewed contacts into ones that already exist in the DB
+    // (update their verification status) and ones the user added manually during
+    // the checkpoint (synthetic client-side ids — these must be inserted, not
+    // updated, or Prisma throws P2025 and rolls back the whole review).
+    const existing = await playbookRepository.getContacts(playbookId)
+    const existingIds = new Set(existing.map(c => c.id))
+
     const updates = contacts
-      .filter(c => c.id && c.verification_status)
+      .filter(c => c.id && existingIds.has(c.id) && c.verification_status)
       .map(c => ({ id: c.id, verificationStatus: c.verification_status }))
+
+    const newContacts = contacts
+      .filter(c => !c.id || !existingIds.has(c.id))
+      .map(c => ({
+        name: c.name,
+        title: c.title,
+        company: c.company,
+        linkedinUrl: c.linkedin_url,
+        email: c.email,
+        confidence: c.confidence,
+        source: c.source || 'Manual',
+        verificationStatus: c.verification_status || 'pending',
+        notes: c.notes,
+      }))
 
     if (updates.length > 0) {
       await playbookRepository.updateContactStatuses(playbookId, updates)
     }
+    if (newContacts.length > 0) {
+      await playbookRepository.addContacts(playbookId, newContacts)
+    }
 
     await playbookRepository.logEvent(
       playbookId, 'contacts.approved', 'Human contact review complete',
-      { total: contacts.length, updates: updates.length },
+      { total: contacts.length, updates: updates.length, added: newContacts.length },
     )
 
     // Create writing run

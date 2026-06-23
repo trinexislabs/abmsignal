@@ -462,6 +462,31 @@ export const playbookRepository = {
     ])
   },
 
+  // Insert brand-new contacts (e.g. ones the user added manually during the
+  // review checkpoint). These arrive with client-side synthetic ids that don't
+  // exist in the DB, so they must be created rather than updated.
+  async addContacts(id: string, contacts: ContactInput[]): Promise<void> {
+    if (contacts.length === 0) return
+    await prisma.playbookContact.createMany({
+      data: contacts.map(c => ({
+        playbookId: id,
+        name: c.name,
+        title: c.title,
+        company: c.company ?? '',
+        linkedinUrl: c.linkedinUrl ?? null,
+        email: c.email ?? null,
+        rationale: c.rationale ?? null,
+        sourceUrls: JSON.stringify(c.sourceUrls ?? []),
+        confidence: c.confidence ?? 'medium',
+        source: c.source ?? 'Manual',
+        verificationStatus: c.verificationStatus ?? 'pending',
+        notes: c.notes ?? null,
+        personalizationSignals: JSON.stringify(c.personalizationSignals ?? []),
+        directQuotes: JSON.stringify(c.directQuotes ?? []),
+      })),
+    })
+  },
+
   async updateContactStatuses(
     id: string,
     updates: { id: string; verificationStatus: string }[],
