@@ -25,7 +25,10 @@ RUN apt-get update \
 # ---- dependencies ----------------------------------------------------------
 FROM base AS deps
 COPY package.json package-lock.json* ./
-RUN npm ci
+# --include=dev is required: NODE_ENV=production (set in base) would otherwise make
+# npm omit devDependencies, but the build needs tailwindcss/@tailwindcss/postcss/
+# typescript and the runtime needs tsx (worker) — see header note.
+RUN npm ci --include=dev
 
 # ---- build -----------------------------------------------------------------
 FROM deps AS build

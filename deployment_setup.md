@@ -141,3 +141,33 @@ With API keys added to `database.env`: anon key reachable ✓; admin API (servic
 ### Next step
 Resume Phase 5 (compose up) + Phase 6 (Cloudflare hostnames). Still TODO in Supabase dashboard: URL config (Site URL + redirect URLs), enable Email provider (decide confirm on/off), Google provider (Phase 8), Resend SMTP (Phase 7).
 
+---
+
+## Phase 5 — Local production stack up  ✅ (2026-06-25)
+
+Host prereqs verified: Docker 28.3.3 + compose v2.39.1 (daemon needs `sudo` — user not in `docker` group); OpenClaw v2026.4.15 installed with all agents (orchestrator/researcher/writer/reviewer) + models via Ollama (`qwen3.5:35b`, `glm-5.2:cloud`); Ollama API up; ports 3000/6379 free.
+
+### Env files generated (gitignored, chmod 600)
+- `.env.production` (containers) + `.env.worker` (host worker), Supabase values pulled from `database.env`, fresh URL-safe `REDIS_PASSWORD` wired consistently (REDIS_PASSWORD + REDIS_URL@redis:6379 in prod; REDIS_URL@127.0.0.1:6379 in worker).
+
+### Fixes needed to build/run (committed)
+1. `Dockerfile`: `npm ci` → `npm ci --include=dev` — base sets `NODE_ENV=production`, which made npm skip devDeps (tailwind/postcss/tsx/typescript) needed by build + worker.
+2. `src/server/db.ts`: Prisma client made **lazy** (Proxy) so importing it no longer connects/throws at build time (`docker build` has no DB env). Also fixes `npm run build` without env.
+3. **`DIRECT_URL` switched to the IPv4 session pooler** (`...pooler.supabase.com:5432`) — the direct host `db.<ref>.supabase.co:5432` is IPv6-only and unreachable from Docker containers (P1001). Updated in `.env.production` + `database.env`.
+
+### Verification
+- `docker compose build` ✅ · `up -d` ✅ — redis healthy, migrate "No pending migrations", web ready.
+- `curl /` 200 · `/auth/signin` 200 · `/api/user/plan` 401 (auth path) · `/dashboard` 307→signin (middleware) ✅
+- redis-cli ping → PONG with app password ✅
+- OpenClaw orchestrator (`--local`) returned exact JSON, model `glm-5.2:cloud` ✅
+- Worker: systemd `abmsignal-worker` active, "worker started (concurrency: 1)", no Redis/errors ✅
+
+### Run commands (reference)
+- Up: `sudo docker compose --env-file .env.production up -d`
+- Rebuild after pull: `sudo docker compose --env-file .env.production build && ... up -d`
+- Logs: `sudo docker compose --env-file .env.production logs -f web` · `sudo journalctl -u abmsignal-worker -f`
+- Worker restart: `sudo systemctl restart abmsignal-worker`
+
+### Next step
+Phase 6 — add public hostnames (`abmsignal.com`, `app.abmsignal.com` → `http://localhost:3000`) to the EXISTING cloudflared tunnel (do not disrupt current remote-access tunnel).
+
