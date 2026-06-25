@@ -19,8 +19,7 @@ export default async function AdminUserDetailPage({
   if (!user) notFound()
 
   const sub = user.subscription
-  const providers = user.accounts.map((a) => a.provider)
-  const authMethods = [user.password ? 'password' : null, ...providers].filter(Boolean) as string[]
+  // Auth methods (password / OAuth providers) live in Supabase Auth, not our DB.
 
   return (
     <div className="space-y-6">
@@ -48,7 +47,6 @@ export default async function AdminUserDetailPage({
           <div className="flex flex-wrap items-center gap-4 mt-1.5 text-xs text-[#9CA3AF]">
             <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" />{user.email}</span>
             <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Joined {format(user.createdAt, 'MMM d, yyyy')}</span>
-            {authMethods.length > 0 && <span className="capitalize">via {authMethods.join(', ')}</span>}
           </div>
         </div>
       </div>

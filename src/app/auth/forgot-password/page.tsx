@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { signIn } from 'next-auth/react'
+import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Zap, Mail, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,8 +19,13 @@ export default function ForgotPasswordPage() {
     if (!email) return
     setLoading(true)
     try {
-      // Use magic link as the password reset mechanism
-      await signIn('resend', { email, redirect: false })
+      // Magic link is the password-reset mechanism: sign in, then update the
+      // password from settings.
+      const supabase = createClient()
+      await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      })
       router.push('/auth/verify-request')
     } finally {
       setLoading(false)

@@ -292,7 +292,7 @@ const createdUserIds: string[] = []
 // (optionally) consumes one credit for a specific playbook id.
 async function makeGrowthUser(consumedForPlaybook?: string): Promise<string> {
   const user = await prisma.user.create({
-    data: { email: `refund_test_${crypto.randomUUID()}@example.com` },
+    data: { id: crypto.randomUUID(), email: `refund_test_${crypto.randomUUID()}@example.com` },
   })
   createdUserIds.push(user.id)
   await prisma.userSubscription.create({
@@ -363,7 +363,7 @@ async function test10_nonErroredDeleteDoesNotRefund() {
 async function test11_oneOffErroredDeleteDoesNotRefund() {
   console.log('\n[11] one_off user deleting an errored playbook does NOT refund')
   const { playbookService } = await import('../playbooks/playbook-service')
-  const user = await prisma.user.create({ data: { email: `refund_test_${crypto.randomUUID()}@example.com` } })
+  const user = await prisma.user.create({ data: { id: crypto.randomUUID(), email: `refund_test_${crypto.randomUUID()}@example.com` } })
   createdUserIds.push(user.id)
   await prisma.userSubscription.create({ data: { userId: user.id, plan: 'one_off', status: 'active' } })
   await prisma.userCredit.create({ data: { userId: user.id, amount: 1, reason: 'mock_payment_one_off' } })
@@ -526,7 +526,7 @@ async function test18_growthRetentionKeeps20() {
 async function test19_oneOffRetentionKeeps5() {
   console.log('\n[19] One-off / free retention keeps only the 5 most recent')
   const { playbookService } = await import('../playbooks/playbook-service')
-  const user = await prisma.user.create({ data: { email: `ret_test_${crypto.randomUUID()}@example.com` } })
+  const user = await prisma.user.create({ data: { id: crypto.randomUUID(), email: `ret_test_${crypto.randomUUID()}@example.com` } })
   createdUserIds.push(user.id)
   await prisma.userSubscription.create({ data: { userId: user.id, plan: 'one_off', status: 'active' } })
   await makeAgedPlaybooks(user.id, 8)
@@ -539,7 +539,7 @@ async function test19_oneOffRetentionKeeps5() {
 async function test20_retentionNeverPurgesInFlightOrDrafts() {
   console.log('\n[20] Retention never purges drafts or in-flight playbooks, even when old')
   const { playbookService } = await import('../playbooks/playbook-service')
-  const user = await prisma.user.create({ data: { email: `ret_test_${crypto.randomUUID()}@example.com` } })
+  const user = await prisma.user.create({ data: { id: crypto.randomUUID(), email: `ret_test_${crypto.randomUUID()}@example.com` } })
   createdUserIds.push(user.id)
   await prisma.userSubscription.create({ data: { userId: user.id, plan: 'one_off', status: 'active' } })
 

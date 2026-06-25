@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth/session'
 import { prisma } from '@/server/db'
 import { activateGrowthCycle, upsertUserPlan } from '@/server/users/user-repository'
 import { tryGrowthAutoUnlock } from '@/server/playbooks/playbook-access'
@@ -27,7 +27,7 @@ function sanitizeReturnTo(value: string | undefined, fallback: string): string {
 }
 
 export async function POST(request: Request) {
-  const session = await auth()
+  const session = await getSession()
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

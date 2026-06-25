@@ -1,24 +1,32 @@
-# ABMSignal — production stack
+# ABMSignal — production stack (DGX Spark + Cloudflare Tunnel)
 #
-#   caddy   : TLS termination + reverse proxy (auto HTTPS via Let's Encrypt)
-#   web     : Next.js app server
-#   worker  : BullMQ consumer that drives playbook generation
-#   redis   : job queue broker
-#   migrate : one-shot, runs `prisma migrate deploy` before web/worker start
+#   web     : Next.js app server (frontend + API), published on 127.0.0.1:3000 only
+#   redis   : BullMQ broker, published on 127.0.0.1:6379 only (so the HOST worker can reach it)
+#   migrate : one-shot, runs `prisma migrate deploy` before web starts
 #
-# The database is a libsql/SQLite file on the `appdata` volume, shared by web,
-# worker and migrate. For multi-node / high-write scale, switch DATABASE_URL to
-# a managed libsql (Turso) URL and drop the appdata mounts — see DEPLOYMENT_GUIDE.md.
+# NOT in this file (run on the HOST, not in Docker):
+#   worker      -> systemd service `abmsignal-worker` (infra/abmsignal-worker.service).
+#                  It execs the local OpenClaw CLI + Ollama, so it must run on the host.
+#   cloudflared -> systemd service; the ONLY public ingress. Maps:
+#                    abmsignal.com      -> http://localhost:3000  (marketing)
+#                    app.abmsignal.com  -> http://localhost:3000  (app/dashboard)
+#   TLS         -> terminated by Cloudflare. No Caddy / no Let's Encrypt here.
+#
+# Database: Supabase Postgres (managed). The app connects via the transaction
+# pooler (DATABASE_URL, :6543); migrations use a direct connection (DIRECT_URL,
+# :5432). No local DB volume — web container and host worker both reach Supabase
+# over the network.
 
 x-app-build: &app-build
   context: .
   target: runtime
   args:
-    # NEXT_PUBLIC_* must be available at build time (inlined into the client bundle).
+    # NEXT_PUBLIC_* are inlined into the client bundle at BUILD time.
     NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
-    NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+    # Supabase browser client needs these at build time (client bundle):
+    NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
 
 services:
   redis:
@@ -26,6 +34,9 @@ services:
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
     volumes:
       - redisdata:/data
+    # Loopback-only: reachable by the host worker, never exposed to LAN/internet.
+    ports:
+      - "127.0.0.1:6379:6379"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
@@ -38,54 +49,21 @@ services:
     image: abmsignal:latest
     env_file: .env.production
     command: ["npx", "prisma", "migrate", "deploy"]
-    volumes:
-      - appdata:/data
     restart: "no"
 
   web:
     build: *app-build
     image: abmsignal:latest
     env_file: .env.production
-    volumes:
-      - appdata:/data
     depends_on:
       migrate:
         condition: service_completed_successfully
       redis:
         condition: service_healthy
-    expose:
-      - "3000"
-    restart: unless-stopped
-
-  worker:
-    build: *app-build
-    image: abmsignal:latest
-    env_file: .env.production
-    command: ["npx", "tsx", "src/server/jobs/worker-process.ts"]
-    volumes:
-      - appdata:/data
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-
-  caddy:
-    image: caddy:2-alpine
+    # Loopback-only: cloudflared (on the host) proxies to this. Never public.
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddydata:/data
-      - caddyconfig:/config
-    depends_on:
-      - web
+      - "127.0.0.1:3000:3000"
     restart: unless-stopped
 
 volumes:
-  appdata:
   redisdata:
-  caddydata:
-  caddyconfig:

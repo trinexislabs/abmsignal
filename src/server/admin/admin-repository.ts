@@ -241,7 +241,6 @@ export async function getUserDetail(userId: string) {
       subscription: true,
       credits: { orderBy: { createdAt: 'desc' } },
       playbooks: { orderBy: { updatedAt: 'desc' } },
-      accounts: { select: { provider: true } },
     },
   })
   if (!user) return null

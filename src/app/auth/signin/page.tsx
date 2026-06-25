@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Zap, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -50,8 +50,12 @@ function SignInForm() {
     if (!magicEmail) return
     setLoading(true)
     try {
-      const res = await signIn('resend', { email: magicEmail, redirect: false })
-      if (res?.error) {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOtp({
+        email: magicEmail,
+        options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      })
+      if (error) {
         toast.error('Could not send magic link. Check your email address.')
       } else {
         router.push('/auth/verify-request')
@@ -66,15 +70,16 @@ function SignInForm() {
     if (!passwordEmail || !password) return
     setLoading(true)
     try {
-      const res = await signIn('credentials', {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
         email: passwordEmail,
         password,
-        redirect: false,
       })
-      if (res?.error) {
+      if (error) {
         toast.error('Invalid email or password.')
       } else {
         router.push(callbackUrl)
+        router.refresh()
       }
     } finally {
       setLoading(false)
@@ -83,7 +88,17 @@ function SignInForm() {
 
   async function handleGoogle() {
     setGoogleLoading(true)
-    await signIn('google', { callbackUrl })
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(callbackUrl)}`,
+      },
+    })
+    if (error) {
+      toast.error('Could not start Google sign-in.')
+      setGoogleLoading(false)
+    }
   }
 
   return (

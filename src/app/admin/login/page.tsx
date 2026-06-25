@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn, getSession, signOut } from 'next-auth/react'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { ShieldAlert, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,16 +20,18 @@ export default function AdminLoginPage() {
     if (!email || !password) return
     setLoading(true)
     try {
-      const res = await signIn('credentials', { email, password, redirect: false })
-      if (res?.error) {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
         toast.error('Invalid email or password.')
         return
       }
-      // Credentials are valid — now confirm this account is actually an admin.
-      // Non-admins are signed back out so they don't hold an admin-looking session.
-      const session = await getSession()
-      if (session?.user?.role !== 'admin') {
-        await signOut({ redirect: false })
+      // Credentials are valid — now confirm this account is actually an admin
+      // (role lives in the DB, checked server-side). Non-admins are signed back
+      // out so they don't hold an admin-looking session.
+      const check = await fetch('/api/admin/check').then((r) => r.json()).catch(() => ({ isAdmin: false }))
+      if (!check.isAdmin) {
+        await supabase.auth.signOut()
         toast.error('This account does not have admin access.')
         return
       }

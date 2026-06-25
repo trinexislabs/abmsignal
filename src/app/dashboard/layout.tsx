@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { createClient } from '@/lib/supabase/client'
+import { useUser } from '@/lib/supabase/use-user'
 import { cn, getUserInitials } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -50,12 +51,12 @@ function UserAvatar({ image, name, size = 'sm' }: { image?: string | null; name?
 function Sidebar({ collapsed, onCollapse }: { collapsed: boolean; onCollapse: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session } = useSession()
-  const user = session?.user
+  const { user } = useUser()
 
   async function handleSignOut() {
-    await signOut({ redirect: false })
+    await createClient().auth.signOut()
     router.push('/')
+    router.refresh()
   }
 
   return (
@@ -181,12 +182,12 @@ function Sidebar({ collapsed, onCollapse }: { collapsed: boolean; onCollapse: ()
 function MobileSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session } = useSession()
-  const user = session?.user
+  const { user } = useUser()
 
   async function handleSignOut() {
-    await signOut({ redirect: false })
+    await createClient().auth.signOut()
     router.push('/')
+    router.refresh()
   }
 
   return (
@@ -258,13 +259,13 @@ function MobileSidebar({ open, onClose }: { open: boolean; onClose: () => void }
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { data: session } = useSession()
+  const { user } = useUser()
   const router = useRouter()
-  const user = session?.user
 
   async function handleSignOut() {
-    await signOut({ redirect: false })
+    await createClient().auth.signOut()
     router.push('/')
+    router.refresh()
   }
 
   return (

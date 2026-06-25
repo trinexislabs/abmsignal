@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Zap, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -37,25 +37,29 @@ function SignUpForm() {
     if (!isValid) return
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: name },
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        },
       })
-      const data = await res.json()
-      if (!res.ok) {
-        toast.error(data.error ?? 'Registration failed')
+      if (error) {
+        toast.error(error.message ?? 'Registration failed')
         return
       }
-      const signInRes = await signIn('credentials', { email, password, redirect: false })
-      if (signInRes?.error) {
-        toast.error('Account created. Please sign in.')
-        router.push('/auth/signin')
+      // If email confirmation is required, Supabase returns no session — send
+      // the user to check their inbox. Otherwise they're signed in immediately.
+      if (!data.session) {
+        router.push('/auth/verify-request')
         return
       }
       // No plan selection at sign-up — go straight to the dashboard. Payment is
       // collected from the paywall after the first playbook is generated.
       router.push('/dashboard')
+      router.refresh()
     } finally {
       setLoading(false)
     }
@@ -63,7 +67,15 @@ function SignUpForm() {
 
   async function handleGoogle() {
     setGoogleLoading(true)
-    await signIn('google', { callbackUrl: '/dashboard' })
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
+    })
+    if (error) {
+      toast.error('Could not start Google sign-in.')
+      setGoogleLoading(false)
+    }
   }
 
   return (

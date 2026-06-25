@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth/session'
 import { playbookService } from '@/server/playbooks/playbook-service'
 import { playbookRepository } from '@/server/playbooks/playbook-repository'
 import { projectPlaybookForViewer } from '@/server/playbooks/playbook-access'
@@ -21,7 +21,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
   if (playbook) {
     // Withhold real content for a completed-but-unpaid playbook unless the
     // viewer has unlocked it (paid) or owns it under an active Growth sub.
-    const session = await auth()
+    const session = await getSession()
     const projected = await projectPlaybookForViewer(playbook, session?.user?.id)
     return NextResponse.json({ data: projected })
   }
@@ -77,7 +77,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 // sections, contacts) and drop any pending queue jobs. Irreversible.
 export async function DELETE(_req: Request, { params }: RouteContext) {
   const { id } = await params
-  const session = await auth()
+  const session = await getSession()
   const userId = session?.user?.id
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

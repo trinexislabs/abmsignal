@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import { cn, getUserInitials } from '@/lib/utils'
 import { LayoutDashboard, Users, FileText, BarChart3, ShieldAlert, LogOut, ArrowUpRight, Menu, X } from 'lucide-react'
@@ -94,8 +94,9 @@ export function AdminSidebar({ name, email, image }: AdminSidebarProps) {
   const [open, setOpen] = useState(false)
 
   async function handleSignOut() {
-    await signOut({ redirect: false })
+    await createClient().auth.signOut()
     router.push('/admin/login')
+    router.refresh()
   }
 
   return (

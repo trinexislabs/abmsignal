@@ -7,20 +7,22 @@ import { Badge } from '@/components/ui/badge'
 import { Menu, X, LayoutDashboard } from 'lucide-react'
 import { LogoMark } from '@/components/logo'
 import { useState } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { createClient } from '@/lib/supabase/client'
+import { useUser } from '@/lib/supabase/use-user'
 
 export function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const isLanding = pathname === '/'
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { data: session, status } = useSession()
-  const isLoading = status === 'loading'
-  const isLoggedIn = !!session?.user
+  const { user, loading } = useUser()
+  const isLoading = loading
+  const isLoggedIn = !!user
 
   async function handleSignOut() {
-    await signOut({ redirect: false })
+    await createClient().auth.signOut()
     router.push('/')
+    router.refresh()
   }
 
   return (

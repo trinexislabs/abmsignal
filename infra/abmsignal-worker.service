@@ -1,0 +1,45 @@
+# ABMSignal BullMQ worker — runs on the HOST (not in Docker).
+#
+# It consumes the playbook-generation queue and execs the local OpenClaw CLI
+# (--local mode) + Ollama, which is why it cannot run inside a container.
+#
+# Install:
+#   sudo cp infra/abmsignal-worker.service /etc/systemd/system/abmsignal-worker.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now abmsignal-worker
+#   journalctl -u abmsignal-worker -f        # follow logs
+#
+# Prereqs on the host (one time, in the repo dir):
+#   npm ci
+#   npx prisma generate
+#
+# Adjust User / paths if your repo or username differs.
+
+[Unit]
+Description=ABMSignal BullMQ worker (host process; drives OpenClaw generation)
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=trinexis-dgx-spark
+WorkingDirectory=/home/trinexis-dgx-spark/Apps/abmsignal
+
+# OpenClaw needs HOME to locate its state dirs (~/.openclaw, ~/.openclaw-abmsignal).
+Environment=HOME=/home/trinexis-dgx-spark
+Environment=NODE_ENV=production
+
+# Shared secrets first, then host-context overrides (DATABASE_URL / REDIS_URL).
+EnvironmentFile=/home/trinexis-dgx-spark/Apps/abmsignal/.env.production
+EnvironmentFile=/home/trinexis-dgx-spark/Apps/abmsignal/.env.worker
+
+ExecStart=/usr/bin/npx tsx src/server/jobs/worker-process.ts
+
+Restart=always
+RestartSec=5
+# Give in-flight agent jobs time to finish on stop/restart.
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target

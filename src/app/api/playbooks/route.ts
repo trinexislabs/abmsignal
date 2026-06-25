@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth/session'
 import { prisma } from '@/server/db'
 import { playbookRepository } from '@/server/playbooks/playbook-repository'
 import { playbookService } from '@/server/playbooks/playbook-service'
@@ -8,7 +8,7 @@ import { getUserSubscription } from '@/server/users/user-repository'
 import type { PlaybookCreateRequest } from '@/types'
 
 export async function GET() {
-  const session = await auth()
+  const session = await getSession()
   const userId = session?.user?.id
   const playbooks = userId
     ? await playbookService.listByUser(userId)
@@ -22,7 +22,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth()
+  const session = await getSession()
   const userId = session?.user?.id ?? null
 
   let body: PlaybookCreateRequest

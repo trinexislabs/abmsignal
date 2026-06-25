@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth/session'
 import { prisma } from '@/server/db'
 
 export interface AdminUser {
@@ -10,12 +10,12 @@ export interface AdminUser {
   role: string
 }
 
-// Server-side admin gate. Re-verifies the role against the DB rather than
-// trusting only the JWT, so a demoted user can't keep operating on a stale
-// token and a freshly-promoted user is recognized without re-login. Redirects
-// to /admin/login when the caller is not an authenticated admin.
+// Server-side admin gate. The `role` lives in our `User` (profile) table, not in
+// the Supabase JWT, so we always verify against the DB — a demoted user can't
+// keep operating and a freshly-promoted user is recognized without re-login.
+// Redirects to /admin/login when the caller is not an authenticated admin.
 export async function requireAdmin(): Promise<AdminUser> {
-  const session = await auth()
+  const session = await getSession()
   const userId = session?.user?.id
   if (!userId) redirect('/admin/login')
 
@@ -31,7 +31,7 @@ export async function requireAdmin(): Promise<AdminUser> {
 
 // Non-redirecting variant for places that need to branch on admin status.
 export async function isAdmin(): Promise<boolean> {
-  const session = await auth()
+  const session = await getSession()
   const userId = session?.user?.id
   if (!userId) return false
   const user = await prisma.user.findUnique({

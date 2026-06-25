@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth/session'
 import { getUserSubscription, upsertUserPlan } from '@/server/users/user-repository'
 
 const VALID_PLANS = ['one_off', 'growth'] as const
 
 export async function GET() {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -14,7 +14,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

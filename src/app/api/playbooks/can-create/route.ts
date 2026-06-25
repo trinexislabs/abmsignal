@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth/session'
 import { playbookRepository } from '@/server/playbooks/playbook-repository'
 import { getUserSubscription } from '@/server/users/user-repository'
 
 export async function GET() {
-  const session = await auth()
+  const session = await getSession()
   const userId = session?.user?.id
 
   if (!userId) {

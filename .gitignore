@@ -32,8 +32,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-# ...but keep the secret-free production template tracked
+# any *.env file (e.g. database.env) — these hold secrets
+*.env
+# ...but keep the secret-free templates tracked
 !.env.production.example
+!.env.worker.example
 
 # vercel
 .vercel
