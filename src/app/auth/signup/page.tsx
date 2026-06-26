@@ -2,10 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Zap, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react'
+import { Zap, Mail, ArrowRight, Loader2, MailCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,45 +20,29 @@ function GoogleIcon() {
   )
 }
 
-function SignUpForm() {
-  const router = useRouter()
-
-  const [name, setName] = useState('')
+export default function SignUpPage() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-
-  const isValid = name.trim() && email.trim() && password.length >= 8
+  const [sent, setSent] = useState(false)
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
-    if (!isValid) return
+    if (!email.trim()) return
     setLoading(true)
     try {
       const supabase = createClient()
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
-        password,
-        options: {
-          data: { full_name: name },
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
-        },
+        // Creates the account if new, then logs in via the emailed link.
+        // Uses the stock Supabase email template (ConfirmationURL → /auth/callback).
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       })
       if (error) {
-        toast.error(error.message ?? 'Registration failed')
-        return
+        toast.error(error.message ?? 'Could not send the sign-up link.')
+      } else {
+        setSent(true)
       }
-      // If email confirmation is required, Supabase returns no session — send
-      // the user to check their inbox. Otherwise they're signed in immediately.
-      if (!data.session) {
-        router.push('/auth/verify-request')
-        return
-      }
-      // No plan selection at sign-up — go straight to the dashboard. Payment is
-      // collected from the paywall after the first playbook is generated.
-      router.push('/dashboard')
-      router.refresh()
     } finally {
       setLoading(false)
     }
@@ -73,7 +56,7 @@ function SignUpForm() {
       options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
     })
     if (error) {
-      toast.error('Could not start Google sign-in.')
+      toast.error('Google sign-in is not available yet.')
       setGoogleLoading(false)
     }
   }
@@ -92,107 +75,86 @@ function SignUpForm() {
           </Link>
           <h1 className="font-heading text-3xl font-bold text-white text-center">Create your account</h1>
           <p className="text-[#9CA3AF] text-sm mt-2 text-center">
-            Start free — generate your first playbook, then choose how to pay.
+            Enter your email — we&apos;ll send a secure link to get started. No password needed.
           </p>
         </div>
 
         <div className="bg-[#111827] border border-[#374151] rounded-2xl p-8 space-y-5">
-          <Button
-            onClick={handleGoogle}
-            disabled={googleLoading}
-            variant="outline"
-            className="w-full h-11 bg-white/5 border-[#374151] text-white hover:bg-white/10 hover:border-[#374151]/60 rounded-xl gap-2.5 font-medium"
-          >
-            {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GoogleIcon />}
-            Continue with Google
-          </Button>
-
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/[0.06]" />
-            <span className="text-[11px] text-[#9CA3AF] uppercase tracking-wider">or</span>
-            <div className="flex-1 h-px bg-white/[0.06]" />
-          </div>
-
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="full-name" className="text-white text-sm font-medium">Full name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
-                <Input
-                  id="full-name"
-                  type="text"
-                  placeholder="Alex Johnson"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  autoComplete="name"
-                  className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-[#10B981]/50 focus-visible:ring-[#10B981]/20 rounded-xl"
-                />
+          {sent ? (
+            <div className="flex flex-col items-center text-center py-4 space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-[#0B3D2E] border border-[#10B981]/30 flex items-center justify-center">
+                <MailCheck className="w-6 h-6 text-[#10B981]" />
               </div>
+              <h2 className="text-white font-semibold">Check your email</h2>
+              <p className="text-sm text-[#9CA3AF]">
+                We sent a secure link to <span className="text-white">{email}</span>.
+                Click it to finish creating your account.
+              </p>
+              <button onClick={() => setSent(false)} className="text-xs text-[#10B981] hover:text-[#10B981]/80 mt-2">
+                Use a different email
+              </button>
             </div>
+          ) : (
+            <>
+              <Button
+                onClick={handleGoogle}
+                disabled={googleLoading}
+                variant="outline"
+                className="w-full h-11 bg-white/5 border-[#374151] text-white hover:bg-white/10 hover:border-[#374151]/60 rounded-xl gap-2.5 font-medium"
+              >
+                {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GoogleIcon />}
+                Continue with Google
+              </Button>
 
-            <div className="space-y-2">
-              <Label htmlFor="signup-email" className="text-white text-sm font-medium">Work email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-[#10B981]/50 focus-visible:ring-[#10B981]/20 rounded-xl"
-                />
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/[0.06]" />
+                <span className="text-[11px] text-[#9CA3AF] uppercase tracking-wider">or</span>
+                <div className="flex-1 h-px bg-white/[0.06]" />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="signup-password" className="text-white text-sm font-medium">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
-                <Input
-                  id="signup-password"
-                  type="password"
-                  placeholder="Min. 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-[#10B981]/50 focus-visible:ring-[#10B981]/20 rounded-xl"
-                />
-              </div>
-              {password.length > 0 && password.length < 8 && (
-                <p className="text-xs text-red-400">Password must be at least 8 characters</p>
-              )}
-            </div>
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email" className="text-white text-sm font-medium">Work email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="you@company.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                      className="pl-10 h-11 bg-[#0B0F13] border-[#374151] text-white placeholder:text-[#9CA3AF] focus-visible:border-[#10B981]/50 focus-visible:ring-[#10B981]/20 rounded-xl"
+                    />
+                  </div>
+                </div>
 
-            <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
-              No card required to sign up. After your first playbook is generated you can
-              unlock it for a one-off fee or subscribe to Growth.
-            </p>
+                <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
+                  No card required to sign up. After your first playbook is generated you can
+                  unlock it for a one-off fee or subscribe to Growth.
+                </p>
 
-            <Button
-              type="submit"
-              disabled={loading || !isValid}
-              className="w-full h-11 bg-[#10B981] hover:bg-[#059669] text-white font-semibold rounded-xl"
-            >
-              {loading ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating account...</>
-              ) : (
-                <>Create account <ArrowRight className="w-4 h-4 ml-2" /></>
-              )}
-            </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || !email.trim()}
+                  className="w-full h-11 bg-[#10B981] hover:bg-[#059669] text-white font-semibold rounded-xl"
+                >
+                  {loading ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</>
+                  ) : (
+                    <>Send sign-up link <ArrowRight className="w-4 h-4 ml-2" /></>
+                  )}
+                </Button>
 
-            <p className="text-[11px] text-[#9CA3AF] text-center leading-relaxed">
-              By creating an account you agree to our{' '}
-              <a href="/terms" className="text-[#10B981] hover:underline">Terms</a>{' '}
-              and{' '}
-              <a href="/privacy" className="text-[#10B981] hover:underline">Privacy Policy</a>.
-            </p>
-          </form>
+                <p className="text-[11px] text-[#9CA3AF] text-center leading-relaxed">
+                  By continuing you agree to our{' '}
+                  <a href="/terms" className="text-[#10B981] hover:underline">Terms</a>{' '}and{' '}
+                  <a href="/privacy" className="text-[#10B981] hover:underline">Privacy Policy</a>.
+                </p>
+              </form>
+            </>
+          )}
         </div>
 
         <p className="text-center text-sm text-[#9CA3AF] mt-6">
@@ -204,8 +166,4 @@ function SignUpForm() {
       </div>
     </div>
   )
-}
-
-export default function SignUpPage() {
-  return <SignUpForm />
 }

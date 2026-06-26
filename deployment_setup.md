@@ -171,3 +171,50 @@ Host prereqs verified: Docker 28.3.3 + compose v2.39.1 (daemon needs `sudo` — 
 ### Next step
 Phase 6 — add public hostnames (`abmsignal.com`, `app.abmsignal.com` → `http://localhost:3000`) to the EXISTING cloudflared tunnel (do not disrupt current remote-access tunnel).
 
+---
+
+## Phase 6 — Cloudflare Tunnel public hostnames  ✅ (2026-06-26)
+
+Existing tunnel reused: **`openclaw-spark`** (ID `3f751820-…cf51`), remotely-managed (token), runs as systemd `cloudflared`. Also serves the owner's private network (WARP CIDR `192.168.1.0/24`, `spark/ssh.nilumagents.com`) — left untouched.
+
+### Gotchas hit + resolved (record for future)
+1. **Private vs Public hostname:** first attempt added `abmsignal.com`/`app.abmsignal.com` as **Private hostnames** (WARP-only) → not publicly resolvable. Fix: add them as **Public Hostnames** on the tunnel (creates public DNS CNAME → `<tunnelid>.cfargotunnel.com` + ingress).
+2. **Wrong-zone DNS:** `cloudflared tunnel route dns openclaw-spark abmsignal.com` created junk records in the **nilumagents.com** zone (the host's `~/.cloudflared/cert.pem` is scoped to nilumagents.com, not abmsignal.com). Deleted via dashboard. → Don't use `route dns` here; the dashboard Public Hostname handles DNS.
+3. **HTTPS vs HTTP origin (502):** public hostnames defaulted to service **`https://…:3000`** → `tls: first record does not look like a TLS handshake` (Next.js serves plain HTTP). Fix: Service **Type = HTTP**, URL **`127.0.0.1:3000`** (IPv4 explicit; app binds IPv4 loopback only).
+4. **Host stale DNS:** the DGX's own resolver still serves a negative cache for the new names (so local `curl` fails with "could not resolve") — cosmetic; public works. Verified via `curl --resolve <host>:443:<edge-ip>`.
+
+### Verification (via Cloudflare edge)
+- `abmsignal.com` 200 · `app.abmsignal.com` 200 · `/dashboard` 307→`/auth/signin` (HTTPS) · `/auth/signin` 200 · `/api/user/plan` 401 · valid edge TLS cert ✅
+- No public inbound ports on the host; only cloudflared egress.
+
+### Next step
+Phase 7 (Resend email via Supabase SMTP — needed for magic-link login + password reset), Phase 8 (Google OAuth in Supabase), Phase 9 (Lemon Squeezy). Also: set Supabase **Site URL + redirect URLs** (`https://app.abmsignal.com/auth/callback` + `/auth/confirm`); create admin user (`npm run admin:create`); do a real browser signup/login test at https://app.abmsignal.com.
+
+---
+
+## Auth flow → magic-link only  ✅ (2026-06-26)
+
+User decision: customer auth = **magic link (primary) + Google (Phase 8)**; **passwords removed** from the customer journey. Admin portal (`/admin/login`) **kept on password** (internal operator login).
+
+### Why / what changed
+- Original email+password signup hit Supabase's default hosted-verify link (implicit flow) → redirected to `/#error=...` (no session) + `otp_expired` (one-time link consumed/old email).
+- Switched to magic link via `signInWithOtp` (shouldCreateUser=true → unifies signin+signup).
+- **No Supabase email-template editing required** (free tier allows it anyway): set `emailRedirectTo` to **`/auth/callback`** so the STOCK email link (ConfirmationURL → verify → `/auth/callback?code=…`) is exchanged by our existing callback route (PKCE). `/auth/confirm` (token_hash) is also still present for an optional cross-device template tweak later.
+- Files: rewrote `auth/signin` + `auth/signup` (magic-link + Google button, "check your email" state); **deleted** `auth/forgot-password`. tsc + docker build clean; redeployed web.
+
+### Required Supabase settings (no templates)
+- Auth → URL Configuration: Site URL `https://app.abmsignal.com`; Redirect URLs incl. `https://app.abmsignal.com/auth/callback`.
+- Auth → Providers → Email enabled.
+
+### Caveat (by design)
+Stock-email/PKCE works when the link is opened on the **same browser/device** that requested it. Cross-device magic links need the optional `token_hash` template edit (→ `/auth/confirm`). **Google OAuth (Phase 8)** is the better mobile path.
+
+### Resume-after-leave (user Q)
+Confirmed feasible with magic-link: generation is async (worker+DB), decoupled from the browser session; Supabase sessions persist long-term (default no timeout); state is keyed to user ID, so users return to the exact stage. Login method is irrelevant to this.
+
+### Verification
+Local + public edge: `/auth/signin` 200 (magic-link UI). **User confirmed real e2e login → reached dashboard ✅.**
+
+### Next step
+Commit magic-link changes; await user's broader e2e test outcome; then Phase 7 (Resend SMTP).
+
