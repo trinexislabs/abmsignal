@@ -218,3 +218,29 @@ Local + public edge: `/auth/signin` 200 (magic-link UI). **User confirmed real e
 ### Next step
 Commit magic-link changes; await user's broader e2e test outcome; then Phase 7 (Resend SMTP).
 
+---
+
+## Agentic runtime fixes (generation + URL mode)  ✅ (2026-06-27)
+
+Two bugs from the SQLite→Postgres move + the container/host split, both now fixed & verified.
+
+### 1. Playbook generation never dispatched (P2010)
+- `playbook-repository.ts` `claimRuntimeSlot` raw SQL used SQLite `?` placeholders → Postgres `syntax error at or near ","` → `startGeneration` threw → no run, no job (playbook stuck at `draft`).
+- Fix: numbered `$1,$2…` placeholders (built via a `bind()` helper preserving order).
+- Verified: dispatched "PeopleSocial" → research run **succeeded in ~1m45s**, **8 real Fortude contacts** discovered, status → `contact_review` 60%. (OpenClaw model glm-5.2:cloud.)
+
+### 2. URL mode returned meta-only (no AI)
+- `analyze-url` execed the OpenClaw CLI **inside the web container** (no binary there) → silently fell back to meta tags.
+- Fix: route the AI step to the **host worker**. New `src/server/agent/url-analyzer.ts` (`analyzePageContent` via `openclaw product-analyst --local`); new `url-analysis` BullMQ queue (`queue.ts`); second Worker in `worker-process.ts`; `analyze-url` route now fetches HTML + enqueues page text + polls for the result (95s), keeping the meta fallback.
+- Verified: `POST /api/analyze-url` (stripe.com) → HTTP 200, `source:"ai"`, real product brief in ~34s.
+
+### Files
+- `src/server/playbooks/playbook-repository.ts` (raw SQL fix — ALSO contains pre-existing user WIP), `src/server/jobs/queue.ts`, `src/server/jobs/worker-process.ts`, `src/app/api/analyze-url/route.ts`, NEW `src/server/agent/url-analyzer.ts`.
+- Rebuilt web image + restarted host worker.
+
+### Commit note
+The generation fix sits in `playbook-repository.ts`, one of the 4 pre-existing WIP files — can't be committed file-isolated from that WIP. URL-mode files are independent/clean.
+
+### Next step
+Decide commit handling for the WIP files; user runs full contact-review → writing test; then Phase 7 (Resend SMTP).
+

@@ -1,7 +1,14 @@
 import { Worker } from 'bullmq'
-import { redisConnection, PLAYBOOK_QUEUE, type PlaybookJobData } from './queue'
+import {
+  redisConnection,
+  PLAYBOOK_QUEUE,
+  URL_ANALYSIS_QUEUE,
+  type PlaybookJobData,
+  type UrlAnalysisJobData,
+} from './queue'
 import { runResearchWorker } from './workers/playbook-generation-worker'
 import { runWritingWorker } from './workers/playbook-writing-worker'
+import { analyzePageContent } from '../agent/url-analyzer'
 import { runRepository } from '../runs/run-repository'
 
 const CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY ?? '3', 10)
@@ -25,6 +32,18 @@ const worker = new Worker<PlaybookJobData>(
   },
 )
 
+// URL-analysis worker: extracts a product brief from page text via OpenClaw.
+// The job's return value is sent back to the waiting web request.
+const urlAnalysisWorker = new Worker<UrlAnalysisJobData>(
+  URL_ANALYSIS_QUEUE,
+  async (job) => analyzePageContent(job.data.pageContent, job.id ?? 'url'),
+  { connection: redisConnection, concurrency: 2 },
+)
+
+urlAnalysisWorker.on('failed', (job, err) => {
+  console.error(`[worker] URL analysis job ${job?.id} failed:`, err.message)
+})
+
 worker.on('completed', (job) => {
   console.log(`[worker] Job ${job.id} (${job.data.type}) completed for playbook ${job.data.playbookId}`)
 })
@@ -44,7 +63,7 @@ runRepository.resetStuckRuns()
 
 async function shutdown() {
   console.log('[worker] Shutting down gracefully...')
-  await worker.close()
+  await Promise.all([worker.close(), urlAnalysisWorker.close()])
   process.exit(0)
 }
 

@@ -1,27 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { execFile } from 'child_process'
-import { promisify } from 'util'
+import { urlAnalysisQueue } from '@/server/jobs/queue'
+import type { ExtractedBrief } from '@/server/agent/url-analyzer'
 
-const execFileAsync = promisify(execFile)
+export type { ExtractedBrief }
 
-const OPENCLAW_BIN = process.env.OPENCLAW_BIN ?? '/home/trinexis-dgx-spark/.openclaw/bin/openclaw'
-const OPENCLAW_STATE_DIR = process.env.OPENCLAW_STATE_DIR ?? '/home/trinexis-dgx-spark/.openclaw-abmsignal'
-const OPENCLAW_CONFIG_PATH = process.env.OPENCLAW_CONFIG_PATH ?? `${OPENCLAW_STATE_DIR}/openclaw.json`
-const OPENCLAW_GATEWAY_PORT = process.env.OPENCLAW_GATEWAY_PORT ?? '18790'
-// Use the dedicated product-analyst agent — NOT `orchestrator`, which is wired to
-// the ABM pipeline soul and will attempt to run a playbook pipeline for any input.
-const URL_ANALYSIS_AGENT_ID = process.env.URL_ANALYSIS_AGENT_ID ?? 'product-analyst'
+// The OpenClaw CLI only exists on the HOST, not in this (web) container — so the
+// AI extraction runs on the host worker. We enqueue the page text and wait for
+// the result (request/response), falling back to meta tags if it fails.
+async function analyzeViaWorker(pageContent: string): Promise<ExtractedBrief> {
+  const job = await urlAnalysisQueue.add('analyze', { pageContent })
+  const jobId = job.id
+  if (!jobId) throw new Error('Failed to enqueue analysis job')
 
-export interface ExtractedBrief {
-  product_name: string
-  description: string
-  value_propositions: string[]
-  target_personas: string
-  differentiators: string
-  competitors: string
-  deployment_model: string
-  deal_size: string
-  sales_cycle: string
+  const deadline = Date.now() + 95_000
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 1500))
+    const fresh = await urlAnalysisQueue.getJob(jobId)
+    if (!fresh) continue
+    const state = await fresh.getState()
+    if (state === 'completed') return fresh.returnvalue as ExtractedBrief
+    if (state === 'failed') throw new Error(fresh.failedReason || 'URL analysis failed')
+  }
+  throw new Error('URL analysis timed out')
 }
 
 // ─── HTML → readable text ──────────────────────────────────────────────────────
@@ -97,89 +97,6 @@ function extractMetaOnly(html: string): ExtractedBrief {
   }
 }
 
-// ─── AI extraction via the `main` general-purpose agent ───────────────────────
-
-async function analyzeWithAgent(pageContent: string): Promise<ExtractedBrief> {
-  const message = [
-    `You are a product intelligence analyst. Your job is to extract structured product information STRICTLY from the webpage content below.`,
-    ``,
-    `CRITICAL RULES:`,
-    `- Extract ONLY what is explicitly stated on the page. Do NOT infer, guess, or fabricate details.`,
-    `- value_propositions must use the product's own language and claims — copy phrases directly from the page where possible.`,
-    `- If a field cannot be determined from the page content, use the default value shown below. Never invent values.`,
-    `- Return ONLY a valid JSON code block. No other text, no explanation, no preamble.`,
-    ``,
-    `## Webpage Content`,
-    pageContent,
-    ``,
-    `## Return this exact JSON structure:`,
-    `\`\`\`json`,
-    `{`,
-    `  "product_name": "Brand name only — no taglines or slogans",`,
-    `  "description": "2-3 sentences using the page's own words: what it does, who it serves, core outcome",`,
-    `  "value_propositions": [`,
-    `    "Specific outcome or claim directly from the page (include numbers/metrics if stated)",`,
-    `    "Second claim from the page",`,
-    `    "Third claim from the page"`,
-    `  ],`,
-    `  "target_personas": "Comma-separated job titles explicitly mentioned or strongly implied (e.g. CMO, Head of Sales, VP Marketing)",`,
-    `  "differentiators": "Features or positioning that the page explicitly contrasts with alternatives",`,
-    `  "competitors": "Competitor names only if explicitly mentioned on the page — empty string if none",`,
-    `  "deployment_model": "saas",`,
-    `  "deal_size": "",`,
-    `  "sales_cycle": ""`,
-    `}`,
-    `\`\`\``,
-    ``,
-    `Enum constraints (use empty string "" if not determinable from page):`,
-    `- deployment_model: saas | on-prem | hybrid | open-source`,
-    `- deal_size: <50k | 50k-250k | 250k-1m | 1m+ | "" (leave blank if not stated)`,
-    `- sales_cycle: <30d | 30-90d | 90-180d | 180d+ | "" (leave blank if not stated)`,
-    `- value_propositions: minimum 2, maximum 6 items, all sourced from explicit page claims`,
-  ].join('\n')
-
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    OPENCLAW_STATE_DIR,
-    OPENCLAW_CONFIG_PATH,
-    OPENCLAW_GATEWAY_PORT,
-  }
-
-  const { stdout } = await execFileAsync(
-    OPENCLAW_BIN,
-    ['agent', '--agent', URL_ANALYSIS_AGENT_ID, '--message', message, '--json'],
-    { env, timeout: 90_000, maxBuffer: 10 * 1024 * 1024 },
-  )
-
-  // Unwrap OpenClaw JSON envelope
-  let agentText = stdout
-  try {
-    const envelope = JSON.parse(stdout) as { result?: { payloads?: Array<{ text?: string }> } }
-    const text = envelope.result?.payloads?.[0]?.text
-    if (typeof text === 'string') agentText = text
-  } catch {
-    // Raw stdout — use as-is
-  }
-
-  const jsonMatch =
-    agentText.match(/```json\s*([\s\S]*?)\s*```/) ??
-    agentText.match(/(\{[\s\S]*\})/)
-  const jsonStr = jsonMatch ? (jsonMatch[1] ?? jsonMatch[0]) : agentText.trim()
-
-  const parsed = JSON.parse(jsonStr) as Partial<ExtractedBrief>
-
-  return {
-    product_name: parsed.product_name ?? '',
-    description: parsed.description ?? '',
-    value_propositions: Array.isArray(parsed.value_propositions) ? parsed.value_propositions : [],
-    target_personas: parsed.target_personas ?? '',
-    differentiators: parsed.differentiators ?? '',
-    competitors: parsed.competitors ?? '',
-    deployment_model: parsed.deployment_model ?? 'saas',
-    deal_size: parsed.deal_size ?? '<50k',
-    sales_cycle: parsed.sales_cycle ?? '30-90d',
-  }
-}
 
 // ─── Route handler ────────────────────────────────────────────────────────────
 
@@ -238,7 +155,7 @@ export async function POST(req: NextRequest) {
 
   // Try AI analysis with the general-purpose agent; fall back to meta-tag extraction
   try {
-    const data = await analyzeWithAgent(pageContent)
+    const data = await analyzeViaWorker(pageContent)
     return NextResponse.json({ ok: true, data, source: 'ai' })
   } catch (agentErr) {
     console.error('[analyze-url] AI analysis failed, falling back to meta extraction:', agentErr)

@@ -54,3 +54,21 @@ export const playbookQueue = new Queue<PlaybookJobData>(PLAYBOOK_QUEUE, {
     removeOnFail: { count: 200 },
   },
 })
+
+// ── URL analysis (product brief from a URL) ──────────────────────────────────
+// Runs on the host worker because it execs the local OpenClaw CLI. The web route
+// enqueues the extracted page text and waits for the result (request/response).
+export interface UrlAnalysisJobData {
+  pageContent: string
+}
+
+export const URL_ANALYSIS_QUEUE = 'url-analysis'
+
+export const urlAnalysisQueue = new Queue<UrlAnalysisJobData>(URL_ANALYSIS_QUEUE, {
+  connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 1,
+    removeOnComplete: { count: 50 },
+    removeOnFail: { count: 50 },
+  },
+})
