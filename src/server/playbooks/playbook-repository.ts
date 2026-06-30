@@ -317,25 +317,30 @@ export const playbookRepository = {
 
     // Correlated NOT EXISTS can't be expressed via Prisma's typed API, so this
     // one path uses raw SQL. All bound values (including the status sets) use
-    // placeholders, so there's no injection surface.
-    const claimablePlaceholders = CLAIMABLE_SOURCE_STATUSES.map(() => '?').join(', ')
-    const runtimePlaceholders = RUNTIME_SLOT_STATUSES.map(() => '?').join(', ')
+    // numbered PostgreSQL placeholders ($1, $2, …), so there's no injection
+    // surface. (Postgres rejects the SQLite-style `?` placeholders.)
+    const params: unknown[] = []
+    const bind = (v: unknown) => {
+      params.push(v)
+      return `$${params.length}`
+    }
+    const agentStatusPh = bind(agentStatusJson)
+    const idPh = bind(playbookId)
+    const claimablePlaceholders = CLAIMABLE_SOURCE_STATUSES.map((s) => bind(s)).join(', ')
+    const userIdPh = bind(userId)
+    const idPh2 = bind(playbookId)
+    const runtimePlaceholders = RUNTIME_SLOT_STATUSES.map((s) => bind(s)).join(', ')
     const affected = await prisma.$executeRawUnsafe(
       `UPDATE "Playbook"
-          SET "status" = 'queued', "progressPct" = 0, "agentStatus" = ?, "failedReason" = NULL
-        WHERE "id" = ?
+          SET "status" = 'queued', "progressPct" = 0, "agentStatus" = ${agentStatusPh}, "failedReason" = NULL
+        WHERE "id" = ${idPh}
           AND "status" IN (${claimablePlaceholders})
           AND NOT EXISTS (
                 SELECT 1 FROM "Playbook" AS p2
-                WHERE p2."userId" = ? AND p2."id" <> ?
+                WHERE p2."userId" = ${userIdPh} AND p2."id" <> ${idPh2}
                   AND p2."status" IN (${runtimePlaceholders})
               )`,
-      agentStatusJson,
-      playbookId,
-      ...CLAIMABLE_SOURCE_STATUSES,
-      userId,
-      playbookId,
-      ...RUNTIME_SLOT_STATUSES,
+      ...params,
     )
     return affected === 1
   },
@@ -460,6 +465,31 @@ export const playbookRepository = {
         })),
       }),
     ])
+  },
+
+  // Insert brand-new contacts (e.g. ones the user added manually during the
+  // review checkpoint). These arrive with client-side synthetic ids that don't
+  // exist in the DB, so they must be created rather than updated.
+  async addContacts(id: string, contacts: ContactInput[]): Promise<void> {
+    if (contacts.length === 0) return
+    await prisma.playbookContact.createMany({
+      data: contacts.map(c => ({
+        playbookId: id,
+        name: c.name,
+        title: c.title,
+        company: c.company ?? '',
+        linkedinUrl: c.linkedinUrl ?? null,
+        email: c.email ?? null,
+        rationale: c.rationale ?? null,
+        sourceUrls: JSON.stringify(c.sourceUrls ?? []),
+        confidence: c.confidence ?? 'medium',
+        source: c.source ?? 'Manual',
+        verificationStatus: c.verificationStatus ?? 'pending',
+        notes: c.notes ?? null,
+        personalizationSignals: JSON.stringify(c.personalizationSignals ?? []),
+        directQuotes: JSON.stringify(c.directQuotes ?? []),
+      })),
+    })
   },
 
   async updateContactStatuses(

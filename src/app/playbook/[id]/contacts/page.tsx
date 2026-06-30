@@ -31,6 +31,7 @@ interface ResearchedContact {
   confidence: ContactConfidence
   source: string
   linkedinUrl: string
+  email?: string
   status: ContactVerificationStatus
   notes?: string
   personalization_signals?: PersonalizationSignal[]
@@ -71,6 +72,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
             confidence: c.confidence || 'medium',
             source: c.source || 'AI Research',
             linkedinUrl: c.linkedin_url || '',
+            email: c.email,
             status: c.verification_status || 'pending',
             notes: c.notes,
             personalization_signals: c.personalization_signals,
@@ -111,6 +113,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
         confidence: c.confidence,
         source: c.source,
         linkedin_url: c.linkedinUrl,
+        email: c.email,
         verification_status: c.status,
         playbook_id: id,
       }))
@@ -184,6 +187,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
       confidence: newContact.confidence,
       source: newContact.source || 'Manual',
       linkedinUrl: newContact.linkedinUrl || '#',
+      email: newContact.email || undefined,
       status: 'pending',
     }
     setContacts(prev => [...prev, contact])
