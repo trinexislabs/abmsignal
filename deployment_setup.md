@@ -244,3 +244,23 @@ The generation fix sits in `playbook-repository.ts`, one of the 4 pre-existing W
 ### Next step
 Decide commit handling for the WIP files; user runs full contact-review → writing test; then Phase 7 (Resend SMTP).
 
+---
+
+## Phase 7 — Resend SMTP + cross-device magic links  ✅ (2026-06-30)
+
+- Supabase **gates email-template editing behind custom SMTP** (free-tier built-in email = read-only templates). So Resend was a prerequisite for the token_hash fix, not just deliverability.
+- Cloudflare has **no outbound SMTP** (Email Routing = receive-only; Workers+MailChannels free tier discontinued 2024) → used **Resend**.
+- Sending domain **`notify.abmsignal.com`** (region ap-northeast-1), sender `noreply@notify.abmsignal.com`.
+- DNS in Cloudflare (verified live via dig): MX `send.notify`→feedback-smtp.ap-northeast-1.amazonses.com; SPF TXT `send.notify`; DKIM TXT `resend._domainkey.notify`. (DMARC optional, not set.)
+- Supabase custom SMTP: host `smtp.resend.com`, port 465, user `resend`, pass = Resend API key, sender `noreply@notify.abmsignal.com`.
+- Template editing unlocked → **Magic link** template link changed to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` → `/auth/confirm` verifies server-side (PKCE-free) → **cross-device magic links now work** (verified on mobile).
+
+### Loose ends — CLOSED (2026-06-30)
+- **Full pipeline verified end-to-end**: a playbook (TracEI→Hatton National Bank) reached COMPLETE 100% — 8 contacts confirmed, 18/18 sections (181KB content, 0 empty), 109 sources cited.
+- **Generation fix + contact-review WIP committed** (`15da843`): Postgres slot-claim placeholders + manual/edited contacts (with email) at the review checkpoint. Working tree clean.
+
+### Remaining phases
+- Phase 8 — Google OAuth (Supabase provider)
+- Phase 9 — Lemon Squeezy payments (replace mock; proper state model)
+- Phase 10 — Backups (Supabase DB + off-box) · Phase 11 — Monitoring · Phase 12 — Launch checklist
+
