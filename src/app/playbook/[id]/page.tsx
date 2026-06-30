@@ -507,6 +507,34 @@ export default function PlaybookDetailPage({ params }: { params: Promise<{ id: s
     fetchPlaybook()
   }, [id, mounted, fetchPlaybook])
 
+  // Returning from Lemon Squeezy checkout (?paid=1): poll for entitlement (the
+  // webhook performs the unlock) and reveal content once it lands.
+  useEffect(() => {
+    if (!id || !mounted) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('paid') !== '1') return
+    let cancelled = false
+    let tries = 0
+    const poll = async () => {
+      if (cancelled) return
+      tries++
+      try {
+        const res = await fetch(`/api/payment/status?playbookId=${id}`, { cache: 'no-store' })
+        const j = await res.json()
+        if (j.playbookPaid) {
+          await fetchPlaybook()
+          window.history.replaceState({}, '', `/playbook/${id}`)
+          return
+        }
+      } catch {
+        // keep polling
+      }
+      if (tries < 20) setTimeout(poll, 2000) // ~40s window for the webhook
+    }
+    poll()
+    return () => { cancelled = true }
+  }, [id, mounted, fetchPlaybook])
+
   const handleSourceUpdate = useCallback((sectionId: string, sourceId: string, status: SourceVerificationStatus) => {
     setSourceStatuses(prev => ({
       ...prev,

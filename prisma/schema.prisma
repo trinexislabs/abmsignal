@@ -206,3 +206,49 @@ model PlaybookEvent {
   playbook Playbook     @relation(fields: [playbookId], references: [id])
   run      PlaybookRun? @relation(fields: [runId], references: [id])
 }
+
+// ── Payments (Lemon Squeezy — merchant of record) ───────────────────────────
+// One row per transaction (checkout/order/subscription). Audit + state model +
+// reconciliation source. userId/playbookId are plain references (no FK) so the
+// ledger survives user/playbook deletion.
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String?
+  playbookId      String?
+  // "unlock" (one finished playbook) | "credit" (top-up) | "subscription" (growth)
+  purpose         String
+  provider        String   @default("lemonsqueezy")
+  // checkout_created | payment_pending | payment_succeeded | payment_failed |
+  // subscription_active | subscription_past_due | subscription_cancelled |
+  // refunded | chargeback_opened | manual_unlock
+  status          String   @default("checkout_created")
+  amountCents     Int?
+  currency        String   @default("USD")
+  checkoutId      String?
+  orderId         String?
+  subscriptionId  String?
+  lemonCustomerId String?
+  variantId       String?
+  rawJson         String? // last related event payload, for debugging
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([subscriptionId])
+}
+
+// Every received provider webhook, for idempotency (dedupeKey = sha256 of the
+// raw body) and an audit trail.
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String    @default("lemonsqueezy")
+  eventName   String
+  dedupeKey   String    @unique
+  payload     String
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+
+  @@index([eventName])
+}

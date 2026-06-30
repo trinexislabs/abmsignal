@@ -27,6 +27,12 @@ function sanitizeReturnTo(value: string | undefined, fallback: string): string {
 }
 
 export async function POST(request: Request) {
+  // Mock gateway is for local dev only. Disabled in production unless explicitly
+  // enabled — real payments go through Lemon Squeezy (/api/payment/checkout).
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCK_PAYMENTS !== 'true') {
+    return NextResponse.json({ error: 'Mock payments are disabled' }, { status: 403 })
+  }
+
   const session = await getSession()
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

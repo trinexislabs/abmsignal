@@ -264,3 +264,29 @@ Decide commit handling for the WIP files; user runs full contact-review → writ
 - Phase 9 — Lemon Squeezy payments (replace mock; proper state model)
 - Phase 10 — Backups (Supabase DB + off-box) · Phase 11 — Monitoring · Phase 12 — Launch checklist
 
+---
+
+## Phase 8 — Google OAuth  ✅ (2026-06-30)
+Code already in place (signin/signup Google button → signInWithOAuth → /auth/callback). Configured Google Cloud OAuth client (redirect URI = Supabase callback `https://drttinztgqfuxgpdlanx.supabase.co/auth/v1/callback`) + Supabase Google provider. **Verified working.**
+
+## Phase 9 — Lemon Squeezy payments  ⏳ code complete, live test pending (2026-06-30)
+
+Replaces the mock gateway with LS (merchant of record). Pricing confirmed: one-off $29, Growth $229/mo (10/cycle). Card form removed — we redirect to LS hosted checkout.
+
+### Schema (migration `add_payments`)
+- `Payment` (state model: checkout_created→payment_succeeded/failed, subscription_active/past_due/cancelled, refunded, manual_unlock) and `WebhookEvent` (idempotency via sha256 dedupeKey + audit).
+
+### Code (all new/mine, type-clean, deployed)
+- `src/server/payments/lemonsqueezy.ts` — createCheckout, verifyWebhookSignature (HMAC-SHA256), getOrder/getSubscription (reconciliation reads).
+- `src/server/payments/payment-service.ts` — recordCheckout + handleLemonEvent (idempotent entitlement: unlock playbook / grant credit guarded by order id / activateGrowthCycle + tryGrowthAutoUnlock on subscribe).
+- Routes: `POST /api/payment/checkout` (authed, creates LS checkout), `POST /api/webhooks/lemonsqueezy` (raw-body signature verify + dedupe), `GET /api/payment/status` (success-page poll).
+- UI: `playbook-paywall.tsx` → redirect to LS; `playbook/[id]/page.tsx` polls on `?paid=1`; `onboarding/plan-selector` growth → LS checkout. Mock route gated (403 in prod unless `ENABLE_MOCK_PAYMENTS=true`).
+- Entitlement reuse: existing `activateGrowthCycle`, `tryGrowthAutoUnlock`, playbook paymentStatus, UserCredit.
+
+### Remaining to go live
+1. Add LS keys to `.env.production` (API key, store id, growth + one-off variant ids).
+2. Create LS webhook → `https://app.abmsignal.com/api/webhooks/lemonsqueezy` → set signing secret → `LEMONSQUEEZY_WEBHOOK_SECRET`.
+3. Recreate web container; test in LS **test mode** (checkout → webhook → unlock / subscribe).
+
+### Deferred (noted): automated refund/chargeback revocation UI, admin reconciliation UI, periodic background reconciliation job, in-app "manage subscription" (LS customer portal) link.
+

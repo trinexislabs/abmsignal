@@ -52,10 +52,19 @@ export function PlanSelector({ firstName }: { firstName: string }) {
   async function handleConfirm() {
     setLoading(true)
     try {
-      // Growth = monthly subscription, billed upfront via the mock gateway.
-      // The /api/payment/mock endpoint activates the plan on payment success.
+      // Growth = monthly subscription via Lemon Squeezy hosted checkout.
       if (selectedPlan === 'growth') {
-        router.push(`/payment/mock?purpose=plan&plan=growth&amount=${GROWTH_PRICE_USD}`)
+        const res = await fetch('/api/payment/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ purpose: 'subscription' }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok || !data.url) {
+          toast.error(data.error ?? 'Could not start checkout')
+          return
+        }
+        window.location.href = data.url
         return
       }
 
