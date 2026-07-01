@@ -290,3 +290,17 @@ Replaces the mock gateway with LS (merchant of record). Pricing confirmed: one-o
 
 ### Deferred (noted): automated refund/chargeback revocation UI, admin reconciliation UI, periodic background reconciliation job, in-app "manage subscription" (LS customer portal) link.
 
+---
+
+## Security — RLS on public tables  ✅ (2026-07-01)
+
+Supabase advisor flagged **rls_disabled_in_public** (CRITICAL). Supabase exposes `public` tables via PostgREST with the public anon key; RLS was off → **confirmed leak** (anon REST read User emails).
+
+Fix: enabled RLS on **all 14 public tables** (no policies = deny to anon/authenticated API roles). App uses **Prisma as the `postgres` owner, which BYPASSES RLS**, so it's unaffected (only uses Supabase for auth, never the REST data API).
+
+Verified: anon REST `User`/`Payment` → `[]`; Prisma still reads (count ok). Advisor clears on next scan.
+
+Durability: `supabase/enable-rls.sql` (idempotent, loops all public tables) — **re-run after any migration that adds tables** (new tables default RLS-off). Optional dashboard hardening: remove `public` from Settings → API → Exposed schemas.
+
+> NOTE: overlay checkout + billing-page checkout buttons are implemented & deployed but still UNCOMMITTED pending the user's live LS payment test.
+
