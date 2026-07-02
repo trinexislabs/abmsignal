@@ -722,12 +722,6 @@ export default function LandingPage() {
                 <LogoMark className="w-5 h-5 text-[#10B981]" />
               </div>
               <span className="font-heading font-bold text-lg text-white">ABMSignal</span>
-              <Badge
-                variant="secondary"
-                className="text-[10px] px-1.5 py-0 bg-[#0B3D2E] text-[#10B981] border border-[#10B981]/30"
-              >
-                BETA
-              </Badge>
             </div>
 
             <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-[#D1D5DB]">
