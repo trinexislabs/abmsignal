@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Lock, Loader2, ShieldCheck, Sparkles } from 'lucide-react'
+import { openCheckoutOverlay } from '@/lib/lemonsqueezy-checkout'
 
 interface Props {
   playbookId: string
@@ -29,11 +30,13 @@ export function PlaybookPaywall({
   contactsCount,
   isGrowthSubscriber = false,
   cycleResetsAt,
+  onUnlocked,
 }: Props) {
   const [loading, setLoading] = useState<Choice | null>(null)
+  const [finalizing, setFinalizing] = useState(false)
 
   async function startCheckout(choice: Choice) {
-    if (loading) return
+    if (loading || finalizing) return
     setLoading(choice)
     try {
       const purpose = choice === 'growth' ? 'subscription' : 'unlock'
@@ -48,17 +51,56 @@ export function PlaybookPaywall({
         setLoading(null)
         return
       }
-      // Hand off to Lemon Squeezy's hosted, PCI-compliant checkout.
-      window.location.href = data.url
+      // Open Lemon Squeezy's overlay checkout (modal on this page).
+      await openCheckoutOverlay(data.url, handleCheckoutSuccess)
+      // Overlay is open; re-enable underlying buttons in case the user closes it.
+      setLoading(null)
     } catch {
       toast.error('Network error starting checkout')
       setLoading(null)
     }
   }
 
+  // Payment succeeded in the overlay. Entitlement applies via webhook — poll for
+  // it, then reveal the content.
+  function handleCheckoutSuccess() {
+    setFinalizing(true)
+    let tries = 0
+    const poll = async () => {
+      tries++
+      try {
+        const res = await fetch(`/api/payment/status?playbookId=${playbookId}`, { cache: 'no-store' })
+        const j = await res.json()
+        if (j.playbookPaid) {
+          toast.success('Unlocked — enjoy your playbook!')
+          onUnlocked?.()
+          return
+        }
+      } catch {
+        // keep polling
+      }
+      if (tries < 25) {
+        setTimeout(poll, 2000)
+      } else {
+        setFinalizing(false)
+        toast.message('Payment received — your playbook will unlock shortly.')
+      }
+    }
+    poll()
+  }
+
   return (
     <div className="absolute inset-0 z-30 flex items-start justify-center overflow-y-auto px-4 py-10">
       <div className="absolute inset-0 bg-[#0B0F13]/70 backdrop-blur-[2px] pointer-events-none" />
+
+      {finalizing && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center">
+          <div className="rounded-2xl border border-[#374151] bg-[#111827] px-6 py-5 flex items-center gap-3 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+            <Loader2 className="w-5 h-5 animate-spin text-[#10B981]" />
+            <span className="text-sm text-white">Finalizing your unlock…</span>
+          </div>
+        </div>
+      )}
 
       <div className="relative w-full max-w-lg">
         <div className="rounded-2xl border border-[#374151] bg-[#111827] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">

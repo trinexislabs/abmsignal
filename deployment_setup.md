@@ -302,5 +302,16 @@ Verified: anon REST `User`/`Payment` → `[]`; Prisma still reads (count ok). Ad
 
 Durability: `supabase/enable-rls.sql` (idempotent, loops all public tables) — **re-run after any migration that adds tables** (new tables default RLS-off). Optional dashboard hardening: remove `public` from Settings → API → Exposed schemas.
 
-> NOTE: overlay checkout + billing-page checkout buttons are implemented & deployed but still UNCOMMITTED pending the user's live LS payment test.
+## Phase 9 — payments: overlay checkout + live go-live  ✅ (2026-07-02)
+
+- **Overlay checkout** (Lemon.js): checkout opens as a modal on the page instead of redirecting. New `src/lib/lemonsqueezy-checkout.ts`; `createCheckout` uses `embed:true`; paywall + onboarding + billing open the overlay and poll `/api/payment/status` to reveal.
+- **Billing page connected**: was partially broken (Growth = detour via onboarding; "buy credits" dead-ended). New `billing-actions.tsx` opens the LS overlay directly (`subscription` / `credit`).
+- **Went LIVE**: LS store approved. LS API keys + webhooks are **mode-specific** — the initial keys were TEST keys (`test_mode:true`). User created live products (new variant ids), a live API key, and a live webhook + secret. Copied into `.env.production`; verified both variants now return `test_mode:false`; web recreated. (Note: `database.env` has a shell-special char in a value that breaks `source` — use a node parser, not `. ./file`.)
+
+### Remaining payment verification
+One real $29 purchase → confirm live webhook signature + entitlement → refund to confirm reversal.
+
+## Deploy model & git state  (2026-07-02)
+- **No CI/CD.** Deploys are MANUAL from the working tree: `sudo docker compose --env-file .env.production build web && up -d` + `systemctl restart abmsignal-worker`. So committing ≠ deploying; even uncommitted worktree changes are live.
+- Remote `origin` = github.com/trinexislabs/abmsignal, branch `chore/dockerize-deploy`. Chose plan **A**: commit payment UI + push all commits to GitHub for backup; keep manual deploy. Auto-deploy (self-hosted GH Actions runner on the DGX — fits tunnel-only/no-inbound) deferred to Phase 11.
 

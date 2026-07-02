@@ -65,7 +65,9 @@ export async function createCheckout(
           redirect_url: params.redirectUrl,
           enabled_variants: [Number(variantId)],
         },
-        checkout_options: { embed: false },
+        // embed:true → URL opens in the Lemon.js overlay (modal on our page).
+        // redirect_url above is the fallback if the overlay isn't used.
+        checkout_options: { embed: true },
       },
       relationships: {
         store: { data: { type: 'stores', id: storeId() } },

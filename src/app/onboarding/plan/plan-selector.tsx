@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { Zap, ArrowRight, Loader2, Check, Sparkles, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GROWTH_PRICE_USD, ONE_OFF_PRICE_USD } from '@/lib/pricing'
+import { openCheckoutOverlay } from '@/lib/lemonsqueezy-checkout'
 
 const PLANS = [
   {
@@ -52,7 +53,7 @@ export function PlanSelector({ firstName }: { firstName: string }) {
   async function handleConfirm() {
     setLoading(true)
     try {
-      // Growth = monthly subscription via Lemon Squeezy hosted checkout.
+      // Growth = monthly subscription via Lemon Squeezy overlay checkout.
       if (selectedPlan === 'growth') {
         const res = await fetch('/api/payment/checkout', {
           method: 'POST',
@@ -64,7 +65,10 @@ export function PlanSelector({ firstName }: { firstName: string }) {
           toast.error(data.error ?? 'Could not start checkout')
           return
         }
-        window.location.href = data.url
+        await openCheckoutOverlay(data.url, () => {
+          router.push('/dashboard')
+          router.refresh()
+        })
         return
       }
 

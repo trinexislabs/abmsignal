@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireAuth } from '@/lib/auth/session'
 import {
@@ -7,9 +6,9 @@ import {
   GROWTH_CYCLE_CREDITS,
 } from '@/server/users/user-repository'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { CreditCard, Zap, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { CreditCard, Zap, CheckCircle2 } from 'lucide-react'
 import { ONE_OFF_PRICE_USD, GROWTH_PRICE_USD } from '@/lib/pricing'
+import { BillingCheckoutButton } from './billing-actions'
 
 export default async function BillingPage() {
   const session = await requireAuth()
@@ -99,11 +98,12 @@ export default async function BillingPage() {
 
         {!isGrowth && credits === 0 && (
           <div className="mt-4">
-            <Link href="/onboarding/plan">
-              <Button size="sm" className="bg-[#10B981] hover:bg-[#10B981]/90 text-white gap-1.5">
-                Buy more credits <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-            </Link>
+            <BillingCheckoutButton
+              purpose="credit"
+              label={`Buy a credit ($${ONE_OFF_PRICE_USD})`}
+              size="sm"
+              className="bg-[#10B981] hover:bg-[#10B981]/90 text-white gap-1.5"
+            />
           </div>
         )}
       </Card>
@@ -128,11 +128,7 @@ export default async function BillingPage() {
               </li>
             ))}
           </ul>
-          <Link href="/onboarding/plan">
-            <Button className="bg-[#10B981] hover:bg-[#10B981]/90 text-white font-semibold gap-1.5">
-              Upgrade now <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
+          <BillingCheckoutButton purpose="subscription" label="Upgrade now" />
         </Card>
       )}
     </div>
