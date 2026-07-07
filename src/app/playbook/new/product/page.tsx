@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { TrackEvent } from '@/components/analytics/track-event'
 import { formState } from '@/lib/form-state'
 
 // Native select styled to match the dark form theme
@@ -300,6 +301,7 @@ export default function ProductBriefPage() {
 
   return (
     <div className="min-h-screen bg-[#0B0F13]">
+      <TrackEvent type="brief.viewed" />
       {/* Top nav */}
       <div className="border-b border-[#374151] bg-[#0B0F13]/80 backdrop-blur-xl sticky top-0 z-30">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">

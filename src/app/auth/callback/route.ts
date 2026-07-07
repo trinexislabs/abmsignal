@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logUserEvent } from '@/server/analytics/user-events'
 
 // OAuth (Google) + PKCE code exchange. Supabase redirects here with `?code=`
 // after the user authenticates with the provider.
@@ -13,8 +14,10 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // Behavior funnel: OAuth code exchanged = user returned to app.
+      if (data.user) await logUserEvent(data.user.id, 'auth.login', { path: '/auth/callback' })
       return NextResponse.redirect(`${base}${next}`)
     }
   }

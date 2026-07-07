@@ -26,8 +26,29 @@ model User {
   subscription UserSubscription?
   credits      UserCredit[]
   memberships  OrganizationMember[]
+  events       UserEvent[]
 
   @@map("User")
+}
+
+// ── Behavioral / funnel analytics ────────────────────────────────────────────
+// First-party, user-scoped event stream powering the admin behavior funnel.
+// Written server-side at auth verify (`auth.login`) and via a lightweight
+// client beacon (`/api/track`) for page-view signals the DB can't otherwise
+// infer (dashboard/brief/paywall views). Complements `PlaybookEvent`, which is
+// pipeline-scoped. `metadata` is a JSON string (matches PlaybookEvent).
+model UserEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  path      String?
+  metadata  String   @default("{}") // JSON
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([type, createdAt])
 }
 
 // ── Billing models ────────────────────────────────────────────────────────────

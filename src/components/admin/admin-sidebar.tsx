@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import { cn, getUserInitials } from '@/lib/utils'
-import { LayoutDashboard, Users, FileText, BarChart3, ShieldAlert, LogOut, ArrowUpRight, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, BarChart3, Filter, ShieldAlert, LogOut, ArrowUpRight, Menu, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 const NAV_ITEMS = [
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Playbooks', href: '/admin/playbooks', icon: FileText },
   { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { label: 'Funnel', href: '/admin/funnel', icon: Filter },
 ]
 
 interface AdminSidebarProps {

@@ -354,3 +354,220 @@ export async function getRecentSignups(limit = 6) {
     include: { subscription: { select: { plan: true } } },
   })
 }
+
+// ── Behavioral funnel ────────────────────────────────────────────────────────
+// Distinct-user counts for each step of the product journey, the return-activity
+// metrics, and the per-step drop-off user lists (for outreach). Combines two
+// data sources:
+//   • Derived (retroactive): Playbook status/paidAt + Payment ledger — works on
+//     all historical data.
+//   • Event-based (from tracking deploy forward only, no backfill): UserEvent
+//     'auth.login' / 'brief.viewed' / 'contact_review.submitted'.
+// Everything is loaded once here and computed in JS (admin scale), so the funnel
+// page makes a single round-trip.
+
+// Playbook status groupings for the funnel (mirror PlaybookStatus).
+const GENERATION_STARTED_STATUSES: PlaybookStatus[] = [
+  'queued',
+  'pending_queue',
+  'researching',
+  'contact_review',
+  'writing',
+  'reviewing',
+  'complete',
+  ...FAILED_STATUSES,
+]
+const REACHED_REVIEW_STATUSES: PlaybookStatus[] = ['contact_review', 'writing', 'reviewing', 'complete']
+const PASSED_REVIEW_STATUSES: PlaybookStatus[] = ['writing', 'reviewing', 'complete']
+// Payment ledger states that mean money actually cleared / access was granted.
+const PAID_PAYMENT_STATUSES = ['payment_succeeded', 'subscription_active', 'manual_unlock']
+
+export interface FunnelStep {
+  key: string
+  label: string
+  users: number
+  description: string
+  tracked: boolean // true = relies on new event tracking (no pre-deploy backfill)
+}
+
+export interface FunnelSegmentUser {
+  id: string
+  name: string | null
+  email: string
+  createdAt: Date
+}
+
+export interface FunnelSegment {
+  key: string
+  label: string
+  description: string
+  count: number
+  users: FunnelSegmentUser[] // capped sample, most recent first
+}
+
+export interface FunnelReturnMetrics {
+  returners: number // users with ≥1 login event
+  repeatLoginUsers: number // users with ≥2 login events
+  postBriefReturners: number // any activity after their first brief
+  postCompletionReturners: number // any activity after a playbook completed
+}
+
+export interface FunnelAnalytics {
+  totalUsers: number
+  steps: FunnelStep[]
+  metrics: FunnelReturnMetrics
+  segments: FunnelSegment[]
+  hasEventData: boolean // any UserEvent rows exist yet
+}
+
+const SEGMENT_SAMPLE_CAP = 50
+
+export async function getFunnelAnalytics(): Promise<FunnelAnalytics> {
+  const [users, playbooks, events, payments] = await Promise.all([
+    prisma.user.findMany({ select: { id: true, name: true, email: true, createdAt: true } }),
+    prisma.playbook.findMany({
+      where: { userId: { not: null } },
+      select: { userId: true, status: true, completedAt: true, paymentStatus: true, createdAt: true },
+    }),
+    prisma.userEvent.findMany({ select: { userId: true, type: true, createdAt: true } }),
+    prisma.payment.findMany({
+      where: { userId: { not: null }, status: { in: PAID_PAYMENT_STATUSES } },
+      select: { userId: true },
+    }),
+  ])
+
+  const userDir = new Map(users.map((u) => [u.id, u]))
+  const totalUsers = users.length
+
+  // Distinct-user sets per step.
+  const registered = new Set(users.map((u) => u.id))
+  const loggedIn = new Set<string>()
+  const repeatLoginCount = new Map<string, number>()
+  const briefViewed = new Set<string>()
+  const reviewSubmittedEvt = new Set<string>()
+
+  for (const e of events) {
+    if (e.type === 'auth.login') {
+      loggedIn.add(e.userId)
+      repeatLoginCount.set(e.userId, (repeatLoginCount.get(e.userId) ?? 0) + 1)
+    } else if (e.type === 'brief.viewed') {
+      briefViewed.add(e.userId)
+    } else if (e.type === 'contact_review.submitted') {
+      reviewSubmittedEvt.add(e.userId)
+    }
+  }
+
+  const briefCreated = new Set<string>()
+  const generationStarted = new Set<string>()
+  const reachedReview = new Set<string>()
+  const passedReview = new Set<string>()
+  const completed = new Set<string>()
+  const paid = new Set<string>()
+  // Earliest brief-created / completed time per user, for return-activity metrics.
+  const firstBriefAt = new Map<string, Date>()
+  const firstCompletedAt = new Map<string, Date>()
+
+  for (const p of playbooks) {
+    const uid = p.userId as string
+    briefCreated.add(uid)
+    const prevBrief = firstBriefAt.get(uid)
+    if (!prevBrief || p.createdAt < prevBrief) firstBriefAt.set(uid, p.createdAt)
+
+    const status = p.status as PlaybookStatus
+    if (GENERATION_STARTED_STATUSES.includes(status)) generationStarted.add(uid)
+    if (REACHED_REVIEW_STATUSES.includes(status)) reachedReview.add(uid)
+    if (PASSED_REVIEW_STATUSES.includes(status)) passedReview.add(uid)
+    if (status === 'complete') {
+      completed.add(uid)
+      if (p.completedAt) {
+        const prev = firstCompletedAt.get(uid)
+        if (!prev || p.completedAt < prev) firstCompletedAt.set(uid, p.completedAt)
+      }
+    }
+    if (p.paymentStatus === 'paid') paid.add(uid)
+  }
+
+  for (const pay of payments) paid.add(pay.userId as string)
+
+  // Unions of derived + event-based signals.
+  const reachedBrief = union(briefViewed, briefCreated)
+  const passedReviewAll = union(passedReview, reviewSubmittedEvt)
+
+  // Return-activity metrics.
+  let repeatLoginUsers = 0
+  for (const n of repeatLoginCount.values()) if (n >= 2) repeatLoginUsers++
+
+  // "Activity after X" = a login or dashboard view whose timestamp is later than
+  // the user's first brief / first completion.
+  const returnEvents = events.filter((e) => e.type === 'auth.login' || e.type === 'dashboard.viewed')
+  const postBrief = new Set<string>()
+  const postCompletion = new Set<string>()
+  for (const e of returnEvents) {
+    const briefAt = firstBriefAt.get(e.userId)
+    if (briefAt && e.createdAt > briefAt) postBrief.add(e.userId)
+    const compAt = firstCompletedAt.get(e.userId)
+    if (compAt && e.createdAt > compAt) postCompletion.add(e.userId)
+  }
+
+  const steps: FunnelStep[] = [
+    { key: 'registered', label: 'Registered', users: registered.size, description: 'Signed up for an account', tracked: false },
+    { key: 'returned', label: 'Returned to app', users: loggedIn.size, description: 'Verified a magic-link / login and came back', tracked: true },
+    { key: 'brief', label: 'Reached product brief', users: reachedBrief.size, description: 'Opened the product-brief step or created one', tracked: false },
+    { key: 'generation', label: 'Started generation', users: generationStarted.size, description: 'Kicked off playbook generation', tracked: false },
+    { key: 'review', label: 'Reached contact review', users: reachedReview.size, description: 'Research finished; hit the contact-review gate', tracked: false },
+    { key: 'review_cta', label: 'Passed contact-review CTA', users: passedReviewAll.size, description: 'Approved contacts and continued to writing', tracked: false },
+    { key: 'completed', label: 'Playbook completed', users: completed.size, description: 'A playbook finished generating', tracked: false },
+    { key: 'returned_after_complete', label: 'Returned after completion', users: postCompletion.size, description: 'Came back to the app after a playbook completed', tracked: true },
+    { key: 'paid', label: 'Past the paywall', users: paid.size, description: 'Unlocked a playbook / paid', tracked: false },
+  ]
+
+  const metrics: FunnelReturnMetrics = {
+    returners: loggedIn.size,
+    repeatLoginUsers,
+    postBriefReturners: postBrief.size,
+    postCompletionReturners: postCompletion.size,
+  }
+
+  // Drop-off segments (reached step N but not N+1), most valuable for outreach.
+  const segments: FunnelSegment[] = [
+    buildSegment('registered_not_returned', 'Registered · never returned', 'Signed up but no recorded return visit (tracking starts at deploy).', difference(registered, loggedIn), userDir),
+    buildSegment('returned_not_briefed', 'Returned · no product brief', 'Came back but never opened the product-brief step.', difference(loggedIn, reachedBrief), userDir),
+    buildSegment('briefed_not_generated', 'Briefed · never generated', 'Started a product brief but never launched generation.', difference(reachedBrief, generationStarted), userDir),
+    buildSegment('review_not_submitted', 'Stuck at contact review', 'Reached the contact-review gate but never approved contacts.', difference(reachedReview, passedReviewAll), userDir),
+    buildSegment('completed_not_paid', 'Completed · did not pay', 'Playbook finished but never made it past the paywall.', difference(completed, paid), userDir),
+  ]
+
+  return { totalUsers, steps, metrics, segments, hasEventData: events.length > 0 }
+}
+
+function union(a: Set<string>, b: Set<string>): Set<string> {
+  const out = new Set(a)
+  for (const v of b) out.add(v)
+  return out
+}
+
+function difference(a: Set<string>, b: Set<string>): string[] {
+  const out: string[] = []
+  for (const v of a) if (!b.has(v)) out.push(v)
+  return out
+}
+
+function buildSegment(
+  key: string,
+  label: string,
+  description: string,
+  ids: string[],
+  userDir: Map<string, { id: string; name: string | null; email: string; createdAt: Date }>,
+): FunnelSegment {
+  const users = ids
+    .map((id) => userDir.get(id))
+    .filter((u): u is NonNullable<typeof u> => Boolean(u))
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  return {
+    key,
+    label,
+    description,
+    count: users.length,
+    users: users.slice(0, SEGMENT_SAMPLE_CAP).map((u) => ({ id: u.id, name: u.name, email: u.email, createdAt: u.createdAt })),
+  }
+}

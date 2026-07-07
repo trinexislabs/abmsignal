@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { playbookService } from '@/server/playbooks/playbook-service'
 import type { ApiContact } from '@/server/playbooks/playbook-types'
 import type { Contact } from '@/types'
+import { logUserEvent } from '@/server/analytics/user-events'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -42,6 +43,11 @@ export async function POST(request: Request, { params }: RouteContext) {
   }))
 
   const { runId } = await playbookService.submitContactReview(id, apiContacts)
+
+  // Behavior funnel: the user acted on the contact-review CTA (passed the gate).
+  if (playbook.user_id) {
+    await logUserEvent(playbook.user_id, 'contact_review.submitted', { metadata: { playbookId: id } })
+  }
 
   return NextResponse.json({
     data: {

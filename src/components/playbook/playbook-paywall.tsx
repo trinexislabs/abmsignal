@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Lock, Loader2, ShieldCheck, Sparkles } from 'lucide-react'
 import { openCheckoutOverlay } from '@/lib/lemonsqueezy-checkout'
+import { track } from '@/lib/analytics/track'
+import { TrackEvent } from '@/components/analytics/track-event'
 
 interface Props {
   playbookId: string
@@ -38,6 +40,7 @@ export function PlaybookPaywall({
   async function startCheckout(choice: Choice) {
     if (loading || finalizing) return
     setLoading(choice)
+    track('paywall.checkout_clicked', { playbookId, choice })
     try {
       const purpose = choice === 'growth' ? 'subscription' : 'unlock'
       const res = await fetch('/api/payment/checkout', {
@@ -91,6 +94,7 @@ export function PlaybookPaywall({
 
   return (
     <div className="absolute inset-0 z-30 flex items-start justify-center overflow-y-auto px-4 py-10">
+      <TrackEvent type="paywall.viewed" />
       <div className="absolute inset-0 bg-[#0B0F13]/70 backdrop-blur-[2px] pointer-events-none" />
 
       {finalizing && (

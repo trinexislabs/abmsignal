@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { ActivePlaybooks } from '@/components/dashboard/active-playbooks'
 import { FailedPlaybookActions } from '@/components/dashboard/failed-playbook-actions'
+import { TrackEvent } from '@/components/analytics/track-event'
 import { requireAuth } from '@/lib/auth/session'
 import { canAccess } from '@/lib/plan-features'
 import { playbookRetentionLimit } from '@/lib/pricing'
@@ -173,6 +174,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
+      <TrackEvent type="dashboard.viewed" />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

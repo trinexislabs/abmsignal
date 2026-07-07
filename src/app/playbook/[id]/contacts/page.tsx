@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { AppSidebar, MobileSidebar } from '@/components/app-sidebar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { TrackEvent } from '@/components/analytics/track-event'
 import type { Contact, ContactVerificationStatus, ContactConfidence, PersonalizationSignal, DirectQuote } from '@/types'
 import {
   AlertTriangle,
@@ -197,6 +198,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="flex h-screen bg-[#0B0F13] overflow-hidden">
+      <TrackEvent type="contact_review.viewed" />
       <AppSidebar />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
