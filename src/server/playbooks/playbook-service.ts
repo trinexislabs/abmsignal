@@ -59,6 +59,25 @@ async function getQueue() {
   return _queue
 }
 
+// Remove any queued/active BullMQ jobs belonging to a playbook so they don't
+// fire after it's deleted/stopped. Best-effort: if Redis is unreachable we skip.
+// (An 'active' job can't be interrupted here — the worker's cooperative-cancel
+// poll handles the running subprocess; this just clears the pending records.)
+async function removeQueuedJobs(playbookId: string): Promise<void> {
+  try {
+    const queue = await getQueue()
+    if (!queue) return
+    const jobs = await queue.getJobs(['waiting', 'delayed', 'paused', 'active'])
+    for (const job of jobs) {
+      if (job?.data?.playbookId === playbookId) {
+        try { await job.remove() } catch { /* job already gone — ignore */ }
+      }
+    }
+  } catch (err) {
+    console.warn(`[playbook-service] queue cleanup skipped for ${playbookId}:`, err)
+  }
+}
+
 async function enqueueOrFallback(
   type: 'research' | 'writing',
   runId: string,
@@ -282,23 +301,24 @@ export const playbookService = {
     }
 
     // 2. Drop any pending BullMQ jobs for this playbook so they don't fire after
-    //    deletion. Best-effort — if Redis is unreachable we just skip.
-    try {
-      const queue = await getQueue()
-      if (queue) {
-        const jobs = await queue.getJobs(['waiting', 'delayed', 'paused', 'active'])
-        for (const job of jobs) {
-          if (job?.data?.playbookId === playbookId) {
-            try { await job.remove() } catch { /* job already gone — ignore */ }
-          }
-        }
-      }
-    } catch (err) {
-      console.warn(`[playbook-service] queue cleanup skipped for ${playbookId}:`, err)
-    }
+    //    deletion. (The worker's cooperative-cancel poll sees the run flipped to
+    //    'cancelled' above — or the row gone after step 3 — and kills the live
+    //    OpenClaw subprocess within ~10s, so hung processes don't linger.)
+    await removeQueuedJobs(playbookId)
 
     // 3. Cascade-delete all DB rows.
     await playbookRepository.deleteCascade(playbookId)
+
+    // 3b. Free the user's runtime slot: if this playbook held it, promote the
+    //     next pending_queue playbook so the user's queue doesn't stall.
+    if (userId) {
+      try {
+        const { promoteNextInQueue } = await import('./queue-promotion')
+        await promoteNextInQueue(userId)
+      } catch (err) {
+        console.warn(`[playbook-service] queue promotion skipped after delete for ${userId}:`, err)
+      }
+    }
 
     // 4. Refund a growth cycle credit if the user just deleted an errored
     //    playbook. Done AFTER the cascade succeeds so we never credit back for a
@@ -323,6 +343,68 @@ export const playbookService = {
     }
 
     return { deleted: true, creditRefunded }
+  },
+
+  // Admin escape hatch: stop an in-flight (or hung) generation WITHOUT deleting
+  // the playbook. Releases every runtime resource — cancels the active run (which
+  // signals the worker to SIGTERM/SIGKILL its OpenClaw child), removes pending
+  // queue jobs, frees the user's runtime slot (status → error), and promotes the
+  // next queued playbook. The playbook stays in place and is re-generatable
+  // ('error' ∈ CLAIMABLE_SOURCE_STATUSES).
+  async forceStopGeneration(
+    playbookId: string,
+  ): Promise<{ stopped: boolean; reason?: string }> {
+    const pb = await playbookRepository.findById(playbookId)
+    if (!pb) return { stopped: false, reason: 'not_found' }
+
+    // findById maps DB 'failed'→'error' and 'cancelled'→'rejected'.
+    const TERMINAL = ['complete', 'error', 'rejected', 'failed', 'cancelled']
+    if (TERMINAL.includes(pb.status)) {
+      return { stopped: false, reason: 'not_running' }
+    }
+
+    const userId = pb.user_id || null
+
+    // 1. Cancel the active run — this is the kill signal the worker poll watches.
+    const active = await runRepository.findActiveForPlaybook(playbookId)
+    if (active) {
+      try {
+        await prisma.playbookRun.update({
+          where: { id: active.id },
+          data: { status: 'cancelled', failedAt: new Date(), errorMessage: 'Generation force-stopped by admin' },
+        })
+      } catch (err) {
+        console.warn(`[playbook-service] could not cancel run ${active.id}:`, err)
+      }
+    }
+
+    // 2. Drop pending queue jobs.
+    await removeQueuedJobs(playbookId)
+
+    // 3. Move the playbook to a terminal error state so it releases the runtime
+    //    slot and can be regenerated. logEvent is best-effort.
+    await playbookRepository.setFailed(playbookId, 'Generation force-stopped by admin')
+    try {
+      await playbookRepository.logEvent(
+        playbookId,
+        'run.force_stopped',
+        'Generation force-stopped by admin',
+        { runId: active?.id ?? null },
+        active?.id,
+      )
+    } catch { /* non-fatal */ }
+
+    // 4. Promote the next queued playbook for this user.
+    if (userId) {
+      try {
+        const { promoteNextInQueue } = await import('./queue-promotion')
+        await promoteNextInQueue(userId)
+      } catch (err) {
+        console.warn(`[playbook-service] queue promotion skipped after force-stop for ${userId}:`, err)
+      }
+    }
+
+    return { stopped: true }
   },
 
   // Enforce the per-plan retention window: we keep only the user's most recent

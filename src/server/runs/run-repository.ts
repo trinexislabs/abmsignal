@@ -58,6 +58,25 @@ export const runRepository = {
     })
   },
 
+  // Lightweight status probe for cooperative cancellation. Returns the run's
+  // status, or null if the row no longer exists (playbook was deleted) — both
+  // are treated as "cancel" by the worker's kill poll.
+  async getStatusById(id: string): Promise<string | null> {
+    const run = await prisma.playbookRun.findUnique({ where: { id }, select: { status: true } })
+    return run?.status ?? null
+  },
+
+  // Record the OS pid of the spawned OpenClaw child WITHOUT touching startedAt
+  // (unlike markRunning). Best-effort — used for observability and host-side
+  // manual kills. Swallows errors so it never disrupts the run.
+  async setProcessId(id: string, processId: number): Promise<void> {
+    try {
+      await prisma.playbookRun.update({ where: { id }, data: { processId } })
+    } catch (err) {
+      console.warn(`[run-repository] setProcessId skipped for ${id}:`, err)
+    }
+  },
+
   async markSucceeded(id: string): Promise<void> {
     await prisma.playbookRun.update({
       where: { id },

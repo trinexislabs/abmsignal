@@ -75,8 +75,23 @@ export async function runResearchWorker(runId: string): Promise<void> {
     { agent: 'reviewer', task: 'Awaiting content', status: 'pending' },
   ])
 
-  // Invoke OpenClaw via HTTP TaskFlow — each run gets an isolated flow
-  const agentResult = await runAgentTask(prompt, runId)
+  // Invoke OpenClaw via HTTP TaskFlow — each run gets an isolated flow.
+  // shouldCancel lets an admin delete/force-stop kill the subprocess: the run is
+  // flipped to 'cancelled' (or the row deleted) and this poll terminates the child.
+  const agentResult = await runAgentTask(prompt, runId, {
+    shouldCancel: async () => {
+      const s = await runRepository.getStatusById(runId)
+      return s === null || s === 'cancelled'
+    },
+    onProcess: (pid) => { void runRepository.setProcessId(runId, pid) },
+  })
+
+  // Cancelled by admin — the delete/force-stop path owns all cleanup (rows,
+  // queue, slot promotion). Bail without recording a failure.
+  if (!agentResult.ok && agentResult.cancelled) {
+    console.info(`[research-worker] run ${runId} cancelled — stopping quietly`)
+    return
+  }
 
   // Persist raw output and flowId for debugging
   await runRepository.saveRawOutput(runId, agentResult.ok ? agentResult.rawOutput : agentResult.error)

@@ -258,6 +258,10 @@ export async function healthCheck(): Promise<boolean> {
 
 const AGENT_TIMEOUT_MS = parseInt(process.env.AGENT_TIMEOUT_MS ?? '600000', 10)
 
+// How often the worker polls for a cancel signal while a child runs. Bounds the
+// worst-case delay between an admin delete/force-stop and the subprocess dying.
+const CANCEL_POLL_MS = 10_000
+
 // Path to the openclaw binary and its state directory.
 // Override via OPENCLAW_BIN / OPENCLAW_STATE_DIR env vars if the install location differs.
 const OPENCLAW_BIN =
@@ -277,10 +281,20 @@ const OPENCLAW_CONFIG_PATH =
 export async function runAgentTask(
   prompt: string,
   runId: string,
-): Promise<{ ok: true; rawOutput: string; flowId: string } | { ok: false; error: string }> {
-  const { execFile } = await import('child_process')
-  const { promisify } = await import('util')
-  const execFileAsync = promisify(execFile)
+  opts: {
+    // Polled (~every CANCEL_POLL_MS) while the child runs; when it resolves true
+    // the child is killed (SIGTERM → SIGKILL). Used so an admin delete/force-stop
+    // can terminate a running OpenClaw subprocess (the worker owns the handle;
+    // the web tier only flips the run's DB status).
+    shouldCancel?: () => Promise<boolean>
+    // Called once with the spawned child's pid, for observability / host-side kill.
+    onProcess?: (pid: number) => void
+  } = {},
+): Promise<
+  | { ok: true; rawOutput: string; flowId: string }
+  | { ok: false; error: string; cancelled?: true }
+> {
+  const { spawn } = await import('child_process')
 
   const timeoutSeconds = Math.floor(AGENT_TIMEOUT_MS / 1000)
   const syntheticFlowId = `local-${runId}`
@@ -300,37 +314,123 @@ export async function runAgentTask(
   // agent already did this run (its research, tool results, etc.).
   const invokeOnce = async (
     message: string,
-  ): Promise<{ rawOutput: string | null; hardError?: string }> => {
+  ): Promise<{ rawOutput: string | null; hardError?: string; cancelled?: true }> => {
     let stdout = ''
     let stderr = ''
-    try {
-      const result = await execFileAsync(
-        OPENCLAW_BIN,
-        [
-          'agent',
-          '--agent', 'orchestrator',
-          '--local',
-          // Unique session per run so the agent's memory from a previous run
-          // (e.g. another playbook's research phase) cannot bleed into this one.
-          // Without this, every call shares the default "main" session.
-          '--session-id', sessionId,
-          '--message', message,
-          '--json',
-          '--timeout', String(timeoutSeconds),
-        ],
-        {
-          env: {
-            ...process.env,
-            OPENCLAW_STATE_DIR,
-            OPENCLAW_CONFIG_PATH,
+    let cancelledByPoll = false
+
+    // Spawn DETACHED so the child leads its own process group — that lets us kill
+    // the WHOLE tree (openclaw + any tool subprocesses it forks) via
+    // process.kill(-pid). Killing only the direct child leaves grandchildren
+    // holding the stdout pipe open, so the process would hang until they exit —
+    // exactly the "hung process" case this feature must defeat. We buffer
+    // stdout/stderr and enforce the maxBuffer/timeout that execFile gave us.
+    const MAX_BUFFER = 50 * 1024 * 1024 // 50 MB — playbook output can be large
+    const run = () =>
+      new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        const child = spawn(
+          OPENCLAW_BIN,
+          [
+            'agent',
+            '--agent', 'orchestrator',
+            '--local',
+            // Unique session per run so the agent's memory from a previous run
+            // (e.g. another playbook's research phase) cannot bleed into this one.
+            // Without this, every call shares the default "main" session.
+            '--session-id', sessionId,
+            '--message', message,
+            '--json',
+            '--timeout', String(timeoutSeconds),
+          ],
+          {
+            env: { ...process.env, OPENCLAW_STATE_DIR, OPENCLAW_CONFIG_PATH },
+            detached: true,
+            stdio: ['ignore', 'pipe', 'pipe'],
           },
-          maxBuffer: 50 * 1024 * 1024, // 50 MB — playbook output can be large
-          timeout: AGENT_TIMEOUT_MS + 30_000, // process-level kill timeout with 30s buffer
-        },
-      )
+        )
+
+        let stdout = ''
+        let stderr = ''
+        let overflow = false
+        let timedOut = false
+        let settled = false
+
+        // Kill the child's entire process group (negative pid). Best-effort.
+        const killTree = (sig: NodeJS.Signals) => {
+          try { if (child.pid) process.kill(-child.pid, sig) } catch { /* already gone */ }
+        }
+
+        const hardTimeout = setTimeout(() => {
+          timedOut = true
+          killTree('SIGKILL')
+        }, AGENT_TIMEOUT_MS + 30_000)
+
+        // Cooperative cancellation: if the run is cancelled/deleted while the
+        // child runs, terminate the whole tree instead of blocking to the timeout.
+        const poll = opts.shouldCancel
+          ? setInterval(async () => {
+              try {
+                if (await opts.shouldCancel!()) {
+                  cancelledByPoll = true
+                  killTree('SIGTERM')
+                  setTimeout(() => killTree('SIGKILL'), 5_000)
+                }
+              } catch { /* transient DB error — retry next tick */ }
+            }, CANCEL_POLL_MS)
+          : null
+
+        const cleanup = () => {
+          clearTimeout(hardTimeout)
+          if (poll) clearInterval(poll)
+        }
+
+        child.stdout.on('data', (d: Buffer) => {
+          stdout += d.toString()
+          if (stdout.length > MAX_BUFFER && !overflow) { overflow = true; killTree('SIGKILL') }
+        })
+        child.stderr.on('data', (d: Buffer) => {
+          stderr += d.toString()
+          if (stderr.length > MAX_BUFFER && !overflow) { overflow = true; killTree('SIGKILL') }
+        })
+
+        if (child.pid) opts.onProcess?.(child.pid)
+
+        child.on('error', (err) => {
+          if (settled) return
+          settled = true
+          cleanup()
+          reject(err) // spawn failure (e.g. ENOENT on the binary)
+        })
+
+        child.on('close', (code, signal) => {
+          if (settled) return
+          settled = true
+          cleanup()
+          if (cancelledByPoll) {
+            const e = new Error('Run cancelled') as NodeJS.ErrnoException & { stdout?: string; stderr?: string }
+            e.stdout = stdout; e.stderr = stderr
+            return reject(e)
+          }
+          if (timedOut) {
+            const e = new Error('Agent task timed out') as NodeJS.ErrnoException & { stdout?: string; stderr?: string }
+            e.stdout = stdout; e.stderr = stderr
+            return reject(e)
+          }
+          if (code === 0) return resolve({ stdout, stderr })
+          const e = new Error(
+            `Agent subprocess exited with code ${code}${signal ? ` (${signal})` : ''}`,
+          ) as NodeJS.ErrnoException & { stdout?: string; stderr?: string }
+          e.stdout = stdout; e.stderr = stderr
+          reject(e)
+        })
+      })
+
+    try {
+      const result = await run()
       stdout = result.stdout
       stderr = result.stderr
     } catch (err) {
+      if (cancelledByPoll) return { rawOutput: null, cancelled: true }
       const msg = err instanceof Error ? err.message : String(err)
       // Preserve any partial output captured before the failure for diagnostics
       const e = err as { stdout?: string; stderr?: string }
@@ -356,6 +456,10 @@ export async function runAgentTask(
 
   // First attempt: send the real task prompt.
   const first = await invokeOnce(prompt)
+  if (first.cancelled) {
+    // Killed by an admin delete/force-stop — the caller owns cleanup, bail fast.
+    return { ok: false, error: 'Run cancelled', cancelled: true }
+  }
   if (first.hardError && !first.rawOutput) {
     // Timeout / subprocess crash — nudging a dead process won't help.
     return { ok: false, error: first.hardError }
@@ -372,6 +476,7 @@ export async function runAgentTask(
   // but the writing batches do not, so this is what was failing every playbook.
   for (let nudge = 0; nudge < MAX_JSON_NUDGES && !looksLikeJsonOutput(rawOutput); nudge++) {
     const retry = await invokeOnce(JSON_NUDGE_MESSAGE)
+    if (retry.cancelled) return { ok: false, error: 'Run cancelled', cancelled: true }
     if (retry.rawOutput && retry.rawOutput.trim()) rawOutput = retry.rawOutput
   }
 

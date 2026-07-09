@@ -27,6 +27,17 @@ export async function runWritingWorker(runId: string): Promise<void> {
 
   await runRepository.markRunning(runId)
 
+  // Shared cooperative-cancellation opts for every batch call. Keyed on the REAL
+  // runId (not the per-batch task id) so an admin delete/force-stop kills the
+  // live subprocess of whichever batch is running.
+  const cancelOpts = {
+    shouldCancel: async () => {
+      const s = await runRepository.getStatusById(runId)
+      return s === null || s === 'cancelled'
+    },
+    onProcess: (pid: number) => { void runRepository.setProcessId(runId, pid) },
+  }
+
   const writingAgentStatus: AgentStatus[] = [
     { agent: 'orchestrator', task: 'Contact review complete — starting content generation', status: 'running' },
     { agent: 'researcher', task: 'Account research complete', status: 'complete' },
@@ -91,7 +102,12 @@ export async function runWritingWorker(runId: string): Promise<void> {
   ])
 
   const prompt1 = buildWritingPromptBatch(writingCtx, WRITING_BATCH_1_KEYS, 1)
-  const result1 = await runAgentTask(prompt1, `${runId}-batch1`)
+  const result1 = await runAgentTask(prompt1, `${runId}-batch1`, cancelOpts)
+
+  if (!result1.ok && result1.cancelled) {
+    console.info(`[writing-worker] run ${runId} cancelled (batch 1) — stopping quietly`)
+    return
+  }
 
   await runRepository.saveRawOutput(runId, result1.ok ? result1.rawOutput : result1.error)
   if (result1.ok) {
@@ -131,7 +147,12 @@ export async function runWritingWorker(runId: string): Promise<void> {
   ])
 
   const prompt2 = buildWritingPromptBatch(writingCtx, WRITING_BATCH_2_KEYS, 2)
-  const result2 = await runAgentTask(prompt2, `${runId}-batch2`)
+  const result2 = await runAgentTask(prompt2, `${runId}-batch2`, cancelOpts)
+
+  if (!result2.ok && result2.cancelled) {
+    console.info(`[writing-worker] run ${runId} cancelled (batch 2) — stopping quietly`)
+    return
+  }
 
   await runRepository.saveRawOutput(runId, result2.ok ? result2.rawOutput : result2.error)
 

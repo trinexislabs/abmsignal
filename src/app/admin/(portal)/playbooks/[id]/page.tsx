@@ -5,6 +5,7 @@ import { marked } from 'marked'
 import { ChevronLeft, User, ExternalLink, Mail, AlertTriangle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
+import { AdminPlaybookActions } from '@/components/admin/admin-playbook-actions'
 import { getPlaybookDetail } from '@/server/admin/admin-repository'
 import type { PlaybookStatus } from '@/types'
 
@@ -56,7 +57,15 @@ export default async function AdminPlaybookDetailPage({
             <span>Created {format(pb.createdAt, 'MMM d, yyyy · h:mm a')}</span>
           </div>
         </div>
-        <StatusBadge status={pb.status as PlaybookStatus} />
+        <div className="flex items-center gap-3">
+          <StatusBadge status={pb.status as PlaybookStatus} />
+          <AdminPlaybookActions
+            playbookId={pb.id}
+            productName={pb.productName}
+            targetCompany={pb.targetCompany}
+            status={pb.status}
+          />
+        </div>
       </div>
 
       {/* Failure banner */}
