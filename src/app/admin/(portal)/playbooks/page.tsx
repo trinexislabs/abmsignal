@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Card } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { SearchInput, FilterSelect, Pagination } from '@/components/admin/table-controls'
+import { AdminPlaybookRegenerate } from '@/components/admin/admin-playbook-regenerate'
 import { listPlaybooks } from '@/server/admin/admin-repository'
 import type { PlaybookStatus } from '@/types'
 
@@ -55,27 +56,34 @@ export default async function AdminPlaybooksPage({
         ) : (
           <div className="divide-y divide-white/[0.04]">
             {result.rows.map((p) => (
-              <Link
+              <div
                 key={p.id}
-                href={`/admin/playbooks/${p.id}`}
-                className="grid grid-cols-1 md:grid-cols-[1fr_180px_130px_130px] gap-2 md:gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors md:items-center"
+                className="relative block group/row"
               >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{p.targetCompany}</p>
-                  <p className="text-[11px] text-[#9CA3AF] truncate">
-                    {p.productName}
-                    {p.failedReason ? <span className="text-red-400/80"> · {p.failedReason}</span> : ''}
-                  </p>
+                <Link
+                  href={`/admin/playbooks/${p.id}`}
+                  className="grid grid-cols-1 md:grid-cols-[1fr_180px_130px_130px] gap-2 md:gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors md:items-center md:pr-36"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{p.targetCompany}</p>
+                    <p className="text-[11px] text-[#9CA3AF] truncate">
+                      {p.productName}
+                      {p.failedReason ? <span className="text-red-400/80"> · {p.failedReason}</span> : ''}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-white truncate">{p.ownerName ?? '—'}</p>
+                    <p className="text-[11px] text-[#9CA3AF] truncate">{p.ownerEmail ?? 'no owner'}</p>
+                  </div>
+                  <div><StatusBadge status={p.status as PlaybookStatus} /></div>
+                  <div className="text-[11px] text-[#9CA3AF] md:text-right">
+                    {formatDistanceToNow(p.updatedAt, { addSuffix: true })}
+                  </div>
+                </Link>
+                <div className="md:absolute md:right-5 md:top-1/2 md:-translate-y-1/2 px-5 md:px-0 pb-3 md:pb-0">
+                  <AdminPlaybookRegenerate playbookId={p.id} status={p.status} />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-white truncate">{p.ownerName ?? '—'}</p>
-                  <p className="text-[11px] text-[#9CA3AF] truncate">{p.ownerEmail ?? 'no owner'}</p>
-                </div>
-                <div><StatusBadge status={p.status as PlaybookStatus} /></div>
-                <div className="text-[11px] text-[#9CA3AF] md:text-right">
-                  {formatDistanceToNow(p.updatedAt, { addSuffix: true })}
-                </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
