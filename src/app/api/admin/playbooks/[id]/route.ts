@@ -48,11 +48,12 @@ export async function PUT(_req: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
   }
 
+  // Only truly runtime-active statuses reject regeneration. contact_review is
+  // intentionally allowed — admin can regenerate stuck playbooks directly.
   const ACTIVE_STATUSES = new Set([
     'queued',
     'pending_queue',
     'researching',
-    'contact_review',
     'writing',
     'reviewing',
   ])

@@ -189,7 +189,7 @@ export default function ContactsPage({ params }: { params: Promise<{ id: string 
       source: newContact.source || 'Manual',
       linkedinUrl: newContact.linkedinUrl || '#',
       email: newContact.email || undefined,
-      status: 'pending',
+      status: 'confirmed',
     }
     setContacts(prev => [...prev, contact])
     setNewContact({ name: '', title: '', linkedinUrl: '', email: '', confidence: 'medium', source: '' })

@@ -40,6 +40,10 @@ const urlAnalysisWorker = new Worker<UrlAnalysisJobData>(
   { connection: redisConnection, concurrency: 2 },
 )
 
+urlAnalysisWorker.on('completed', (job) => {
+  console.log(`[worker] URL analysis job ${job.id} completed`)
+})
+
 urlAnalysisWorker.on('failed', (job, err) => {
   console.error(`[worker] URL analysis job ${job?.id} failed:`, err.message)
 })

@@ -7,6 +7,7 @@ const execFileAsync = promisify(execFile)
 const OPENCLAW_BIN = process.env.OPENCLAW_BIN ?? '/home/trinexis-dgx-spark/.openclaw/bin/openclaw'
 const OPENCLAW_STATE_DIR = process.env.OPENCLAW_STATE_DIR ?? '/home/trinexis-dgx-spark/.openclaw-abmsignal'
 const OPENCLAW_CONFIG_PATH = process.env.OPENCLAW_CONFIG_PATH ?? `${OPENCLAW_STATE_DIR}/openclaw.json`
+const OPENCLAW_GATEWAY_PORT = process.env.OPENCLAW_GATEWAY_PORT ?? '18790'
 // Dedicated product-analyst agent — NOT `orchestrator`, which runs the full ABM pipeline.
 const URL_ANALYSIS_AGENT_ID = process.env.URL_ANALYSIS_AGENT_ID ?? 'product-analyst'
 
@@ -100,23 +101,44 @@ function extractAgentText(stdout: string, stderr: string): string | null {
   return null
 }
 
-// Runs the product-analyst agent (--local, isolated session) and returns a brief.
-// Throws if OpenClaw fails or returns no parseable JSON — callers fall back to meta tags.
-export async function analyzePageContent(pageContent: string, sessionId: string): Promise<ExtractedBrief> {
-  const env: NodeJS.ProcessEnv = { ...process.env, OPENCLAW_STATE_DIR, OPENCLAW_CONFIG_PATH }
-
+// Exec the product-analyst agent once and return its reply text.
+// `local: false` routes through the running gateway; `local: true` embeds the
+// agent in this process, which OpenClaw refuses while a gateway owns the state dir.
+async function invokeAgent(message: string, sessionId: string, local: boolean): Promise<string> {
+  const env: NodeJS.ProcessEnv = { ...process.env, OPENCLAW_STATE_DIR, OPENCLAW_CONFIG_PATH, OPENCLAW_GATEWAY_PORT }
   const { stdout, stderr } = await execFileAsync(
     OPENCLAW_BIN,
     [
-      'agent', '--agent', URL_ANALYSIS_AGENT_ID, '--local',
+      'agent', '--agent', URL_ANALYSIS_AGENT_ID,
+      ...(local ? ['--local'] : []),
       '--session-id', `url-${sessionId}`,
-      '--message', buildPrompt(pageContent),
+      '--message', message,
       '--json', '--timeout', '85',
     ],
     { env, timeout: 90_000, maxBuffer: 10 * 1024 * 1024 },
   )
+  return extractAgentText(stdout, stderr) ?? stdout
+}
 
-  const agentText = extractAgentText(stdout, stderr) ?? stdout
+// Runs the product-analyst agent (isolated session) and returns a brief.
+// Gateway first — the openclaw-abmsignal gateway service holds exclusive ownership
+// of the state dir, so `--local` fails fast whenever it is up. If the gateway call
+// fails quickly (gateway down), retry embedded with `--local`.
+// Throws if OpenClaw fails or returns no parseable JSON — callers fall back to meta tags.
+export async function analyzePageContent(pageContent: string, sessionId: string): Promise<ExtractedBrief> {
+  const message = buildPrompt(pageContent)
+  const started = Date.now()
+  let agentText: string
+  try {
+    agentText = await invokeAgent(message, sessionId, false)
+  } catch (gatewayErr) {
+    // A slow failure means the gateway ran the agent and it timed out — retrying
+    // embedded would blow the web route's 95s wait, so only retry fast failures.
+    if (Date.now() - started > 20_000) throw gatewayErr
+    console.warn('[url-analyzer] gateway call failed, retrying with --local:', (gatewayErr as Error).message.slice(0, 300))
+    agentText = await invokeAgent(message, sessionId, true)
+  }
+
   const jsonMatch =
     agentText.match(/```json\s*([\s\S]*?)\s*```/) ??
     agentText.match(/(\{[\s\S]*\})/)

@@ -270,10 +270,17 @@ const OPENCLAW_STATE_DIR =
   process.env.OPENCLAW_STATE_DIR ?? '/home/trinexis-dgx-spark/.openclaw-abmsignal'
 const OPENCLAW_CONFIG_PATH =
   process.env.OPENCLAW_CONFIG_PATH ?? `${OPENCLAW_STATE_DIR}/openclaw.json`
+const OPENCLAW_GATEWAY_PORT = process.env.OPENCLAW_GATEWAY_PORT ?? '18790'
+
+// A gateway-mode call that fails faster than this never reached the agent
+// (gateway down / unreachable), so it is safe to retry embedded with --local.
+const GATEWAY_FAST_FAIL_MS = 20_000
 
 /**
- * Run the orchestrator agent as an embedded local subprocess (--local flag),
- * bypassing the gateway session-routing layer which requires an active session.
+ * Run the orchestrator agent via the running OpenClaw gateway, falling back to an
+ * embedded local subprocess (--local) when the gateway is unreachable. The
+ * openclaw-abmsignal gateway service holds exclusive ownership of the state dir,
+ * so `--local` fails within seconds whenever it is up.
  *
  * Returns the agent's text reply as rawOutput, or an error.
  * The flowId field is a synthetic ID so callers don't need branching.
@@ -314,6 +321,7 @@ export async function runAgentTask(
   // agent already did this run (its research, tool results, etc.).
   const invokeOnce = async (
     message: string,
+    local = false,
   ): Promise<{ rawOutput: string | null; hardError?: string; cancelled?: true }> => {
     let stdout = ''
     let stderr = ''
@@ -333,7 +341,7 @@ export async function runAgentTask(
           [
             'agent',
             '--agent', 'orchestrator',
-            '--local',
+            ...(local ? ['--local'] : []),
             // Unique session per run so the agent's memory from a previous run
             // (e.g. another playbook's research phase) cannot bleed into this one.
             // Without this, every call shares the default "main" session.
@@ -343,7 +351,7 @@ export async function runAgentTask(
             '--timeout', String(timeoutSeconds),
           ],
           {
-            env: { ...process.env, OPENCLAW_STATE_DIR, OPENCLAW_CONFIG_PATH },
+            env: { ...process.env, OPENCLAW_STATE_DIR, OPENCLAW_CONFIG_PATH, OPENCLAW_GATEWAY_PORT },
             detached: true,
             stdio: ['ignore', 'pipe', 'pipe'],
           },
@@ -454,8 +462,19 @@ export async function runAgentTask(
     return { rawOutput: extractAgentText(stdout) ?? extractAgentText(stderr) }
   }
 
+  // Gateway first; if it fails fast with nothing to show (gateway down), retry
+  // embedded. A slow failure means the gateway ran the agent — don't double-run.
+  const invoke = async (message: string) => {
+    const started = Date.now()
+    const viaGateway = await invokeOnce(message, false)
+    if (viaGateway.cancelled || viaGateway.rawOutput) return viaGateway
+    if (Date.now() - started > GATEWAY_FAST_FAIL_MS) return viaGateway
+    console.warn(`[runAgentTask] gateway call failed fast for ${sessionId}, retrying with --local`)
+    return invokeOnce(message, true)
+  }
+
   // First attempt: send the real task prompt.
-  const first = await invokeOnce(prompt)
+  const first = await invoke(prompt)
   if (first.cancelled) {
     // Killed by an admin delete/force-stop — the caller owns cleanup, bail fast.
     return { ok: false, error: 'Run cancelled', cancelled: true }
@@ -475,7 +494,7 @@ export async function runAgentTask(
   // Observed to recover reliably; research already self-heals via run retries,
   // but the writing batches do not, so this is what was failing every playbook.
   for (let nudge = 0; nudge < MAX_JSON_NUDGES && !looksLikeJsonOutput(rawOutput); nudge++) {
-    const retry = await invokeOnce(JSON_NUDGE_MESSAGE)
+    const retry = await invoke(JSON_NUDGE_MESSAGE)
     if (retry.cancelled) return { ok: false, error: 'Run cancelled', cancelled: true }
     if (retry.rawOutput && retry.rawOutput.trim()) rawOutput = retry.rawOutput
   }
