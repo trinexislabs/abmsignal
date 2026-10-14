@@ -6,8 +6,11 @@ import { toast } from 'sonner'
 import { RefreshCw, Loader2 } from 'lucide-react'
 
 // Terminal/raw statuses where regeneration is allowed. Anything in
-// (queued, pending_queue, researching,
+// (queued, researching,
 // writing, reviewing) hold runtime resources and must not be re-enqueued.
+// pending_queue is included: a stuck queued playbook holds no actual runtime
+// (previous run may have failed without freeing the slot), so admin can
+// regenerate it directly (Force-stop remains available separately).
 // contact_review is included: admin may regenerate directly without waiting
 // for contact approval (Force-stop remains available separately).
 const REGENERABLE_STATUSES = new Set([
@@ -18,6 +21,7 @@ const REGENERABLE_STATUSES = new Set([
   'cancelled',
   'draft',
   'contact_review',
+  'pending_queue',
 ])
 
 export function AdminPlaybookRegenerate({ playbookId, status }: { playbookId: string; status: string }) {

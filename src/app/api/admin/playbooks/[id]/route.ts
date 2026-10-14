@@ -33,9 +33,12 @@ export async function DELETE(_req: Request, { params }: RouteContext) {
 
 // PUT — regenerate: re-run the full agent pipeline for this playbook (admin
 // override of the user-facing generate endpoint). Allowed from any status,
-// including terminal ones (failed, error, rejected, complete, cancelled, draft).
-// Playbooks already holding runtime resources (queued/pending_queue/researching/
-// contact_review/writing/reviewing) are rejected with 409 — force-stop first.
+// including terminal ones (failed, error, rejected, complete, cancelled, draft),
+// plus pending_queue and contact_review — pending_queue playbooks hold no
+// actual runtime (a stuck queued playbook is waiting for a slot that may never
+// come), and contact_review lets admin regenerate without contact approval.
+// Playbooks already holding runtime resources (queued/researching/
+// writing/reviewing) are rejected with 409 — force-stop first.
 export async function PUT(_req: Request, { params }: RouteContext) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -48,11 +51,11 @@ export async function PUT(_req: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
   }
 
-  // Only truly runtime-active statuses reject regeneration. contact_review is
-  // intentionally allowed — admin can regenerate stuck playbooks directly.
+  // Only truly runtime-active statuses reject regeneration. pending_queue is
+  // intentionally allowed — a stuck queued playbook holds no actual runtime.
+  // contact_review is also allowed — admin can regenerate stuck playbooks directly.
   const ACTIVE_STATUSES = new Set([
     'queued',
-    'pending_queue',
     'researching',
     'writing',
     'reviewing',

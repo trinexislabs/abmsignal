@@ -35,8 +35,9 @@ const RUNTIME_ACTIVE_STATUSES = new Set([
 
 // Terminal statuses + draft where regeneration is offered. Complement of
 // RUNTIME_ACTIVE_STATUSES — explicit so a future new status defaults to hidden.
-// contact_review is included: admin may regenerate directly without waiting
-// for contact approval (Force-stop remains available separately).
+// pending_queue is included: a queued playbook may be stuck behind a failed
+// run that never freed the slot — it holds no actual runtime, so admin can
+// regenerate it directly (Force-stop remains available separately).
 const REGENERABLE_STATUSES = new Set([
   'failed',
   'error',
@@ -45,6 +46,7 @@ const REGENERABLE_STATUSES = new Set([
   'cancelled',
   'draft',
   'contact_review',
+  'pending_queue',
 ])
 
 export function AdminPlaybookActions({ playbookId, productName, targetCompany, status }: Props) {
