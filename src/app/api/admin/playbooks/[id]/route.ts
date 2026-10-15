@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { isAdmin } from '@/lib/auth/admin'
 import { playbookService } from '@/server/playbooks/playbook-service'
 import { playbookRepository } from '@/server/playbooks/playbook-repository'
+import type { ApiContact } from '@/server/playbooks/playbook-types'
 
 // Admin playbook controls. NOTE: middleware does NOT cover /api/admin/**, so each
 // handler MUST gate on isAdmin() itself. isAdmin() (not requireAdmin) is used so
@@ -95,6 +96,49 @@ export async function PUT(_req: Request, { params }: RouteContext) {
   } catch (err) {
     console.error('[admin/playbooks] Regenerate failed:', err)
     return NextResponse.json({ error: 'Regeneration failed' }, { status: 500 })
+  }
+}
+
+// PATCH — approve & continue: for a playbook sitting at contact_review, mark
+// all existing contacts as confirmed and queue the writing phase (admin skip
+// of the user-facing contact approval gate). 409 for any other status.
+export async function PATCH(_req: Request, { params }: RouteContext) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const { id } = await params
+
+  const existing = await playbookService.getById(id)
+  if (!existing) {
+    return NextResponse.json({ error: 'Playbook not found' }, { status: 404 })
+  }
+  if (existing.status !== 'contact_review') {
+    return NextResponse.json(
+      { error: 'Playbook is not at contact_review stage' },
+      { status: 409 },
+    )
+  }
+
+  const existingContacts: ApiContact[] = (await playbookRepository.getContacts(id)).map(
+    (c) => ({ ...c, verification_status: 'confirmed' }),
+  )
+
+  try {
+    const { runId } = await playbookService.submitContactReview(id, existingContacts)
+    await playbookRepository.logEvent(
+      id,
+      'admin.approve_contacts',
+      'Admin approved contacts and continued to writing',
+      { runId, contactCount: existingContacts.length },
+    )
+
+    return NextResponse.json({
+      data: { playbook_id: id, run_id: runId, message: 'Contacts approved, writing phase queued' },
+    })
+  } catch (err) {
+    console.error('[admin/playbooks] Approve contacts failed:', err)
+    return NextResponse.json({ error: 'Failed to approve contacts' }, { status: 500 })
   }
 }
 

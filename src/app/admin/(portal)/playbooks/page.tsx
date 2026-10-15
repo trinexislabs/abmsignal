@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { SearchInput, FilterSelect, Pagination } from '@/components/admin/table-controls'
 import { AdminPlaybookRegenerate } from '@/components/admin/admin-playbook-regenerate'
+import { AdminPlaybookApprove } from '@/components/admin/admin-playbook-approve'
 import { listPlaybooks } from '@/server/admin/admin-repository'
 import type { PlaybookStatus } from '@/types'
 
@@ -81,6 +82,7 @@ export default async function AdminPlaybooksPage({
                   </div>
                 </Link>
                 <div className="md:absolute md:right-5 md:top-1/2 md:-translate-y-1/2 px-5 md:px-0 pb-3 md:pb-0">
+                  <AdminPlaybookApprove playbookId={p.id} status={p.status} />
                   <AdminPlaybookRegenerate playbookId={p.id} status={p.status} />
                 </div>
               </div>

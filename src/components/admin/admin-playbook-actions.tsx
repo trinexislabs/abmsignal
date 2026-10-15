@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { AlertTriangle, Loader2, Trash2, OctagonX, RefreshCw } from 'lucide-react'
+import { AlertTriangle, Loader2, Trash2, OctagonX, RefreshCw, CheckCircle2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -85,6 +85,29 @@ export function AdminPlaybookActions({ playbookId, productName, targetCompany, s
     }
   }
 
+  async function handleApprove() {
+    setError(null)
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/admin/playbooks/${playbookId}`, { method: 'PATCH' })
+      const body = await res.json().catch(() => ({} as Record<string, unknown>))
+      if (res.status === 409) {
+        toast.message('This playbook is not at contact review stage')
+        return
+      }
+      if (!res.ok) throw new Error((body as { error?: string }).error ?? `Approve failed (${res.status})`)
+
+      toast.success('Contacts approved', {
+        description: 'Writing phase queued',
+      })
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not approve contacts.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function handleForceStop() {
     setError(null)
     setBusy(true)
@@ -153,6 +176,17 @@ export function AdminPlaybookActions({ playbookId, productName, targetCompany, s
           className="h-8 text-xs border-[#339af0]/30 text-[#339af0] hover:bg-[#339af0]/10 hover:border-[#339af0]/50 gap-1.5"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Regenerate
+        </Button>
+      )}
+      {status === 'contact_review' && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleApprove}
+          disabled={busy}
+          className="h-8 text-xs border-green-500/30 text-green-400 hover:bg-green-500/10 hover:border-green-500/50 gap-1.5"
+        >
+          {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />} Approve &amp; Continue
         </Button>
       )}
       <Button
